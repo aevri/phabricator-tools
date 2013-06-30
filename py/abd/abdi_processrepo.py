@@ -49,8 +49,9 @@ import abdt_workingbranch
 
 # TODO: split into appropriate modules
 
-_DEFAULT_TEST_PLAN = "I DIDNT TEST"
 MAX_DIFF_SIZE = 1.5 * 1024 * 1024
+DIGEST_REQUEST_MARKER = '@@summarize@@'
+_DEFAULT_TEST_PLAN = "I DIDNT TEST"
 _DIFF_CONTEXT_LINES = 1000
 _LESS_DIFF_CONTEXT_LINES = 100
 
@@ -77,9 +78,14 @@ def createReview(conduit, gitContext, review_branch):
 
     hashes = phlgit_log.get_range_hashes(
         clone, review_branch.remote_base, review_branch.remote_branch)
+    digest = makeMessageDigest(
+        clone,
+        review_branch.remote_base,
+        review_branch.remote_branch)
     commit = hashes[-1]
     parsed = abdt_conduitgit.getFieldsFromCommitHash(
         conduit, clone, commit)
+
     if parsed.errors:
         used_default_test_plan = True
         parsed = abdt_conduitgit.getFieldsFromCommitHash(
@@ -89,10 +95,10 @@ def createReview(conduit, gitContext, review_branch):
             raise abdt_exception.CommitMessageParseException(
                 errors=parsed.errors,
                 fields=parsed.fields,
-                digest=makeMessageDigest(
-                    clone,
-                    review_branch.remote_base,
-                    review_branch.remote_branch))
+                digest=digest)
+
+    if parsed.summary and DIGEST_REQUEST_MARKER in parsed.summary:
+        parsed.summary = digest
 
     rawDiff = phlgit_diff.raw_diff_range(
         clone,

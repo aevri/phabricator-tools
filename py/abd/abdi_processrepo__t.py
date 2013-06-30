@@ -44,9 +44,9 @@ class Test(unittest.TestCase):
         self.mailer = None
         self.mock_sender = None
 
-    def _gitCommitAll(self, subject, testPlan, reviewer):
+    def _gitCommitAll(self, title, subject, testPlan, reviewer):
         reviewers = [reviewer] if reviewer else None
-        message = abdt_commitmessage.make(subject, None, testPlan, reviewers)
+        message = abdt_commitmessage.make(title, subject, testPlan, reviewers)
         phlsys_subprocess.run("git", "commit", "-a", "-F", "-", stdin=message)
 
     def _createCommitNewFileRaw(
@@ -407,6 +407,11 @@ class Test(unittest.TestCase):
         self._devPushNewFile("NEWFILE2", contents=lots)
         self._phabUpdateWithExpectations(total=1, bad=1)
         self._phabUpdateWithExpectations(total=1, bad=1)
+
+    def test_digestRequest(self):
+        self._devCheckoutPushNewBranch("ph-review/digestRequest/master")
+        self._devPushNewFile("DIGESTREQUEST")
+        self._phabUpdateWithExpectations(total=1, bad=0)
 
     # TODO: test landing when origin has been updated underneath us
     # TODO: test landing when dependent review hasn't been landed
