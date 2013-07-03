@@ -50,7 +50,8 @@ GitContext = collections.namedtuple(
     "abdcmd_default__GitContext", [
         "clone",
         "remote",
-        "branches"])
+        "branches",
+        "is_landing_enabled"])
 
 
 def makeWorkingBranchWithStatus(working_branch, status):

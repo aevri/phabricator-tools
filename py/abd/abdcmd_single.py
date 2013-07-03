@@ -107,6 +107,12 @@ def setupParser(parser):
         type=str,
         help="file to touch when successfully updated a repo")
 
+    parser.add_argument(
+        '--enable-landing',
+        type=bool,
+        default=True,
+        help="enable automatic landing of changes onto destination")
+
 
 class DelayedRetrySleepOperation(object):
 

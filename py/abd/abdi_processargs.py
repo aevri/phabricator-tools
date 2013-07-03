@@ -85,7 +85,7 @@ def run_once(args, out):
 
     out.display("process (" + args.repo_desc + "): ")
     abdi_processrepo.processUpdatedRepo(
-        conduit[0], args.repo_path, "origin", mailer)
+        conduit[0], args.repo_path, "origin", mailer, args.enable_landing)
 
     if args.ok_touch_path:
         try:

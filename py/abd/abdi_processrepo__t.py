@@ -117,12 +117,20 @@ class Test(unittest.TestCase):
         with phlsys_fs.chdir_context("phab"):
             runCommands("git fetch origin -p")
         abdi_processrepo.processUpdatedRepo(
-            self.conduit, "phab", "origin", self.mailer)
+            self.conduit,
+            "phab",
+            "origin",
+            self.mailer,
+            is_landing_enabled=True)
 
     def _phabUpdateWithExpectationsHelper(
             self, total=None, bad=None, emails=None):
         abdi_processrepo.processUpdatedRepo(
-            self.conduit, "phab", "origin", self.mailer)
+            self.conduit,
+            "phab",
+            "origin",
+            self.mailer,
+            is_landing_enabled=True)
         if total is not None:
             self.assertEqual(self._countPhabWorkingBranches(), total)
         if bad is not None:
@@ -189,7 +197,20 @@ class Test(unittest.TestCase):
     def test_nothingToDo(self):
         # nothing to process
         abdi_processrepo.processUpdatedRepo(
-            self.conduit, "phab", "origin", self.mailer)
+            self.conduit,
+            "phab",
+            "origin",
+            self.mailer,
+            is_landing_enabled=True)
+
+    def test_nothingToDoNoLand(self):
+        # nothing to process
+        abdi_processrepo.processUpdatedRepo(
+            self.conduit,
+            "phab",
+            "origin",
+            self.mailer,
+            is_landing_enabled=False)
 
     def test_simpleWorkflow(self):
         self._devCheckoutPushNewBranch("ph-review/simpleWorkflow/master")

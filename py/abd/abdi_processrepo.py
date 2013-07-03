@@ -163,7 +163,10 @@ def createDifferentialReview(
 
     print "- commenting on " + str(review.revisionid)
     commenter = abdcmnt_commenter.Commenter(conduit, review.revisionid)
-    commenter.createdReview(review_branch.branch, review_branch.base)
+    if gitContext.is_landing_enabled:
+        commenter.createdReview(review_branch.branch, review_branch.base)
+    else:
+        commenter.createdReviewNoLand(review_branch.branch)
 
     return review.revisionid
 
@@ -197,7 +200,7 @@ def updateReview(conduit, gitContext, reviewBranch, workingBranch, author):
         except abdt_exception.AbdUserException:
             print "still bad"
 
-    if not abdt_naming.isStatusBad(wb):
+    if not abdt_naming.isStatusBad(wb) and gitContext.is_landing_enabled:
         d = phlcon_differential
         status = d.get_revision_status(conduit, wb.id)
         if int(status) == d.ReviewStates.accepted:
@@ -413,10 +416,11 @@ def processAbandonedBranches(conduit, clone, remote, wbList, remote_branches):
             phlgit_push.delete(clone, wb.branch, remote)
 
 
-def processUpdatedRepo(conduit, path, remote, mailer):
+def processUpdatedRepo(conduit, path, remote, mailer, is_landing_enabled):
     clone = phlsys_git.GitClone(path)
     remote_branches = phlgit_branch.get_remote(clone, remote)
-    gitContext = abdt_gittypes.GitContext(clone, remote, remote_branches)
+    gitContext = abdt_gittypes.GitContext(
+        clone, remote, remote_branches, is_landing_enabled)
     wbList = abdt_naming.getWorkingBranches(remote_branches)
     makeRb = abdt_naming.makeReviewBranchNameFromWorkingBranch
     rbDict = dict((makeRb(wb), wb) for wb in wbList)

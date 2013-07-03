@@ -67,6 +67,13 @@ class Commenter(object):
         message += "top-right of the page."
         self._createComment(message, silent=True)
 
+    def createdReviewNoLand(self, branch_name):
+        message = "created revision from branch "
+        message += phlcon_remarkup.monospaced(branch_name) + "\n"
+        message += "\n"
+        message += "note that automated landing is disabled for this repo."
+        self._createComment(message, silent=True)
+
     def updatedReview(self, branch_name):
         message = "updated revision from branch "
         message += phlcon_remarkup.monospaced(branch_name) + "\n"
