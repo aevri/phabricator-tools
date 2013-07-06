@@ -53,7 +53,10 @@ class Mailer(object):
         msg += "either in the unknown email list or an admin.\n"
         to = []
         to.extend(self._admin_emails)
-        to.extend(emails)
+
+        # TODO: call out to exernal hook to determine if the addresses are safe
+        # to.extend(emails)
+
         self._mail_sender.send(
             to_addresses=to,
             subject="user exception",
