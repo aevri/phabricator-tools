@@ -62,36 +62,6 @@ class Mailer(object):
             subject="user exception",
             message=msg)
 
-    def userException(self, message, branch_name):
-        msg = ""
-        msg += "in repository: " + self._repository_name
-        msg += "\nerror when processing branch: " + str(branch_name)
-        msg += "\n" + message
-        self._mail_sender.send(
-            to_addresses=self._admin_emails,
-            subject="user exception",
-            message=msg)
-
-    def initialCommitMessageParseException(self, e, branch_name):
-        subject = ""
-        subject += self._repository_name + ": "
-        subject += branch_name + ": "
-        subject += "missing info"
-        msg = ""
-        msg += "in repository: " + self._repository_name
-        msg += "\nerror when processing branch: " + branch_name
-        msg += "\n" + e.message
-        self._mail_sender.send(
-            to_addresses=[e.email],
-            subject="bad review branch",
-            message=branch_name)
-
-    def badBranchName(self, owner, branch_name):
-        self._mail_sender.send(
-            to_addresses=[owner],
-            subject="bad review branch",
-            message=branch_name)
-
 
 #------------------------------------------------------------------------------
 # Copyright (C) 2012 Bloomberg L.P.
