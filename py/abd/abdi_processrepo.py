@@ -118,6 +118,9 @@ def createReview(conduit, gitContext, review_branch):
         raise abdt_exception.LargeDiffException(
             "diff too big", len(rawDiff), MAX_DIFF_SIZE)
 
+    # XXX: temp measure, at least comment on the review if we do this
+    rawDiff = unicode(rawDiff, errors='replace')
+
     revisionid = createDifferentialReview(
         conduit, user, parsed, gitContext, review_branch, rawDiff)
 
@@ -239,6 +242,9 @@ def updateInReview(conduit, wb, gitContext, review_branch, author):
     if len(rawDiff) >= MAX_DIFF_SIZE:
         raise abdt_exception.LargeDiffException(
             "diff too big", len(rawDiff), MAX_DIFF_SIZE)
+
+    # XXX: temp measure, at least comment on the review if we do this
+    rawDiff = unicode(rawDiff, errors='replace')
 
     d = phlcon_differential
     used_default_test_plan = False
