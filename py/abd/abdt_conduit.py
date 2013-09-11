@@ -68,6 +68,31 @@ class EmailToUserCache(object):
             return self._query_new_email(email, conduit)
 
 
+class ReviewStateCache(object):
+
+    def __init__(self):
+        super(ReviewStateCache, self).__init__()
+        self._review_to_state = {}
+        self._active_reviews = set()
+
+    def get_status(self, review_id, conduit):
+        if review_id not in self._review_to_state:
+            state = phlcon_differential.get_revision_status(conduit, review_id)
+            self._review_to_state[review_id] = state
+
+        self._active_reviews.add(review_id)
+        return self._review_to_state[review_id]
+
+    def refresh_active_reviews(self, conduit):
+        self._review_to_state = {}
+        if self._active_reviews:
+            responses = phlcon_differential.query(
+                conduit, list(self._active_reviews))
+            for r in responses:
+                self._review_to_state[r.id] = r.status
+            self._active_reviews = set()
+
+
 # TODO: re-order methods as (accessor, mutator)
 class Conduit(object):
 
