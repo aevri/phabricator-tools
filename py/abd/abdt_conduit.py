@@ -26,11 +26,46 @@
 
 from __future__ import absolute_import
 
+import datetime
+
 import phlcon_differential
 import phlcon_user
 import phlsys_conduit
 
 import abdt_exception
+
+
+class EmailToUserCache(object):
+
+    def __init__(self):
+        super(EmailToUserCache, self).__init__()
+        self._email_to_user = {}
+        self._email_unknown = {}
+
+    def _query_new_email(self, email, conduit):
+        user = phlcon_user.query_user_from_email(email)
+        if user is not None:
+            self._email_to_user[email] = user.userName
+            del self._email_unknown[email]
+        else:
+            self._email_unknown[email] = datetime.datetime.now()
+        return user
+
+    def _update_unknown_email(self, email, conduit):
+        elapsed = datetime.datetime.now() - self._email_unknown[email]
+        user = None
+        if elapsed.total_seconds() > 60:
+            user = self._query_new_email(email, conduit)
+        return user
+
+    def get_user(self, email, conduit):
+        if email in self._email_to_user:
+            return self._email_to_user[email]
+
+        if email in self._email_unknown:
+            return self._update_unknown_email(email, conduit)
+        else:
+            return self._query_new_email(email, conduit)
 
 
 # TODO: re-order methods as (accessor, mutator)
