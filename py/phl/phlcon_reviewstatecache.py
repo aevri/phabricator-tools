@@ -22,12 +22,42 @@ class ReviewStateCache(object):
 
     def __init__(self):
         super(ReviewStateCache, self).__init__()
+        self._cache = _ReviewStateCache()
+
+    def get_status(self, review_id):
+        return self._cache.get_status(review_id)
+
+    def refresh_active_reviews(self):
+        self._cache.refresh_active_reviews()
+
+    def set_conduit(self, conduit):
+        self._cache.set_revision_list_status_callable(
+            make_revision_list_status_callable(
+                conduit))
+
+    def clear_conduit(self):
+        self._cache.clear_revision_list_status_callable()
+
+
+def make_revision_list_status_callable(conduit):
+
+    def revision_list_status(revision_list):
+        return phlcon_differential.query(conduit, revision_list)
+
+    return revision_list_status
+
+
+class _ReviewStateCache(object):
+
+    def __init__(self):
+        super(ReviewStateCache, self).__init__()
         self._review_to_state = {}
         self._active_reviews = set()
+        self._revision_list_status_callable = None
 
     def get_status(self, review_id, conduit):
         if review_id not in self._review_to_state:
-            state = phlcon_differential.get_revision_status(conduit, review_id)
+            state = self._revision_list_status_callable([review_id])[0].status
             self._review_to_state[review_id] = state
 
         self._active_reviews.add(review_id)
@@ -36,11 +66,16 @@ class ReviewStateCache(object):
     def refresh_active_reviews(self, conduit):
         self._review_to_state = {}
         if self._active_reviews:
-            responses = phlcon_differential.query(
-                conduit, list(self._active_reviews))
-            for r in responses:
-                self._review_to_state[r.id] = r.status
+            responses = self._revision_list_status_callable(
+                list(self._active_reviews))
+            self._review_to_state = {r.id: r.status for r in responses}
             self._active_reviews = set()
+
+    def set_revision_list_status_callable(self, status_callable):
+        self._revision_list_status_callable = status_callable
+
+    def clear_revision_list_status_callable(self, status_callable):
+        self._revision_list_status_callable = None
 
 
 #------------------------------------------------------------------------------
