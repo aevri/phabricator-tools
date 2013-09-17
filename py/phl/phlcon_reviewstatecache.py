@@ -31,6 +31,7 @@ class ReviewStateCache(object):
         self._cache.refresh_active_reviews()
 
     def set_conduit(self, conduit):
+        assert conduit
         self._cache.set_revision_list_status_callable(
             make_revision_list_status_callable(
                 conduit))
@@ -50,12 +51,13 @@ def make_revision_list_status_callable(conduit):
 class _ReviewStateCache(object):
 
     def __init__(self):
-        super(ReviewStateCache, self).__init__()
+        super(_ReviewStateCache, self).__init__()
         self._review_to_state = {}
         self._active_reviews = set()
         self._revision_list_status_callable = None
 
-    def get_status(self, review_id, conduit):
+    def get_status(self, review_id):
+        assert self._revision_list_status_callable
         if review_id not in self._review_to_state:
             state = self._revision_list_status_callable([review_id])[0].status
             self._review_to_state[review_id] = state
@@ -63,7 +65,8 @@ class _ReviewStateCache(object):
         self._active_reviews.add(review_id)
         return self._review_to_state[review_id]
 
-    def refresh_active_reviews(self, conduit):
+    def refresh_active_reviews(self):
+        assert self._revision_list_status_callable
         self._review_to_state = {}
         if self._active_reviews:
             responses = self._revision_list_status_callable(
@@ -73,8 +76,9 @@ class _ReviewStateCache(object):
 
     def set_revision_list_status_callable(self, status_callable):
         self._revision_list_status_callable = status_callable
+        assert self._revision_list_status_callable
 
-    def clear_revision_list_status_callable(self, status_callable):
+    def clear_revision_list_status_callable(self):
         self._revision_list_status_callable = None
 
 
