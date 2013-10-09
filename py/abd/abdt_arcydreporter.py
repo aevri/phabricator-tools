@@ -73,6 +73,7 @@ import types
 import phlsys_fs
 
 ARCYD_STATUS = 'status'
+ARCYD_STATUS_DESCRIPTION = 'status-description'
 ARCYD_CURRENT_REPO = 'current-repo'
 ARCYD_REPOS = 'repos'
 ARCYD_STATISTICS = 'statistics'
@@ -80,6 +81,7 @@ ARCYD_STATISTICS = 'statistics'
 ARCYD_LIST_ATTRIB = [
     ARCYD_CURRENT_REPO,
     ARCYD_STATUS,
+    ARCYD_STATUS_DESCRIPTION,
     ARCYD_REPOS,
     ARCYD_STATISTICS,
 ]
@@ -90,6 +92,7 @@ ARCYD_STATUS_SLEEPING = 'sleeping'
 ARCYD_STATUS_REFRESHING_CACHE = 'refreshing-cache'
 ARCYD_STATUS_STOPPED = 'stopped'
 ARCYD_STATUS_IDLE = 'idle'
+ARCYD_STATUS_TRYLOOP_EXCEPTION = 'tryloop-exception'
 
 ARCYD_LIST_STATUS = [
     ARCYD_STATUS_UPDATING,
@@ -98,6 +101,7 @@ ARCYD_LIST_STATUS = [
     ARCYD_STATUS_STARTING,
     ARCYD_STATUS_STOPPED,
     ARCYD_STATUS_IDLE,
+    ARCYD_STATUS_TRYLOOP_EXCEPTION,
 ]
 
 REPO_ATTRIB_NAME = 'name'
@@ -251,7 +255,9 @@ class ArcydReporter(object):
         self._write_status(ARCYD_STATUS_SLEEPING)
 
     def on_tryloop_exception(self, e, delay):
-        pass  # TBD
+        self._write_status(
+            ARCYD_STATUS_TRYLOOP_EXCEPTION,
+            str(e) + "\nwill wait " + str(delay))
 
     def finish_sleep(self):
         self._write_status(ARCYD_STATUS_IDLE)
@@ -309,8 +315,9 @@ class ArcydReporter(object):
         self._repo = None
         self._write_status(ARCYD_STATUS_IDLE)
 
-    def _write_status(self, status):
+    def _write_status(self, status, description=None):
         timer = self._cycle_timer
+        assert status in ARCYD_LIST_STATUS
         statistics = {
             ARCYD_STAT_CURRENT_CYCLE_TIME: timer.current_duration(),
             ARCYD_STAT_LAST_CYCLE_TIME: timer.last_duration,
@@ -319,6 +326,7 @@ class ArcydReporter(object):
         assert set(statistics.keys()) == set(ARCYD_LIST_STATISTICS)
         d = {
             ARCYD_STATUS: status,
+            ARCYD_STATUS_DESCRIPTION: description,
             ARCYD_CURRENT_REPO: self._repo,
             ARCYD_REPOS: [self._repos[k] for k in self._repos],
             ARCYD_STATISTICS: statistics,
