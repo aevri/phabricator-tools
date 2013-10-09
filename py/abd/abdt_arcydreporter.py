@@ -68,6 +68,7 @@ import datetime
 import functools
 import inspect
 import json
+import traceback
 import types
 
 import phlsys_fs
@@ -255,9 +256,10 @@ class ArcydReporter(object):
         self._write_status(ARCYD_STATUS_SLEEPING)
 
     def on_tryloop_exception(self, e, delay):
+        tb = traceback.format_exc()
         self._write_status(
             ARCYD_STATUS_TRYLOOP_EXCEPTION,
-            str(e) + "\nwill wait " + str(delay))
+            str(e) + "\nwill wait " + str(delay) + '\n\n' + tb)
 
     def finish_sleep(self):
         self._write_status(ARCYD_STATUS_IDLE)
