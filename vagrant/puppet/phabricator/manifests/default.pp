@@ -34,11 +34,17 @@ class apache2 {
       require    => Package["apache2"],
    }
 
+  file { 'conf.d':
+    path    => '/etc/apache2/conf.d',
+    ensure  => directory,
+  }
+
   file { 'vhost':
     path    => '/etc/apache2/conf.d/95-phab.conf',
     ensure  => present,
     content => template("phabricator/vhost.erb"),
     notify  => Service['apache2'],
+    require => File["conf.d"],
   }
 
    define module ( $requires = 'apache2' ) {
