@@ -1,8 +1,6 @@
 # Basic Puppet Apache manifest
 
 $apache2_sites = "/etc/apache2/sites"
-$apache2_mods  = "/etc/apache2/mods"
-$phab_dir      = "/phabricator"
 $dev_dir       = "${phab_dir}/instances/dev"
 $document_root = "${dev_dir}/phabricator/webroot"
 $std_path      = "/usr/bin:/usr/sbin:/bin"
@@ -19,6 +17,19 @@ exec { 'apt-update':
     command     => 'apt-get update',
     refreshonly => true,
     path        => $std_path,
+}
+
+class { 'apache':
+	default_vhost => false,
+}
+
+#RewriteRule ^/rsrc/(.*)     -                       [L,QSA]
+#RewriteRule ^/favicon.ico   -                       [L,QSA]
+apache::vhost { 'local-phabricator',
+	servername => "localhost",
+	docroot => "${document_root}",
+	rewrite_rule => '^(.*)$          /index.php?__path__=$1  [B,L,QSA]',
+	setenv => 'PHABRICATOR_ENV production',
 }
 
 class apache2 {
@@ -109,14 +120,14 @@ class phabricatordb {
 }
 
 # declare our entities
-class {'apache2':}
+class {'apache':}
+apache::mod { "rewrite": }
 class {'otherpackages':}
-apache2::module { "rewrite": }
 class {'phabricator':}
 class {'phabricatordb':}
 
 # declare our dependencies
-Class['apache2']       <- File['apt-proxyconfig']
+Class['apache']        <- File['apt-proxyconfig']
 Class['otherpackages'] <- File['apt-proxyconfig']
 Class['phabricator']   <- Class['apache2']
 Class['phabricator']   <- Class['otherpackages']
