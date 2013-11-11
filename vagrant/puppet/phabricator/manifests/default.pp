@@ -23,48 +23,14 @@ class { 'apache':
 	default_vhost => false,
 }
 
+
 #RewriteRule ^/rsrc/(.*)     -                       [L,QSA]
 #RewriteRule ^/favicon.ico   -                       [L,QSA]
-apache::vhost { 'local-phabricator',
+apache::vhost { 'local-phabricator':
 	servername => "localhost",
 	docroot => "${document_root}",
 	rewrite_rule => '^(.*)$          /index.php?__path__=$1  [B,L,QSA]',
 	setenv => 'PHABRICATOR_ENV production',
-}
-
-class apache2 {
-
-  package { "apache2":
-    ensure => present,
-  }
-
-   service { "apache2":
-      ensure     => running,
-      hasstatus  => true,
-      hasrestart => true,
-      require    => Package["apache2"],
-   }
-
-  file { 'conf.d':
-    path    => '/etc/apache2/conf.d',
-    ensure  => directory,
-  }
-
-  file { 'vhost':
-    path    => '/etc/apache2/conf.d/95-phab.conf',
-    ensure  => present,
-    content => template("phabricator/vhost.erb"),
-    notify  => Service['apache2'],
-    require => File["conf.d"],
-  }
-
-   define module ( $requires = 'apache2' ) {
-        exec { "/usr/sbin/a2enmod ${name}":
-           unless  => "/bin/readlink -e ${apache2_mods}-enabled/${name}.load",
-           notify  => Service['apache2'],
-           require => Package[$requires],
-        }
-   }
 }
 
 class otherpackages {
@@ -120,15 +86,14 @@ class phabricatordb {
 }
 
 # declare our entities
-class {'apache':}
 apache::mod { "rewrite": }
 class {'otherpackages':}
 class {'phabricator':}
 class {'phabricatordb':}
 
 # declare our dependencies
-Class['apache']        <- File['apt-proxyconfig']
-Class['otherpackages'] <- File['apt-proxyconfig']
-Class['phabricator']   <- Class['apache2']
-Class['phabricator']   <- Class['otherpackages']
-Class['phabricatordb'] <- Class['phabricator']
+#Class['apache']        <- File['apt-proxyconfig']
+#Class['otherpackages'] <- File['apt-proxyconfig']
+#Class['phabricator']   <- Class['apache']
+#Class['phabricator']   <- Class['otherpackages']
+#Class['phabricatordb'] <- Class['phabricator']
