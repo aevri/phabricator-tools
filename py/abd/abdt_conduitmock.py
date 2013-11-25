@@ -17,11 +17,13 @@
 #    .users
 #    .revisions
 #   ConduitMock
+#    .describe
 #    .create_comment
 #    .refresh_cache_on_cycle
 #    .create_empty_revision_as_user
 #    .get_commit_message
 #    .create_revision_as_user
+#    .query_name_and_phid_from_email
 #    .query_users_from_emails
 #    .parse_commit_message
 #    .is_review_accepted
@@ -93,10 +95,11 @@ class _Revision(object):
 
 class _User(object):
 
-    def __init__(self, username, email):
+    def __init__(self, username, email, phid):
         super(_User, self).__init__()
         self.username = username
         self.email = email
+        self.phid = phid
 
 
 class ConduitMockData(object):
@@ -107,13 +110,16 @@ class ConduitMockData(object):
         self._users = []
         self._users.append(_User(
             phldef_conduit.ALICE.user,
-            phldef_conduit.ALICE.email))
+            phldef_conduit.ALICE.email,
+            phldef_conduit.ALICE.phid))
         self._users.append(_User(
             phldef_conduit.BOB.user,
-            phldef_conduit.BOB.email))
+            phldef_conduit.BOB.email,
+            phldef_conduit.BOB.phid))
         self._users.append(_User(
             phldef_conduit.PHAB.user,
-            phldef_conduit.PHAB.email))
+            phldef_conduit.PHAB.email,
+            phldef_conduit.PHAB.phid))
         self._firstid = 101
         self._nextid = self._firstid
         self._no_write_attempts = True
@@ -189,6 +195,14 @@ class ConduitMock(object):
             self._data = ConduitMockData()
         phlsys_tracedecorator.decorate_object_methods(self, _mock_to_str)
 
+    def describe(self):
+        """Return a string description of this conduit for a human to read.
+
+        :returns: a string
+
+        """
+        return 'abdt_conduitmock.ConduitMock'
+
     def create_comment(self, revision, message, silent=False):
         """Make a comment on the specified 'revision'.
 
@@ -252,6 +266,21 @@ class ConduitMock(object):
         assert raw_diff
         assert fields
         return self.create_empty_revision_as_user(username)
+
+    def query_name_and_phid_from_email(self, email):
+        """Return a (username, phid) tuple based on the provided email.
+
+        If an email does not correspond to a user then None is returned.
+
+        :email: a strings of the user's email address
+        :returns: a (username, phid) tuple
+
+        """
+        result = None
+        for u in self._data.users:
+            if u.email == email:
+                result = u.username, u.phid
+        return result
 
     def query_users_from_emails(self, emails):
         """Return a list of username strings based on the provided emails.

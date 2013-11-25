@@ -11,6 +11,7 @@
 #    .clear_act_as_user
 #    .get_act_as_user
 #    .get_user
+#    .conduit_uri
 #    .call
 #    .ping
 #
@@ -102,7 +103,9 @@ def make_conduit_uri(uri):
 
     """
     url = urlparse.urlparse(uri)
+    # pylint: disable=E1101
     expected = url.scheme + "://" + url.netloc + "/api/"
+    # pylint: enable=E1101
     return expected
 
 
@@ -155,7 +158,7 @@ class ConduitException(Exception):
 SESSION_ERROR = "ERR-INVALID-SESSION"
 
 
-class Conduit():
+class Conduit(object):
 
     # TODO: make this configurable
     testUri = phldef_conduit.TEST_URI
@@ -196,6 +199,10 @@ class Conduit():
     def get_user(self):
         return self._username
 
+    @property
+    def conduit_uri(self):
+        return self._conduit_uri
+
     def _authenticate(self):
 
         message_dict = self._authenticate_make_message()
@@ -227,7 +234,9 @@ class Conduit():
 
     def _authenticate_make_message(self):
         token = str(int(time.time()))
+        # pylint: disable=E1101
         signature = hashlib.sha1(token + self._certificate).hexdigest()
+        # pylint: enable=E1101
 
         return {
             "user": self._username,

@@ -13,6 +13,7 @@
 # =============================================================================
 from __future__ import absolute_import
 
+import textwrap
 import types
 
 
@@ -38,22 +39,62 @@ class Mailer(object):
 
     def noUsersOnBranch(self, branch_name, branch_base, emails):
         # TODO: determine which of 'emails' we're permitted to send to
-        msg = ""
-        msg += "No registered Phabricator users were found when\n"
-        msg += "trying to create a review from a branch.\n"
-        msg += "\n"
-        msg += "repository:     " + self._repository_name + "\n"
-        msg += "branch:         " + branch_name + "\n"
-        msg += "base branch:    " + branch_base + "\n"
-        msg += "unknown emails: " + str(emails) + "\n"
-        msg += "\n"
-        msg += "If you appear in the 'unknown emails' list then\n"
-        msg += "please register by visiting this link, simply\n"
-        msg += "logging in will resolve the issue:\n"
-        msg += "  " + self._uri + "\n"
-        msg += "\n"
-        msg += "You are receiving this message because you are\n"
-        msg += "either in the unknown email list or an admin.\n"
+        msg = textwrap.dedent("""\
+            No registered Phabricator users were found when
+            trying to create a review from a branch.
+
+            repository:     {repo}
+            branch:         {branch}
+            base branch:    {base_branch}
+            unknown emails: {emails}
+
+            If you appear in the 'unknown emails' list then
+            please register by visiting this link, simply
+            logging in and registering your email address will
+            resolve the issue:
+
+                {uri}
+
+            You are receiving this message because you are
+            either in the unknown email list or an admin.
+
+            If you want to / have to use a different email address
+            to register with Phabricator then you will need to
+            ensure the latest commit on your branch uses the
+            correct email address.
+
+            You can view your email address like so:
+
+                $ git config --global user.email
+
+            and set it like so:
+
+                $ git config --global user.email "name@server.test"
+
+            If you only want to change your email address
+            for the git repo you are currently in, then
+            drop the '--global' bit:
+
+                $ git config user.email "name@server.test"
+
+            You should push the branches again but with
+            a commit that use the right email address.
+            The no-fuss way to do this is the following:
+
+                $ git checkout {branch}
+                $ git commit --reuse-message=HEAD --reset-author --allow-empty
+                $ git push origin {branch}
+
+            This will copy the message from the last commit
+            on the branch and create a new, empty commit
+            with the new authorship information.
+        """).format(
+            repo=self._repository_name,
+            branch=branch_name,
+            base_branch=branch_base,
+            emails=str(emails),
+            uri=self._uri
+        )
         to = []
         to.extend(self._admin_emails)
         to.extend(emails)

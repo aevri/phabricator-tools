@@ -27,21 +27,20 @@ from __future__ import absolute_import
 
 import argparse
 import contextlib
-import datetime
 import functools
-import itertools
-import logging
 import os
+import sys
 import time
 
 import phlsys_scheduleunreliables
 import phlsys_statusline
-import phlsys_tryloop
 import phlurl_watcher
 
 import abdi_processargs
 import abdt_arcydreporter
+import abdt_logging
 import abdt_shareddictoutput
+import abdt_tryloop
 
 
 def getFromfilePrefixChars():
@@ -123,61 +122,17 @@ class RefreshCachesOperation(object):
     def do(self):
         self._reporter.start_cache_refresh()
 
-        # prepare delays in the event of trouble when refreshing
-        # TODO: perhaps this policy should be decided higher-up
-        delays = [
-            datetime.timedelta(seconds=1),
-            datetime.timedelta(seconds=1),
-            datetime.timedelta(seconds=1),
-            datetime.timedelta(seconds=1),
-            datetime.timedelta(seconds=1),
-            datetime.timedelta(seconds=10),
-            datetime.timedelta(seconds=10),
-            datetime.timedelta(seconds=10),
-            datetime.timedelta(seconds=10),
-            datetime.timedelta(seconds=10),
-            datetime.timedelta(seconds=10),
-            datetime.timedelta(minutes=1),
-            datetime.timedelta(minutes=1),
-            datetime.timedelta(minutes=1),
-            datetime.timedelta(minutes=1),
-            datetime.timedelta(minutes=1),
-            datetime.timedelta(minutes=10),
-            datetime.timedelta(minutes=10),
-            datetime.timedelta(minutes=10),
-            datetime.timedelta(minutes=10),
-            datetime.timedelta(minutes=10),
-            datetime.timedelta(minutes=10),
-        ]
-
-        forever = itertools.repeat(datetime.timedelta(minutes=10))
-        delays = itertools.chain(delays, forever)
-
-        # log.error if we get an exception when fetching
-        def on_tryloop_exception_phab(e, delay):
-            self._reporter.on_tryloop_exception(e, delay)
-            self._reporter.log_system_exception('conduit-refresh', '', e)
-            logging.error(str(e) + "\nwill wait " + str(delay))
-
         with self._reporter.tag_timer_context('refresh conduit cache'):
             for key in self._conduits:
                 conduit = self._conduits[key]
-                phlsys_tryloop.try_loop_delay(
+                abdt_tryloop.critical_tryloop(
                     conduit.refresh_cache_on_cycle,
-                    delays,
-                    onException=on_tryloop_exception_phab)
-
-        # log.error if we get an exception when fetching
-        def on_tryloop_exception_git(e, delay):
-            self._reporter.on_tryloop_exception(e, delay)
-            self._reporter.log_system_exception('git-snoop', '', e)
-            logging.error(str(e) + "\nwill wait " + str(delay))
+                    "conduit-refresh",
+                    conduit.describe())
 
         with self._reporter.tag_timer_context('refresh git watcher'):
-            phlsys_tryloop.try_loop_delay(
-                self._url_watcher.refresh,
-                delays,
-                onException=on_tryloop_exception_git)
+            abdt_tryloop.critical_tryloop(
+                self._url_watcher.refresh, 'git-snoop', '')
 
         self._reporter.finish_cache_refresh()
         return True
@@ -214,7 +169,7 @@ class FileCheckOperation(object):
 
 def tryHandleSpecialFiles(f, on_exception_delay):
     try:
-        f()
+        return f()
     except ResetFileException as e:
         on_exception_delay(None)
         try:
@@ -225,10 +180,6 @@ def tryHandleSpecialFiles(f, on_exception_delay):
 
 def process(args):
 
-    # XXX: catch all exceptions at this level
-    # XXX: catch all exceptions at this level
-    # XXX: catch all exceptions at this level
-
     abdi_processargs.setup_sigterm_handler()
     abdi_processargs.configure_sendmail(args)
 
@@ -238,7 +189,8 @@ def process(args):
     on_exception = abdi_processargs.make_exception_message_handler(
         args, reporter, None, "arcyd stopped with exception", "")
 
-    with contextlib.closing(reporter):
+    arcyd_reporter_context = abdt_logging.arcyd_reporter_context
+    with contextlib.closing(reporter), arcyd_reporter_context(reporter):
 
         try:
             _process(args, reporter)
@@ -317,9 +269,12 @@ def _process(args, reporter):
 
     if args.no_loop:
         def process_once():
-            phlsys_scheduleunreliables.process_once(list(operations))
+            return phlsys_scheduleunreliables.process_once(list(operations))
 
-        tryHandleSpecialFiles(process_once, on_exception_delay)
+        new_ops = tryHandleSpecialFiles(process_once, on_exception_delay)
+        if new_ops != set(operations):
+            print 'ERROR: some operations failed'
+            sys.exit(1)
     else:
         def loopForever():
             phlsys_scheduleunreliables.process_loop_forever(list(operations))

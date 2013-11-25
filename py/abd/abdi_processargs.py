@@ -21,8 +21,6 @@
 from __future__ import absolute_import
 
 import contextlib
-import datetime
-import logging
 import platform
 import signal
 import sys
@@ -37,13 +35,13 @@ import phlsys_pluginmanager
 import phlsys_sendmail
 import phlsys_strtotime
 import phlsys_subprocess
-import phlsys_tryloop
 
 import abdmail_mailer
 import abdt_conduit
 import abdt_git
 import abdt_reporeporter
 import abdt_shareddictoutput
+import abdt_tryloop
 
 import abdi_processrepo
 
@@ -299,10 +297,8 @@ def _run_once(args, out, reporter, arcyd_reporter, conduits, url_watcher):
     pluginManager = phlsys_pluginmanager.PluginManager(
         args.plugins, args.trusted_plugins)
 
-    # prepare delays in the event of trouble when fetching or connecting
-    # TODO: perhaps this policy should be decided higher-up
-    arcyd_conduit = _fetch_and_connect(
-        url_watcher, reporter, conduits, args, out, arcyd_reporter)
+    _fetch(url_watcher, args, out, arcyd_reporter)
+    arcyd_conduit = _connect(conduits, args, arcyd_reporter)
 
     out.display("process (" + args.repo_desc + "): ")
 
@@ -317,6 +313,9 @@ def _run_once(args, out, reporter, arcyd_reporter, conduits, url_watcher):
     arcyd_clone = abdt_git.Clone(
         sys_clone, "origin", args.repo_desc, branch_url_callable)
     branches = arcyd_clone.get_managed_branches()
+    for branch in branches:
+        arcyd_reporter.tag_timer_decorate_object_methods_individually(
+            branch, 'branch')
 
     try:
         abdi_processrepo.process_branches(
@@ -332,24 +331,7 @@ def _run_once(args, out, reporter, arcyd_reporter, conduits, url_watcher):
     reporter.on_completed()
 
 
-def _fetch_and_connect(
-        url_watcher, reporter, conduits, args, out, arcyd_reporter):
-    # prepare delays in the event of trouble when fetching or connecting
-    # TODO: perhaps this policy should be decided higher-up
-    delays = [
-        datetime.timedelta(seconds=1),
-        datetime.timedelta(seconds=1),
-        datetime.timedelta(seconds=10),
-        datetime.timedelta(seconds=10),
-        datetime.timedelta(seconds=100),
-        datetime.timedelta(seconds=100),
-        datetime.timedelta(seconds=1000),
-    ]
-
-    def on_tryloop_exception_git(e, delay):
-        reporter.on_tryloop_exception(e, delay)
-        arcyd_reporter.log_system_exception('fetch/prune', args.repo_desc, e)
-        logging.error(str(e) + "\nwill wait " + str(delay))
+def _fetch(url_watcher, args, out, arcyd_reporter):
 
     def prune_and_fetch():
         phlsys_subprocess.run_commands("git remote prune origin")
@@ -361,10 +343,11 @@ def _fetch_and_connect(
         with phlsys_fs.chdir_context(args.repo_path):
             out.display("fetch (" + args.repo_desc + "): ")
             with arcyd_reporter.tag_timer_context('git fetch'):
-                phlsys_tryloop.try_loop_delay(
-                    prune_and_fetch,
-                    delays,
-                    onException=on_tryloop_exception_git)
+                abdt_tryloop.tryloop(
+                    prune_and_fetch, 'fetch/prune', args.repo_desc)
+
+
+def _connect(conduits, args, arcyd_reporter):
 
     key = (
         args.instance_uri, args.arcyd_user, args.arcyd_cert, args.https_proxy)
@@ -375,12 +358,6 @@ def _fetch_and_connect(
         # XXX: we can do better in python 3.x (nonlocal?)
         conduit = [None]
 
-        def on_tryloop_exception_conduit(e, delay):
-            reporter.on_tryloop_exception(e, delay)
-            arcyd_reporter.log_system_exception(
-                'conduit-connect', args.instance_uri, e)
-            logging.error(str(e) + "\nwill wait " + str(delay))
-
         def connect():
             # nonlocal conduit # XXX: we'll rebind in python 3.x, instead
             conduit[0] = phlsys_conduit.Conduit(
@@ -390,14 +367,16 @@ def _fetch_and_connect(
                 https_proxy=args.https_proxy)
 
         with arcyd_reporter.tag_timer_context('conduit connect'):
-            phlsys_tryloop.try_loop_delay(
-                connect, delays, onException=on_tryloop_exception_conduit)
+            abdt_tryloop.tryloop(
+                connect, 'conduit-connect', args.instance_uri)
 
         conduit = conduit[0]
         arcyd_reporter.tag_timer_decorate_object_methods(conduit, 'conduit')
         reviewstate_cache = phlcon_reviewstatecache.ReviewStateCache()
         reviewstate_cache.set_conduit(conduit)
         arcyd_conduit = abdt_conduit.Conduit(conduit, reviewstate_cache)
+        arcyd_reporter.tag_timer_decorate_object_methods_individually(
+            arcyd_conduit, 'conduit')
         conduits[key] = arcyd_conduit
     else:
         arcyd_conduit = conduits[key]

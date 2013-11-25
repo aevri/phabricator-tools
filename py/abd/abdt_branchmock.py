@@ -22,6 +22,7 @@
 #    .get_repo_name
 #    .get_browse_url
 #    .get_clone
+#    .describe
 #    .make_message_digest
 #    .make_raw_diff
 #    .verify_review_branch_base
@@ -270,6 +271,10 @@ class BranchMock(object):
         """Return the abdt_clone for this branch."""
         assert False
 
+    def describe(self):
+        """Return a string description of this branch for a human to read."""
+        return "description!"
+
     def make_message_digest(self):
         """Return a string digest of the commit messages on the branch.
 
@@ -291,10 +296,11 @@ class BranchMock(object):
 
     def verify_review_branch_base(self):
         """Raise exception if review branch has invalid base."""
-        """Raise exception if review branch has invalid base."""
         if not self._data.is_base_ok:
             raise abdt_exception.MissingBaseException(
-                self._data.review_branch, self._data.base_branch)
+                self._data.review_branch,
+                'description',
+                self._data.base_branch)
 
         # TODO: also test raising AbdUserException
         # if not self._is_based_on(
@@ -325,41 +331,40 @@ class BranchMock(object):
 
     def mark_bad_land(self):
         """Mark the current version of the review branch as 'bad land'."""
+        assert self.review_id_or_none() is not None
         self._data.status = abdt_naming.WB_STATUS_BAD_LAND
         self._data.has_new_commits = False
 
     def mark_bad_in_review(self):
         """Mark the current version of the review branch as 'bad in review'."""
-        # XXX: from the existence of 'mark_new_bad_in_review' it seems like
-        #      some checking is required here
+        assert self.review_id_or_none() is not None
         self._data.status = abdt_naming.WB_STATUS_BAD_INREVIEW
         self._data.has_new_commits = False
 
     def mark_new_bad_in_review(self, revision_id):
         """Mark the current version of the review branch as 'bad in review'."""
-        # XXX: from the existence of 'mark_bad_in_review' it seems like
-        #      some checking is required here
+        assert self.review_id_or_none() is None
         self._data.status = abdt_naming.WB_STATUS_BAD_INREVIEW
         self._data.revision_id = int(revision_id)
         self._data.has_new_commits = False
 
     def mark_bad_pre_review(self):
         """Mark this version of the review branch as 'bad pre review'."""
+        assert self.review_id_or_none() is None
+        assert self.is_status_bad_pre_review() or self.is_new()
         self._data.status = abdt_naming.WB_STATUS_BAD_PREREVIEW
         self._data.has_new_commits = False
         self._data.revision_id = None
 
     def mark_ok_in_review(self):
-        # XXX: from the existence of 'mark_ok_new_review' it seems like
-        #      some checking is required here
         """Mark this version of the review branch as 'ok in review'."""
+        assert self.review_id_or_none() is not None
         self._data.status = abdt_naming.WB_STATUS_OK
         self._data.has_new_commits = False
 
     def mark_ok_new_review(self, revision_id):
-        # XXX: from the existence of 'mark_ok_in_review' it seems like
-        #      some checking is required here
         """Mark this version of the review branch as 'ok in review'."""
+        assert self.review_id_or_none() is None
         self._data.status = abdt_naming.WB_STATUS_OK
         self._data.revision_id = int(revision_id)
         self._data.has_new_commits = False

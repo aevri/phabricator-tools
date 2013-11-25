@@ -7,7 +7,6 @@
 # Public Functions:
 #   make_remote
 #   make_local
-#   parse_ref_hash
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
@@ -41,17 +40,6 @@ def make_local(ref):
     # TODO: check that it isn't already fully qualified
     return "refs/heads/" + ref
 
-
-def parse_ref_hash(clone, ref):
-    """Return string of the ref's commit hash if valid, else None.
-
-    :clone: supports call()
-    :ref: the reference to parse
-    :returns: string of the ref's commit hash if valid, else None.
-
-    """
-    commit = clone.call("rev-parse", "--revs-only", ref)
-    return commit if commit else None
 
 #------------------------------------------------------------------------------
 # Copyright (C) 2012 Bloomberg L.P.

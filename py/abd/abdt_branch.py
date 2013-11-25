@@ -21,6 +21,7 @@
 #    .get_repo_name
 #    .get_browse_url
 #    .get_clone
+#    .describe
 #    .make_message_digest
 #    .make_raw_diff
 #    .verify_review_branch_base
@@ -46,13 +47,15 @@
 from __future__ import absolute_import
 
 import phlgit_log
-import phlgitu_ref
+import phlgit_revparse
 
 import abdt_differ
 import abdt_exception
 import abdt_gittypes
 import abdt_lander
+import abdt_landinglog
 import abdt_naming
+import abdt_tryloop
 import abdt_workingbranch
 
 # TODO: allow this to be passed in
@@ -212,7 +215,7 @@ class Branch(object):
         Useful if 'get_author_names_emails' fails.
 
         """
-        if phlgitu_ref.parse_ref_hash(
+        if phlgit_revparse.get_sha1_or_none(
                 self._clone, self._review_branch.remote_base) is None:
             hashes = phlgit_log.get_last_n_commit_hashes_from_ref(
                 self._clone, 1, self._review_branch.remote_branch)
@@ -243,6 +246,15 @@ class Branch(object):
             self._review_branch.remote_base,
             self._review_branch.remote_branch)
         return hashes
+
+    def describe(self):
+        """Return a string description of this branch for a human to read."""
+        branch_description = "(null branch)"
+        if not self.is_null():
+            branch_description = self.review_branch_name()
+            if self.is_abandoned():
+                branch_description += " (abandoned)"
+        return "{}, {}".format(self.get_repo_name(), branch_description)
 
     def make_message_digest(self):
         """Return a string digest of the commit messages on the branch.
@@ -280,7 +292,9 @@ class Branch(object):
         """Raise exception if review branch has invalid base."""
         if self._review_branch.base not in self._clone.get_remote_branches():
             raise abdt_exception.MissingBaseException(
-                self._review_branch.branch, self._review_branch.base)
+                self._review_branch.branch,
+                self._review_branch.description,
+                self._review_branch.base)
         if not self._is_based_on(
                 self._review_branch.branch, self._review_branch.base):
             raise abdt_exception.AbdUserException(
@@ -297,7 +311,10 @@ class Branch(object):
         return message
 
     def _push_delete_tracking_branch(self):
-        self._clone.push_delete(self._tracking_branch.branch)
+        def action():
+            self._clone.push_delete(self._tracking_branch.branch)
+
+        self._tryloop(action, "push-delete-tracking")
 
     def abandon(self):
         """Remove information associated with the abandoned review branch."""
@@ -312,47 +329,86 @@ class Branch(object):
 
     def mark_bad_land(self):
         """Mark the current version of the review branch as 'bad land'."""
-        self._tracking_branch = abdt_workingbranch.push_bad_land(
-            self._make_git_context(),
-            self._review_branch,
-            self._tracking_branch)
+        assert self.review_id_or_none() is not None
+
+        def action():
+            self._tracking_branch = abdt_workingbranch.push_bad_land(
+                self._make_git_context(),
+                self._review_branch,
+                self._tracking_branch)
+        self._tryloop(action, "mark-bad-land")
 
     def mark_bad_in_review(self):
         """Mark the current version of the review branch as 'bad in review'."""
-        self._tracking_branch = abdt_workingbranch.push_bad_in_review(
-            self._make_git_context(),
-            self._review_branch,
-            self._tracking_branch)
+        assert self.review_id_or_none() is not None
+
+        def action():
+            self._tracking_branch = abdt_workingbranch.push_bad_in_review(
+                self._make_git_context(),
+                self._review_branch,
+                self._tracking_branch)
+        self._tryloop(action, "mark-bad-in-review")
 
     def mark_new_bad_in_review(self, revision_id):
         """Mark the current version of the review branch as 'bad in review'."""
-        self._tracking_branch = abdt_workingbranch.push_bad_new_in_review(
-            self._make_git_context(),
-            self._review_branch,
-            revision_id)
+        assert self.review_id_or_none() is None
+
+        def action():
+            if not self.is_new():
+                # 'push_bad_new_in_review' wont clean up our existing tracker
+                self._push_delete_tracking_branch()
+            self._tracking_branch = abdt_workingbranch.push_bad_new_in_review(
+                self._make_git_context(),
+                self._review_branch,
+                revision_id)
+        self._tryloop(action, "mark-new-bad-in-review")
 
     def mark_bad_pre_review(self):
         """Mark this version of the review branch as 'bad pre review'."""
-        self._tracking_branch = abdt_workingbranch.push_bad_pre_review(
-            self._make_git_context(),
-            self._review_branch)
+        assert self.review_id_or_none() is None
+        assert self.is_status_bad_pre_review() or self.is_new()
+
+        # early out if this operation is redundant, pushing is expensive
+        if self.is_status_bad_pre_review() and not self.has_new_commits():
+            return
+
+        def action():
+            self._tracking_branch = abdt_workingbranch.push_bad_pre_review(
+                self._make_git_context(),
+                self._review_branch)
+        self._tryloop(action, "mark-bad-pre-review")
 
     def mark_ok_in_review(self):
         """Mark this version of the review branch as 'ok in review'."""
-        self._tracking_branch = abdt_workingbranch.push_ok_in_review(
-            self._make_git_context(),
-            self._review_branch,
-            self._tracking_branch)
+        assert self.review_id_or_none() is not None
+
+        def action():
+            self._tracking_branch = abdt_workingbranch.push_ok_in_review(
+                self._make_git_context(),
+                self._review_branch,
+                self._tracking_branch)
+        self._tryloop(action, "mark-ok-in-review")
 
     def mark_ok_new_review(self, revision_id):
         """Mark this version of the review branch as 'ok in review'."""
-        self._tracking_branch = abdt_workingbranch.push_ok_new_in_review(
-            self._make_git_context(),
-            self._review_branch,
-            revision_id)
+        assert self.review_id_or_none() is None
+
+        def action():
+            if not self.is_new():
+                # 'push_bad_new_in_review' wont clean up our existing tracker
+                self._push_delete_tracking_branch()
+            self._tracking_branch = abdt_workingbranch.push_ok_new_in_review(
+                self._make_git_context(),
+                self._review_branch,
+                revision_id)
+        self._tryloop(action, "mark_ok_new_review")
 
     def land(self, author_name, author_email, message):
         """Integrate the branch into the base and remove the review branch."""
+
+        review_hash = phlgit_revparse.get_sha1(
+            self._clone, self._tracking_branch.remote_branch)
+
         self._clone.checkout_forced_new_branch(
             self._tracking_branch.base,
             self._tracking_branch.remote_base)
@@ -371,10 +427,40 @@ class Branch(object):
                 self.review_branch_name(),
                 self._tracking_branch.base)
 
-        self._clone.push(self._tracking_branch.base)
-        self._clone.push_delete(self._tracking_branch.branch)
-        self._clone.push_delete(self.review_branch_name())
-        # TODO: we probably want to do a better job of cleaning up locally
+        landing_hash = phlgit_revparse.get_sha1(
+            self._clone, self._tracking_branch.base)
+
+        # don't tryloop here as it's more expected that we can't push the base
+        # due to permissioning or some other error
+        try:
+            self._clone.push(self._tracking_branch.base)
+        except Exception as e:
+            raise abdt_exception.LandingPushBaseException(
+                str(e),
+                self.review_branch_name(),
+                self._tracking_branch.base)
+
+        self._tryloop(
+            lambda: self._clone.push_delete(
+                self._tracking_branch.branch,
+                self.review_branch_name()),
+            "push-delete-landed")
+
+        abdt_landinglog.prepend(
+            self._clone, review_hash, self.review_branch_name(), landing_hash)
+
+        # push the landing log, don't care if it fails to push
+        try:
+            def push_landinglog():
+                abdt_landinglog.push_log(
+                    self._clone, self._clone.get_remote())
+
+            self._tryloop(push_landinglog, "push-landinglog")
+        except Exception:
+            # XXX: don't worry if we can't push the landinglog, this is most
+            #      likely a permissioning issue but not a showstopper.
+            #      we should probably nag on the review instead.
+            pass
 
         self._review_branch = None
         self._tracking_branch = None
@@ -384,6 +470,10 @@ class Branch(object):
     def _make_git_context(self):
         return abdt_gittypes.GitContext(
             self._clone, self._clone.get_remote(), branches=None)
+
+    def _tryloop(self, f, identifier):
+        return abdt_tryloop.tryloop(f, identifier, self.describe())
+
 
 #------------------------------------------------------------------------------
 # Copyright (C) 2012 Bloomberg L.P.

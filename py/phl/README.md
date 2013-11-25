@@ -1,6 +1,8 @@
 # phl
 * `phlcon_differential.py` -
 Wrapper to call Phabricator's Differential Conduit API.
+* `phlcon_maniphest.py` -
+Wrapper to call Phabricator's Maniphest Conduit API.
 * `phlcon_paste.py` -
 Wrapper to call Phabricator's Paste Conduit API.
 * `phlcon_remarkup.py` -
@@ -23,6 +25,8 @@ Wrapper around 'git config'.
 Wrapper around 'git diff'.
 * `phlgit_fetch.py` -
 Dependable wrapper for invocations of git fetch.
+* `phlgit_hashobject.py` -
+Wrapper around 'git hash-object'.
 * `phlgit_log.py` -
 Wrapper around 'git log'.
 * `phlgit_merge.py` -
@@ -31,6 +35,12 @@ Wrapper around 'git merge'.
 Wrapper around 'git push'.
 * `phlgit_rebase.py` -
 Dependable wrapper for invocations of git rebase.
+* `phlgit_revlist.py` -
+Wrapper around 'git rev-list'.
+* `phlgit_revparse.py` -
+Wrapper around 'git rev-parse'.
+* `phlgit_show.py` -
+Wrapper around 'git show'.
 * `phlgitu_ref.py` -
 Utilities for working with git refs.
 * `phlmail_format.py` -
@@ -43,6 +53,8 @@ A mail sender that sends mail via a configured sendmail.
 Wrapper to integrate with Arcanist's .arcconfig file.
 * `phlsys_arcrc.py` -
 Wrapper to integrate with Arcanist's ~/.arcrc file.
+* `phlsys_choice.py` -
+Prompt the user to choose from some options on the command-line.
 * `phlsys_compiface.py` -
 Ensure that two or more interfaces match, useful for validating mocks.
 * `phlsys_conduit.py` -
@@ -71,6 +83,8 @@ A poor substitute for PHP's strtotime function.
 Help to wrap up modules as subcommands.
 * `phlsys_subprocess.py` -
 Interact with other programs using command-line semantics.
+* `phlsys_textconvert.py` -
+Convert between unicode and ascii easily.
 * `phlsys_timedeltatostr.py` -
 Convert timedeltas to strings.
 * `phlsys_timedqueue.py` -

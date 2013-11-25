@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 
 arcyd="$(pwd)/../../proto/arcyd"
 arcyon="$(pwd)/../../bin/arcyon"
+barc="$(pwd)/../../proto/barc"
 
 phaburi="http://127.0.0.1"
 arcyduser='phab'
@@ -180,7 +181,7 @@ if [ ! ${badauthor_revisionid} = ${revisionid} ]; then
     exit 1
 fi
 
-# update review branch as unknown user
+# update review branch as user 'bob'
 cd dev
     git config user.name 'Bob User'
     git config user.email 'bob@server.test'
@@ -192,9 +193,15 @@ run_arcyd
 # look for a good author review
 badauthor_revisionid=$(${arcyon} query --max-results 1 --format-type ids ${arcyoncreds})
 if [ ${badauthor_revisionid} = ${revisionid} ]; then
-    echo 'FAILED! fixed bad author didnt create a review'
+    echo 'FAILED! fixed bad author (bob) didnt create a review'
     exit 1
 fi
+
+# clean up the landed branches
+cd dev
+    git checkout master  # we can't remove the current branch, so be on master
+    $barc gc --update --force
+cd -
 
 cat savemail.txt
 

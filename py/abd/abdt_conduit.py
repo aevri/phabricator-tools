@@ -6,11 +6,13 @@
 #
 # Public Classes:
 #   Conduit
+#    .describe
 #    .refresh_cache_on_cycle
 #    .create_comment
 #    .create_empty_revision_as_user
 #    .get_commit_message
 #    .create_revision_as_user
+#    .query_name_and_phid_from_email
 #    .query_users_from_emails
 #    .parse_commit_message
 #    .is_review_accepted
@@ -30,6 +32,7 @@ from __future__ import absolute_import
 import phlcon_differential
 import phlcon_user
 import phlsys_conduit
+import phlsys_textconvert
 
 import abdt_exception
 
@@ -47,6 +50,19 @@ class Conduit(object):
         super(Conduit, self).__init__()
         self._conduit = conduit
         self._reviewstate_cache = reviewstate_cache
+
+    def describe(self):
+        """Return a string description of this conduit for a human to read.
+
+        :returns: a string
+
+        """
+        description = None
+        if self._conduit.conduit_uri:
+            description = self._conduit.conduit_uri
+        else:
+            description = 'conduit is None'
+        return description
 
     def refresh_cache_on_cycle(self):
         """Refresh the stored state of revisions and users.
@@ -90,8 +106,8 @@ class Conduit(object):
         :returns: the string of the commit message
 
         """
-        return phlcon_differential.get_commit_message(
-            self._conduit, revisionid)
+        msg = phlcon_differential.get_commit_message(self._conduit, revisionid)
+        return phlsys_textconvert.lossy_unicode_to_ascii(msg)
 
     def create_revision_as_user(self, raw_diff, fields, username):
         """Return the id of a newly created revision based on specified args.
@@ -111,6 +127,21 @@ class Conduit(object):
             review = phlcon_differential.create_revision(
                 self._conduit, diffid, fields)
         return review.revisionid
+
+    def query_name_and_phid_from_email(self, email):
+        """Return a (username, phid) tuple based on the provided email.
+
+        If an email does not correspond to a user then None is returned.
+
+        :email: a strings of the user's email address
+        :returns: a (username, phid) tuple
+
+        """
+        user = phlcon_user.query_user_from_email(self._conduit, email)
+        result = None
+        if user:
+            result = (user.userName, user.phid)
+        return result
 
     def query_users_from_emails(self, emails):
         """Return a list of username strings based on the provided emails.

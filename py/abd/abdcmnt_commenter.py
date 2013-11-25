@@ -13,6 +13,7 @@
 #    .landedReview
 #    .abandonedBranch
 #    .usedDefaultTestPlan
+#    .removedSelfReviewer
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
@@ -43,10 +44,14 @@ class Commenter(object):
         if isinstance(e, abdt_exception.AbdBaseException):
             if isinstance(e, abdt_exception.CommitMessageParseException):
                 self._commitMessageParseException(e)
+            elif isinstance(e, abdt_exception.LandingPushBaseException):
+                self._landingPushBaseException(e)
             elif isinstance(e, abdt_exception.LandingException):
                 self._landingException(e)
             elif isinstance(e, abdt_exception.LargeDiffException):
                 self._diffException(e)
+            elif isinstance(e, abdt_exception.MissingBaseException):
+                self._missingBaseException(e)
             else:
                 self._userException(e)
         else:
@@ -108,7 +113,12 @@ the 'edit revision' link at the top-right of the page.
         message = "user deleted branch "
         message += phlcon_remarkup.monospaced(branch_name) + " "
         message += "which was linked to this review.\n"
-        message += "this review is now abandoned."
+        message += "\n"
+        message += "if this review is accepted then nothing will be landed "
+        message += "because there is no associated branch.\n"
+        message += "\n"
+        message += "if the branch is pushed again, then a completely new "
+        message += "review will be created.\n"
         self._createComment(message, silent=True)
 
     def usedDefaultTestPlan(self, branch_name, test_plan):
@@ -124,6 +134,27 @@ the 'edit revision' link at the top-right of the page.
         message += "using the 'edit revision' link at the top-right of "
         message += "this review page."
         self._createComment(message, silent=True)
+
+    def removedSelfReviewer(self, branch_name, digest):
+        digest_markup = phlcon_remarkup.code_block(
+            digest, lang="text", isBad=True)
+
+        branch_markup = phlcon_remarkup.monospaced(branch_name)
+
+        message = (
+            "author, you added yourself to the list of reviewers in your "
+            "commit message.\n"
+            "\n"
+            "phabricator does not permit the author of a review to also be a "
+            "reviewer.\n"
+            "\n"
+            "please carefully review the current list of reviewers to make "
+            "sure there are no other errors.\n"
+            "\n"
+            "combined message digest from branch {branch}:\n"
+            "{digest}").format(branch=branch_markup, digest=digest_markup)
+
+        self._createComment(message)
 
     def _createComment(self, message, silent=False):
         self._conduit.create_comment(self._revision_id, message, silent=silent)
@@ -149,21 +180,57 @@ the 'edit revision' link at the top-right of the page.
         base = phlcon_remarkup.monospaced(e.base_name)
         branch = phlcon_remarkup.monospaced(e.review_branch_name)
         author = phlcon_remarkup.bold('author')
+        errors = phlcon_remarkup.code_block(str(e), lang="text", isBad=True)
         reviewer = phlcon_remarkup.bold('reviewer')
 
-        message = "failed to land revision on " + base + ", see below.\n"
-        message += "\n"
-        message += "errors:\n"
-        message += phlcon_remarkup.code_block(str(e), lang="text", isBad=True)
-        message += "this is probably due to merge conflicts.\n"
-        message += "\n"
-        message += author + ", please do the following:\n"
-        message += "\n"
-        message += "- merge " + base + " into " + branch + "\n"
-        message += "- resolve merge conflicts\n"
-        message += "- push to " + branch + "\n"
-        message += "\n"
-        message += reviewer + " may then accept review with the new changes.\n"
+        message = (
+            "failed to land revision on {base}, see below.\n"
+            "\n"
+            "errors:\n"
+            "{errors}"
+            "this is probably due to merge conflicts.\n"
+            "\n"
+            "{author}, please do the following:\n"
+            "\n"
+            "- merge {base} into {branch}\n"
+            "- resolve merge conflicts\n"
+            "- push to {branch}\n"
+            "\n"
+            "{reviewer} may then accept review with the new changes.\n"
+        ).format(
+            base=base,
+            branch=branch,
+            author=author,
+            errors=errors,
+            reviewer=reviewer)
+
+        self._createComment(message)
+
+    def _landingPushBaseException(self, e):
+        base = phlcon_remarkup.monospaced(e.base_name)
+        branch = phlcon_remarkup.monospaced(e.review_branch_name)
+        author = phlcon_remarkup.bold('author')
+        errors = phlcon_remarkup.code_block(str(e), lang="text", isBad=True)
+        reviewer = phlcon_remarkup.bold('reviewer')
+
+        message = (
+            "failed to push landed revision to {base}, see below.\n"
+            "\n"
+            "errors:\n"
+            "{errors}"
+            "this might be down to permissioning or maybe someone else "
+            "updated the branch before we pushed.\n"
+            "\n"
+            "if there's a permissioning error then please ask the admin of "
+            "this repository to resolve it before proceeding.\n"
+            "\n"
+            "{reviewer} may accept review again to retry the landing.\n"
+        ).format(
+            base=base,
+            branch=branch,
+            author=author,
+            errors=errors,
+            reviewer=reviewer)
 
         self._createComment(message)
 
@@ -176,6 +243,37 @@ the 'edit revision' link at the top-right of the page.
         message += "summary:\n"
         message += phlcon_remarkup.code_block(
             str(e.diff_summary), lang="text", isBad=True)
+
+        self._createComment(message)
+
+    def _missingBaseException(self, e):
+        field_table = phlcon_remarkup.dict_to_table({
+            'description': e.description,
+            'base': e.base_name})
+        remove_instructions = phlcon_remarkup.code_block(
+            "git push origin :{branch}".format(branch=e.review_branch_name),
+            lang="shell")
+        message = (
+            "the specified base branch does not exist: {base}\n"
+            "\n"
+            "the 'base' is the branch to diff against and to land on when "
+            "the review is approved.\n"
+            "\n"
+            "here's how the branch name {branch} was interpreted:\n"
+            "{field_table}\n"
+            "as author you should clean up like so:\n"
+            "\n"
+            "- abandon this review using the 'comment' drop down at the "
+            "bottom of this page.\n"
+            "- remove the associated review branch like so:\n"
+            "{remove_instructions}\n"
+            "in the future please ensure that the base branch exists "
+            "before creating a review to land on it."
+        ).format(
+            base=phlcon_remarkup.monospaced(e.base_name),
+            branch=phlcon_remarkup.monospaced(e.review_branch_name),
+            field_table=field_table,
+            remove_instructions=remove_instructions)
 
         self._createComment(message)
 

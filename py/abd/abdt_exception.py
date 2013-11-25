@@ -13,6 +13,7 @@
 #   LargeDiffException
 #   CommitMessageParseException
 #   LandingException
+#   LandingPushBaseException
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
@@ -71,19 +72,22 @@ class AbdSystemException(AbdBaseException):
 
 class MissingBaseException(AbdUserException):
 
-    def __init__(self, review_branch_name, base_name):
+    def __init__(self, review_branch_name, description, base_name):
         """Branch which the review branch is based on does not exist.
 
         :review_branch_name: name of the branch being reviewed
+        :description: description part of the branch
         :base_name: name of the missing base branch
 
         """
         message = (
             "abdt_exception__MissingBaseException:\n" +
             "review_branch_name: '" + str(review_branch_name) + "'\n" +
+            "description: '" + str(description) + "'\n" +
             "base_name: '" + str(base_name) + "'\n")
         super(MissingBaseException, self).__init__(message)
         self.review_branch_name = review_branch_name
+        self.description = description
         self.base_name = base_name
 
 
@@ -157,7 +161,7 @@ class LandingException(AbdUserException):
 
         :message: any available error message
         :review_branch_name: name of the branch being reviewed
-        :base_name: name of the missing base branch
+        :base_name: name of the base branch
 
         """
         new_message = (
@@ -166,6 +170,26 @@ class LandingException(AbdUserException):
             "review_branch_name: '" + str(review_branch_name) + "'\n" +
             "base_name: '" + str(base_name) + "'\n")
         super(LandingException, self).__init__(new_message)
+        self.review_branch_name = review_branch_name
+        self.base_name = base_name
+
+
+class LandingPushBaseException(AbdUserException):
+
+    def __init__(self, message, review_branch_name, base_name):
+        """Describe failure to land a review at the push new base stage.
+
+        :message: any available error message
+        :review_branch_name: name of the branch being reviewed
+        :base_name: name of the base branch
+
+        """
+        new_message = (
+            "abdt_exception__LandingPushBaseException:\n" +
+            "message: '" + str(message) + "'\n" +
+            "review_branch_name: '" + str(review_branch_name) + "'\n" +
+            "base_name: '" + str(base_name) + "'\n")
+        super(LandingPushBaseException, self).__init__(new_message)
         self.review_branch_name = review_branch_name
         self.base_name = base_name
 

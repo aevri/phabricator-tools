@@ -12,6 +12,7 @@ cd "$(dirname "$0")"
 
 arcyd="$(pwd)/../../proto/arcyd"
 arcyon="$(pwd)/../../bin/arcyon"
+barc="$(pwd)/../../proto/barc"
 
 phaburi="http://127.0.0.1"
 arcyduser='phab'
@@ -103,13 +104,13 @@ function run_arcyd() {
     ${arcyd} \
         arcyd-status-html \
         arcyd_status.json \
-        https://server.test/arcyd
+        https://server.test/arcyd > /dev/null
     echo $?
 
     ${arcyd} \
         repo-status-html \
         touches/repo_origin.try \
-        touches/repo_origin.ok
+        touches/repo_origin.ok > /dev/null
     echo $?
 }
 
@@ -154,6 +155,9 @@ function test_unknown_user() {
     test_name='test_unknown_user'
     branch_name="arcyd-review/${test_name}/master"
 
+    # record the id of the last review, so we can see if we create a new one or not
+    revisionid=$(${arcyon} query --max-results 1 --format-type ids ${arcyoncreds})
+
     # create a review branch as unknown user
     cd dev
         git fetch
@@ -174,7 +178,17 @@ function test_unknown_user() {
         exit 1
     fi
 
-    # update review branch as unknown user
+    # update review branch as another unknown user, use amend so that
+    # if Arcyd doesn't force push the tracking branch then it will fail
+    cd dev
+        git config user.name 'Other Unknown User'
+        git config user.email 'other.unknown@server.test'
+        git commit --amend --reset-author --no-edit
+        git push origin ${branch_name} --force
+    cd -
+    run_arcyd
+
+    # update review branch as known user
     cd dev
         git config user.name 'Bob User'
         git config user.email 'bob@server.test'
@@ -189,6 +203,9 @@ function test_unknown_user() {
         echo 'FAILED! fixed bad author didnt create a review'
         exit 1
     fi
+
+    # make sure arcyd can process the review
+    run_arcyd
 }
 
 function test_bad_base() {
@@ -220,22 +237,33 @@ function test_bad_base() {
     run_arcyd
 }
 
-# function test_self_review() {
-#     test_name='test_happy_path'
-#     branch_name="arcyd-review/${test_name}/master"
-#
-#     # create a review branch
-#     cd dev
-#         git checkout -b ${branch_name}
-#         echo hello > ${test_name}
-#         git add ${test_name}
-#         git commit -m "exercise_arcyd: ${test_name}"
-#         git push origin ${branch_name}
-#     cd -
-#     run_arcyd
-#
-#     # XXX: actually test here
-# }
+function test_self_review() {
+    test_name='test_self_review'
+    branch_name="arcyd-review/${test_name}/master"
+
+    # create a review branch
+    cd dev
+        git checkout -b ${branch_name} origin/master
+        echo hello > ${test_name}
+        git add ${test_name}
+        commit_message=$(printf "exercise_arcyd: ${test_name}\n\nreviewers: bob")
+        git commit -m "${commit_message}"
+        git push origin ${branch_name}
+    cd -
+    run_arcyd
+
+    # find and accept the review
+    revisionid=$(${arcyon} query --max-results 1 --format-type ids ${arcyoncreds})
+    ${arcyon} comment ${revisionid} --action accept --act-as-user alice ${arcyoncreds}
+    run_arcyd
+
+    # make sure the revision is closed and landed
+    ${arcyon} query --ids ${revisionid} ${arcyoncreds} | grep 'Closed'
+    cd dev
+        deleted_prefix='deleted.*'
+        git fetch -p 2>&1 | grep "${deleted_prefix}${branch_name}"
+    cd -
+}
 
 function test_merge_conflict() {
     test_name='test_merge_conflict'
@@ -288,6 +316,46 @@ function test_merge_conflict() {
     cd -
 }
 
+function test_push_error() {
+    test_name='test_push_error'
+    branch_name="arcyd-review/${test_name}/master"
+
+    # create a review branch
+    cd dev
+        git checkout -b ${branch_name} origin/master
+        echo hello > ${test_name}
+        git add ${test_name}
+        git commit -m "exercise_arcyd: ${test_name}"
+        git push origin ${branch_name}
+    cd -
+    run_arcyd
+
+    # prevent writes to origin
+    chmod -R u-w origin
+
+    # find and accept the review
+    revisionid=$(${arcyon} query --max-results 1 --format-type ids ${arcyoncreds})
+    ${arcyon} comment ${revisionid} --action accept --act-as-user alice ${arcyoncreds}
+    run_arcyd
+
+    # make sure the revision is 'Needs revision'
+    ${arcyon} query --ids ${revisionid} ${arcyoncreds} | grep 'Needs Revision'
+
+    # accept the review again
+    ${arcyon} comment ${revisionid} --action accept --act-as-user alice ${arcyoncreds}
+
+    # enable writes to origin and try to land again
+    chmod -R u+w origin
+    run_arcyd
+
+    # make sure the revision is closed and landed
+    ${arcyon} query --ids ${revisionid} ${arcyoncreds} | grep 'Closed'
+    cd dev
+        deleted_prefix='deleted.*'
+        git fetch -p 2>&1 | grep "${deleted_prefix}${branch_name}"
+    cd -
+}
+
 function test_empty_branch() {
     test_name='test_empty_branch'
     branch_name="arcyd-review/${test_name}/master"
@@ -324,6 +392,13 @@ function test_empty_branch() {
     cd -
 }
 
+function test_branch_gc() {
+    # gc the review branches
+    cd dev
+        git checkout master  # we can't remove the current branch, be on master
+        ${barc} gc --force --update
+    cd -
+}
 
 ###############################################################################
 # run the actual tests
@@ -338,8 +413,11 @@ run_arcyd
 test_happy_path
 test_unknown_user
 test_bad_base
+test_self_review
 test_merge_conflict
+test_push_error
 test_empty_branch
+test_branch_gc
 
 # display the sent mails
 pwd

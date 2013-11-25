@@ -20,28 +20,25 @@ libscripts=$(find py/ -iname '*.py' |  tr '\n' ' ')
 allscripts="$(ls bin/* proto/* meta/docgen/*.py meta/autofix/*.py) $libscripts"
 
 ###############################################################################
+# pylint
+###############################################################################
+PYTHONPATH=py/phl pylint \
+    --rcfile=.pylint.rc \
+    --errors-only \
+    ${libscripts}
+
+###############################################################################
 # pychecker
 ###############################################################################
 
 ## please install pychecker with sudo apt-get install pychecker
 # TODO: find workaround for borked import detection
 # TODO: fix phlcon_differential.createDiff() to not have 16 params
-PYTHONPATH=py/phl pychecker \
+PYTHONPATH=py/phl:py/abd pychecker \
     --quiet --only --no-import --exec --constant1 --initattr --changetypes \
     --no-deprecated \
     --maxlines 150 --maxbranches 15 --maxreturns 5 --maxargs 16 --maxlocals 20\
-    py/abd/*.py py/aon/*.py py/phl/*.py py/pig/*.py
-
-###############################################################################
-# pylint
-###############################################################################
-# disabled for now, doesn't seem to add significant value; recent work looks
-# interesting though
-#
-# pylint \
-#     --errors-only \
-#     py/abd/*.py py/aon/*.py py/phl/*.py py/pig/*.py
-#
+    ${libscripts}
 
 ###############################################################################
 # flake8
@@ -53,7 +50,7 @@ flake8 $allscripts
 ###############################################################################
 
 # please install snakefood with ./meta/package_deps/install_snakefood.sh
-sfood $libscripts --internal > meta/package_deps/deps
+sfood ${libscripts} --internal > meta/package_deps/deps
 ./meta/package_deps/process.py meta/package_deps/deps meta/package_deps/file-deps meta/package_deps/package-deps
 diff ./meta/package_deps/expected-package-deps ./meta/package_deps/package-deps
 
