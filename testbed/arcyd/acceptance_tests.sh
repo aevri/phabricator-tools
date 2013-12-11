@@ -505,7 +505,7 @@ test_branch_gc
 
 # delete all local working branches for clean slate, reset master to initial commit
 (cd dev; git checkout master; git branch | grep -v '\*' | xargs git branch -D)
-(cd dev; git checkout master; git rev-list HEAD | tail -n 1 | xargs git reset --hard | git push -f origin master)
+(cd dev; git checkout master; git rev-list HEAD | tail -n 1 | xargs git reset --hard; git push -f origin master)
 
 # remove the config
 remove_config
@@ -513,7 +513,7 @@ test_happy_path
 
 # delete all local working branches for clean slate, reset master to initial commit
 (cd dev; git checkout master; git branch | grep -v '\*' | xargs git branch -D)
-(cd dev; git checkout master; git rev-list HEAD | tail -n 1 | xargs git reset --hard | git push -f origin master)
+(cd dev; git checkout master; git rev-list HEAD | tail -n 1 | xargs git reset --hard; git push -f origin master)
 
 # make a config ref with no repo.json
 make_empty_config_ref
@@ -521,7 +521,7 @@ test_happy_path
 
 # delete all local working branches for clean slate, reset master to initial commit
 (cd dev; git checkout master; git branch | grep -v '\*' | xargs git branch -D)
-(cd dev; git checkout master; git rev-list HEAD | tail -n 1 | xargs git reset --hard | git push -f origin master)
+(cd dev; git checkout master; git rev-list HEAD | tail -n 1 | xargs git reset --hard; git push -f origin master)
 
 # make a config ref with empty repo.json
 make_empty_config
