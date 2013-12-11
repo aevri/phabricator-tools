@@ -2,6 +2,12 @@
 # =============================================================================
 # CONTENTS
 # -----------------------------------------------------------------------------
+# phlgit_showref
+#
+# Public Functions:
+#   names
+#   hash_ref_pairs
+#
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
 # =============================================================================
@@ -16,7 +22,8 @@ def names(clone):
     :returns: a list of string names
 
     """
-    return [name for sha1, name in hash_ref_pairs(clone)]
+    result = [name for sha1, name in hash_ref_pairs(clone)]
+    return result
 
 
 def hash_ref_pairs(clone):
@@ -26,7 +33,8 @@ def hash_ref_pairs(clone):
     :returns: a list of (sha1, name)
 
     """
-    return [line.split() for line in clone.call('show-ref').splitlines()]
+    result = [line.split() for line in clone.call('show-ref').splitlines()]
+    return result
 
 
 #------------------------------------------------------------------------------
