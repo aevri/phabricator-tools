@@ -1,0 +1,133 @@
+===============================================================================
+= Proposal to change the arcyd branch naming scheme to "r/ branches"
+===============================================================================
+
+The current arcyd branch naming scheme has some usability issues drawbacks,
+here is a proposal which attempts to address all of them.
+
+-------------------------------------------------------------------------------
+- Description of the current naming scheme
+-------------------------------------------------------------------------------
+
+Branches are currently composed of 3 sections:
+
+  arcyd-review/somedescription/master
+  |   prefix  |  description  | base|
+
+1. "prefix" - the prefix unique to arcyd reviews, so that arcyd knows which
+   ones to process.  Deliberately long and descriptive to avoid collisions
+   with any pre-existing branches.
+
+2. "description" - a description of the branch by the user.
+
+3. "base" - the branch to diff against and to land on.
+
+Note that the third section may be composed of multiple slashes, otherwise
+users would not be able to target changes to branches like 'releases/master'.
+
+-------------------------------------------------------------------------------
+- Some drawbacks of the current naming scheme
+-------------------------------------------------------------------------------
+
+(A) 'arcyd' is hard to type correctly
+
+(B) 'arcyd-review' is a long prefix to type
+
+(C) Most branches have the same base - 'master'.  It feels wasteful to repeat
+    this and also to risk mis-typing it.
+
+    ('develop' instead of 'master' in some repos, those repos might prefer the
+    protection of devgit's 'master' instead though - non-ff to 'develop' could
+    set the project back some ways)
+
+-------------------------------------------------------------------------------
+- Proposed changes
+-------------------------------------------------------------------------------
+
+(1) Change "prefix" to something much easier to type - the letter 'r'.
+
+(2) Choose a default base for "base" - "master", if no base is specified then
+    use this one instead.
+
+(3) Swap the positions of "description" and "base" (if present)
+
+(4) These schemes could co-exist for some time until the deprecated
+    'arcyd-review' branches are all gone in favour of the new 'r' branches.
+
+-------------------------------------------------------------------------------
+- Examples
+-------------------------------------------------------------------------------
+
+With changes (1) and (2) in effect then the above example would change from:
+
+  arcyd-review/somedescription/master
+
+to
+
+  r/somedescription
+
+The effect on a list of reviews is quite dramatic, with the current scheme:
+
+  arcyd-review/D123993/master
+  arcyd-review/D124002/feature/redoProxy
+  arcyd-review/broadcast_metakey_updown/master
+  arcyd-review/carbon_event_bindings/master
+  arcyd-review/colors_T122239/master
+  arcyd-review/combobox_listener/master
+  arcyd-review/command_signal/feature/redoProxy
+  arcyd-review/fixStartupCrash/master
+  arcyd-review/fix_radiobutton_when_packed/feature/redoProxy
+  arcyd-review/hide_unsigned_badges/master
+  arcyd-review/hookup_delete_event_to_coordinator/feature/redoProxy
+  arcyd-review/menu_T122242/master
+  arcyd-review/renameUtils/master
+
+with (1) applied:
+
+  r/D123993/master
+  r/D124002/feature/redoProxy
+  r/broadcast_metakey_updown/master
+  r/carbon_event_bindings/master
+  r/colors_T122239/master
+  r/combobox_listener/master
+  r/command_signal/feature/redoProxy
+  r/fixStartupCrash/master
+  r/fix_radiobutton_when_packed/feature/redoProxy
+  r/hide_unsigned_badges/master
+  r/hookup_delete_event_to_coordinator/feature/redoProxy
+  r/menu_T122242/master
+  r/renameUtils/master
+
+with (1) and (2) applied:
+
+  r/D123993
+  r/D124002/feature/redoProxy
+  r/broadcast_metakey_updown
+  r/carbon_event_bindings
+  r/colors_T122239
+  r/combobox_listener
+  r/command_signal/feature/redoProxy
+  r/fixStartupCrash
+  r/fix_radiobutton_when_packed/feature/redoProxy
+  r/hide_unsigned_badges
+  r/hookup_delete_event_to_coordinator/feature/redoProxy
+  r/menu_T122242
+  r/renameUtils
+
+if we also apply (3) then there's a more subtle gain:
+
+  r/D123993
+  r/broadcast_metakey_updown
+  r/carbon_event_bindings
+  r/colors_T122239
+  r/combobox_listener
+  r/feature/redoProxy/D124002
+  r/feature/redoProxy/command_signal
+  r/feature/redoProxy/fix_radiobutton_when_packed
+  r/feature/redoProxy/hookup_delete_event_to_coordinator
+  r/fixStartupCrash
+  r/hide_unsigned_badges
+  r/menu_T122242
+  r/renameUtils
+
+The branches headed for the same destination now sort together.
