@@ -94,17 +94,35 @@ The main advantages of (3) are that:
   final revision.
 
 + Once the commits have been separated onto branches, this is the same workflow
-  that all involved would normally go through.
+  that all parties involved would normally go through.
 
 + It's possible for other authors to explicitly depend on a
   'review-in-progress', so they don't have to wait for it to land in order to
   safely begin their work.  Since the depended-on branch will land as early as
-  possible then there is a minimum of jamming in the system as a whole.
+  possible then there is a minimum of waiting in the system as a whole.
 
 The main drawback of (3) seems to be the burden of creating a new branch per
 commit.  This seems like a task suitable for a helper tool and is really just
 the general burden of creating a review branch multiplied by the number of
-branches.
+commits on the branch.
+
+This simple script demonstrates how easy this might be to automate:
+
+    #! /usr/bin/env python
+    import subprocess
+    commit_list = subprocess.check_output(['git', 'rev-list', 'master..'])
+    branch = 'master'
+    for commit in reversed(commit_list.splitlines()):
+        print subprocess.check_output(['git', 'log', '-n', '1', commit])
+        description = raw_input('one word description: ')
+        branch = "r/{}/{}".format(branch, description)
+        print subprocess.check_output(['git', 'branch', branch, commit])
+
+Of course, you'd want something more user-friendly than this but it's not hard
+to imagine how it could be extended.
+
+This proposal will focus exclusively on approach (3) and leave discussion of
+the others as a matter for other proposals.
 
 -------------------------------------------------------------------------------
 - Dependencies encoded in branch names
