@@ -20,24 +20,110 @@ on eachother.  The simplest thing is to submit one change for review at a
 time and gradually work through the stack (or tree) of dependencies from
 root to tips.
 
+We need a better way.
+
 -------------------------------------------------------------------------------
-- Dependencies encoded in branch names
+- Review one change per branch, allow dependencies between branches
 -------------------------------------------------------------------------------
 
-Take this feature branch as an example:
+Taking this feature branch as an example:
 
   * (master) latest change on master
   |
-  | * (feature/mychanges) extendThingMore
-  | * extendThing
-  | * refactorThing
+  | * (feature/mychanges) Thing: extend the warble garble
+  | * Thing: extend the frobnitz munger
+  | * Thing: refactor, remove hungarian notation
   |/
   * commit that's the merge-base
 
   - (figure 0) simple feature branch
 
-If we adopt the 'r' branch syntax then we could easily re-render
-'feature/mychanges' for review as dependent branches like so:
+There are a number of schemes we might pursue to enable review of the branch
+with Phabricator:
+
+  1. 'audit' - push the branch and audit each commit in 'Diffusion', lose all
+     review information if history is re-written.  Without being able to
+     rewrite history then perhaps 'git commit --fixup' can be used to introduce
+     changes destined to patch individual commits.
+     'git rebase -i --autosquash' can be used to apply the fixups, this won't
+     always go cleanly and the process will dispose of all commit comments.
+
+  2. 'drip from local' - push one commit for review at a time as a new review
+     branch.  Once a review lands then rebase the branch on master and push
+     the next commit for review.  When commits are independent then they may
+     of course be pushed as review branches at the same time.
+     This process works but feels far too manual.
+
+  3. 'dependent review branches' - push each commit as a new branch and somehow
+     encode the dependency information in the name of the branch, probably
+     using the existing 'base' portion of the branch naming scheme.  Review
+     branches that are based on review branches can be treated differently to
+     remove all the manual process that would be required in method '2'.
+
+  4. 'branch reviews' - create a single Differential review for the whole
+     branch.  This may create a large, inseperable review out of commits that
+     were originally logically separate changes.  To aid the reviewer, when
+     creating the review we can submit each commit as a separate 'update' to
+     the Differential review.  This will have the advantage of allowing the
+     reviewer to examine the inter-update diffs to break down the review.
+     All inline comments should be made on the most recent version of the files
+     or the comments may not be easily visible to the author.
+     Subsequent updates in response to the review might be made by rebase-edit
+     or fixup commits, either way they will appear as separate updates to the
+     review, the diffs of of the original commits will not be updated.
+     All commits will have to land at the same time, i.e. if only the last
+     commit on the branch has actions from the review then none of them will
+     land until they are all approved.
+
+It seems like approach (3) 'dependent review branches' and (4) 'branch reviews'
+are the most promising.
+
+The main advantages of (3) are that:
+
++ The commits may move independently, so they land as early as possible.
+
++ The commits may move independently, so it's not "all or nothing".
+
++ The commits are viewed and commented upon independently, since they are
+  logically seperate then this may reduce the complexity of the individual
+  reviews quite a lot.
+
++ The commits are versioned individually and are easy to edit in isolation,
+  authors may simply check out the review branch and make fixup commits with
+  semi-meaningful messages without fear that the messages will make it into the
+  final revision.
+
++ Once the commits have been separated onto branches, this is the same workflow
+  that all involved would normally go through.
+
++ It's possible for other authors to explicitly depend on a
+  'review-in-progress', so they don't have to wait for it to land in order to
+  safely begin their work.  Since the depended-on branch will land as early as
+  possible then there is a minimum of jamming in the system as a whole.
+
+The main drawback of (3) seems to be the burden of creating a new branch per
+commit.  This seems like a task suitable for a helper tool and is really just
+the general burden of creating a review branch multiplied by the number of
+branches.
+
+-------------------------------------------------------------------------------
+- Dependencies encoded in branch names
+-------------------------------------------------------------------------------
+
+Taking this feature branch as an example:
+
+  * (master) latest change on master
+  |
+  | * (feature/mychanges) Thing: extend the warble garble
+  | * Thing: extend the frobnitz munger
+  | * Thing: refactor, remove hungarian notation
+  |/
+  * commit that's the merge-base
+
+  - (copy of figure 0) simple feature branch
+
+If we adopt the 'r' branch syntax then we could re-render
+'feature/mychanges' for review as dependent but separate review branches:
 
   r/refactorThing
   r/r/refactorThing/extendThing
@@ -86,6 +172,22 @@ B - (figure 2) - abbreviated branch dependency
 C - (figure 3) - abbrev. branch dependency, transpose 'base' and 'description'
 D - (figure 4) - abbrev. branch dependency, add suffixes
 
+There are at least three criteria to compare them by:
+
+"length" - the length of the resulting branches, the shorter the better
+
+"unambiguity" - in some schemes it's possible for the "base" to alias to more
+                than one branch.  For example in scheme 'D' the branches:
+                  'refactorThing', 'r/refactorThing', 'r/refactorThing/r' are
+                all possible matches for the base of:
+                  'r/refactorThing/extendThing/r'
+
+"sorts to hierarchy" - whether or not sorting the list of branch names
+                       organises them by some sort of hierarchy.
+
+In this table we assign scores to each scheme for each of the criteria and add
+up the totals:
+
                       | A | B | C | D |
   |-------------------|---------------|
   |length             | 0 | 2 | 2 | 1 |
@@ -94,4 +196,22 @@ D - (figure 4) - abbrev. branch dependency, add suffixes
   |-------------------|----------------
   |TOTAL              | 3 | 5 | 3 | 3 |
 
-  (figure 4) abbrev. branch dependency, add suffixes
+  (figure 5) comparison of encoding schemes
+
+It appears that scheme 'B' is a clear winner but unfortunately it is not
+possible due to the limitation of Git outlined earlier.  All other contenders
+score equally.
+
+It appears the remaining choice is the relative importance of 'length',
+'unambiguity' and 'sorts to hierarchy'.
+
+Given that ambiguity might lead to frustrating errors and the difference in
+length is not so great (assuming a short prefix), the best of the possible
+current options is therefore scheme 'A'.
+
+-------------------------------------------------------------------------------
+- Branch dependency workflow
+-------------------------------------------------------------------------------
+
+Given that we have a robust scheme for encoding the dependencies between
+branches then 
