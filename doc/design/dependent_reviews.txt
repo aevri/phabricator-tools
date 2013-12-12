@@ -179,7 +179,7 @@ Another workaround might be to allow for suffixes to avoid collisions:
   (figure 4) abbrev. branch dependency, add suffixes
 
 -------------------------------------------------------------------------------
-- Analysis of encoding schemes
+- Comparison of encoding schemes
 -------------------------------------------------------------------------------
 
 There are 4 schemes outlines in the previous section, here they are assigned
@@ -232,4 +232,33 @@ current options is therefore scheme 'A'.
 -------------------------------------------------------------------------------
 
 Given that we have a robust scheme for encoding the dependencies between
-branches then 
+branches then we may explore the workflow.
+
+Taking this feature branch as an example again:
+
+  * (master) latest change on master
+  |
+  | * (feature/mychanges) Thing: extend the warble garble
+  | * Thing: extend the frobnitz munger
+  | * Thing: refactor, remove hungarian notation
+  |/
+  * commit that's the merge-base
+
+  - (copy of figure 0) simple feature branch
+
+We might imagine that the next step would be to create reviews out of each of
+these commits, in the absence of any helper script we might need to type
+something like:
+
+  $ git push origin feature/mychanges~2:refs/heads/r/noHung
+  $ git push origin feature/mychanges~1:refs/heads/r/r/noHung/extendFrob
+  $ git push origin feature/mychanges~0:refs/heads/r/r/r/noHung/extendFrob/Warb
+
+a simple alias might help simplify this:
+
+  $ git pushdep 2 r/noHung
+  $ git pushdep 1 r/r/noHung/extendFrob
+  $ git pushdep 0 r/r/r/noHung/extendFrob/Warb
+
+
+  $ git config alias.depbranch '! f() {git push origin feature/mychanges~$1:refs/heads
