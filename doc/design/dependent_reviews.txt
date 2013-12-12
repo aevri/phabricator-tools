@@ -1,0 +1,97 @@
+===============================================================================
+= Proposal to add support for dependency between reviews and commits
+===============================================================================
+
+The current Arcyd workflow squashes commits when landing, which puts people
+off if they are working on a chain of dependent commits.  This proposal
+includes support for dependencies between commits, which builds the foundation
+for dependency chain support.
+
+-------------------------------------------------------------------------------
+- Motivation
+-------------------------------------------------------------------------------
+
+It's generally considered good practice to make separate commits for logically
+separate changes.  Usually when separating large changes there are dependencies
+between the resulting commits.
+
+With the current Arcyd workflow it is not easy to land changes that depend
+on eachother.  The simplest thing is to submit one change for review at a
+time and gradually work through the stack (or tree) of dependencies from
+root to tips.
+
+-------------------------------------------------------------------------------
+- Dependencies encoded in branch names
+-------------------------------------------------------------------------------
+
+Take this feature branch as an example:
+
+  * (master) latest change on master
+  |
+  | * (feature/mychanges) extendThingMore
+  | * extendThing
+  | * refactorThing
+  |/
+  * commit that's the merge-base
+
+  - (figure 0) simple feature branch
+
+If we adopt the 'r' branch syntax then we could easily re-render
+'feature/mychanges' for review as dependent branches like so:
+
+  r/refactorThing
+  r/r/refactorThing/extendThing
+  r/r/r/refactorThing/extendThing/extendThingMore
+
+  (figure 1) regular branch dependency
+
+This looks a bit messy, perhaps this would be better:
+
+  r/refactorThing
+  r/refactorThing/extendThing
+  r/refactorThing/extendThing/extendThingMore
+
+  (figure 2) abbreviated branch dependency
+
+Sadly this isn't possible with git - branches can't have other branches as
+prefixes.  This is because 'r/refactorThing' is the path to a file, so by
+file-system rules we can't have another file at path
+'r/refactorThing/extendThing'.
+
+Alternatively, if we transpose 'base' and 'description' then we get:
+
+  r/refactorThing
+  r/extendThing/refactorThing
+  r/extendThingMore/extendThing/refactorThing
+
+  (figure 3) abbrev. branch dependency, transpose 'base' and 'description'
+
+Another workaround might be to allow for suffixes to avoid collisions:
+
+  r/refactorThing/r
+  r/refactorThing/extendThing/r
+  r/refactorThing/extendThing/extendThingMore/r
+
+  (figure 4) abbrev. branch dependency, add suffixes
+
+-------------------------------------------------------------------------------
+- Analysis of encoding schemes
+-------------------------------------------------------------------------------
+
+There are 4 schemes outlines in the previous section, here they are assigned
+letters for easier discussion:
+
+A - (figure 1) - regular branch dependency
+B - (figure 2) - abbreviated branch dependency
+C - (figure 3) - abbrev. branch dependency, transpose 'base' and 'description'
+D - (figure 4) - abbrev. branch dependency, add suffixes
+
+                      | A | B | C | D |
+  |-------------------|---------------|
+  |length             | 0 | 2 | 2 | 1 |
+  |unambiguity        | 2 | 1 | 1 | 0 |
+  |sorts to hierarchy | 1 | 2 | 0 | 2 |
+  |-------------------|----------------
+  |TOTAL              | 3 | 5 | 3 | 3 |
+
+  (figure 4) abbrev. branch dependency, add suffixes
