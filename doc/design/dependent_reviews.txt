@@ -7,6 +7,17 @@ off if they are working on a chain of dependent commits.  This proposal
 includes support for dependencies between commits, which builds the foundation
 for more advanced workflows.
 
+For example, these branches have a dependency relationship such that
+the shortest one automagically lands first. Changes are merged up to the
+longest ones:
+
+  r/refactorThing/r
+  r/refactorThing/extendThing/r
+  r/refactorThing/extendThing/extendThingMore/r
+
+This proposal attempts to make the case that this is the most workable
+scheme for reviewing dependent changes.
+
 -------------------------------------------------------------------------------
 - Motivation
 -------------------------------------------------------------------------------
