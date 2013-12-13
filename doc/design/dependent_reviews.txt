@@ -5,7 +5,7 @@
 The current Arcyd workflow squashes commits when landing, which puts people
 off if they are working on a chain of dependent commits.  This proposal
 includes support for dependencies between commits, which builds the foundation
-for dependency chain support.
+for more advanced workflows.
 
 -------------------------------------------------------------------------------
 - Motivation
@@ -37,6 +37,21 @@ Taking this feature branch as an example:
   * commit that's the merge-base
 
   - (figure 0) simple feature branch
+
+The intuitive answer to the problem of allowing dependencies between commits is
+'just review the branch and then merge'.
+
+Git is already very good at describing dependencies between commits and we
+certainly should avoid doing anything unusual or expensive.
+
+The 'just review the branch' part seems to be non-trivial to robustly map
+onto a workflow.  If we're to follow the maxim of 'one commit is one idea' then
+it's important to be able to examine, comment on and version each commit
+individually.
+
+The 'just merge' part seems to expand nicely out to
+'preserve my individual commits when landed', which doesn't restrict us to a
+simple 'git merge mybranch'.
 
 There are a number of schemes we might pursue to enable review of the branch
 with Phabricator:
@@ -102,6 +117,8 @@ The main advantages of (3) are that:
   'review-in-progress', so they don't have to wait for it to land in order to
   safely begin their work.  Since the depended-on branch will land as early as
   possible then there is a minimum of waiting in the system as a whole.
+
++ Differential already has support for dependencies between revisions
 
 The main drawback of (3) seems to be the burden of creating a new branch per
 commit.  This seems like a task suitable for a helper tool and is really just
@@ -361,8 +378,8 @@ This would make the following branch structure:
   - (figure 11) advanced feature branch pushed for review
 
 Although creating the branch hierarchy is an additional burden it appears that
-there are some good options for reducing it require effort on only the things
-a human is required for.
+there are some good options for reducing it to require effort on only the
+things a human is required for.
 
 -------------------------------------------------------------------------------
 - Branch dependency workflow
@@ -449,6 +466,22 @@ Sad Merge Path
 
 Here, almost every merge fails once
 
-1. all three reviews are immediately approved
+1. Reviewer approves all three reviews
  . Arcyd fails to land 'r/noHung/r' on master, set to 'Needs Revision'
-
+2. Author merges 'master' back to 'r/noHung/r'
+ . Arcyd updates 'r/noHung/r' review, sets to 'Needs Review'
+ . Arcyd fails merge 'r/noHung/r' to 'r/noHung/Warb/r', set to 'Needs Revision'
+ . Arcyd fails merge 'r/noHung/r' to 'r/noHung/extendFrob/r',
+   set to 'Needs Revision'
+3. Reviewer accepts 'r/noHung/r'
+ . Arcyd lands 'r/noHung/r' on master without complication
+ . Arcyd removes 'r/noHung/r' as is usual
+ . Arcyd fails to merge 'master' back to 'r/noHung/Warb/r'
+ . Arcyd fails to merge 'master' back to 'r/noHung/extendFrob/r'
+4. Author merges 'master' back to 'r/noHung/Warb/r'
+ . Arcyd updates the 'r/noHung/Warb/r' review, sets to 'Needs Review'
+5. Author merges 'master' back to 'r/noHung/extendFrob/r'
+ . Arcyd updates the 'r/noHung/extendFrob/r' review, sets to 'Needs Review'
+6. Reviewer accepts 'r/noHung/extendFrob/r' and 'r/noHung/Warb/r'
+ . Arcyd lands 'r/noHung/Warb/r' on 'master' without issue
+ . Arcyd lands 'r/noHung/extendFrob/r' on 'master' without issue
