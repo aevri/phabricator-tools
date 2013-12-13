@@ -74,6 +74,8 @@ with Phabricator:
      All commits will have to land at the same time, i.e. if only the last
      commit on the branch has actions from the review then none of them will
      land until they are all approved.
+     While this approach has some appeal initially and is easily grasped, it
+     quickly degenerates as the review grows in complexity.
 
 It seems like approach (3) 'dependent review branches' and (4) 'branch reviews'
 are the most promising.
@@ -368,7 +370,7 @@ a human is required for.
 
 Given that we have a robust scheme for encoding the dependencies between
 branches and creating the hierarchy of dependent branches then we may explore
-various use-cases for the workflow.
+various routes through the workflow.
 
 Taking the advanced example from the previous section:
 
@@ -384,4 +386,69 @@ Taking the advanced example from the previous section:
   * commit that's the merge-base
 
   - (copy of figure 11) advanced feature branch pushed for review
+
+Examples of this workflow from a user perspective follow, each action required
+by a user is numbered so it's easy to measure burden.  Arcyd's actions are also
+presented but without number, to illustrate the effort saved.
+
+Happy Path
+----------
+
+We may first explore the 'happy path' through the review process, where
+everything proceeds without complication.
+
+1. all three reviews are immediately approved
+ . Arcyd lands 'r/noHung/r' on master without complication
+ . Arcyd removes 'r/noHung/r' as is usual
+ . Arcyd merges 'master' back to 'r/noHung/Warb/r' without issue
+ . Arcyd merges 'master' back to 'r/noHung/extendFrob/r' without issue
+ . Arcyd lands 'r/noHung/Warb/r' on 'master' without issue
+ . Arcyd lands 'r/noHung/extendFrob/r' on 'master' without issue
+
+Here the only user intervention was to approve the reviews, everything else was
+automatic.
+
+Unapproved 'Warb' Path
+----------------------
+
+In this case, the 'Warb' patch proves contentious and changes are required.
+
+1. 'noHung' and 'noHung/extendFrob' are approved, 'noHung/Warb' needs revision
+ . Arcyd lands 'r/noHung/r' on master without complication
+ . Arcyd removes 'r/noHung/r' as is usual
+ . Arcyd merges 'master' back to 'r/noHung/Warb/r' without issue
+ . Arcyd merges 'master' back to 'r/noHung/extendFrob/r' without issue
+ . Arcyd lands 'r/noHung/extendFrob/r' on 'master' without issue
+2. Author updates 'r/noHung/Warb/r' with a new change
+ . Arcyd updates the 'noHung/Warb' review
+3. Reviewer approves 'r/noHung/Warb/r'
+ . Arcyd lands 'r/noHung/Warb/r' on 'master' without issue
+
+Unapproved 'noHung' Path
+------------------------
+
+In this case, the 'noHung' patch proves contentious and changes are required.
+
+1. 'noHung/extendFrob' and 'noHung/Warb' are approved, 'noHung' needs revision
+2. Author updates 'r/noHung/r' with a new change
+ . Arcyd updates the 'r/noHung/r' review
+ . Arcyd merges 'r/noHung/r' back to 'r/noHung/Warb/r' without issue
+ . Arcyd merges 'r/noHung/r' back to 'r/noHung/extendFrob/r' without issue
+ . Arcyd sets 'r/noHung/Warb/r' to 'Needs Review' (the base changed)
+ . Arcyd sets 'r/noHung/extendFrob/r' to 'Needs Review' (the base changed)
+3. Reviewer approves 'r/noHung/r', 'r/noHung/Warb', 'r/noHung/extendFrob'
+ . Arcyd lands 'r/noHung/r' on 'master' without complication
+ . Arcyd removes 'r/noHung/r' as is usual
+ . Arcyd merges 'master' back to 'r/noHung/Warb/r' without issue
+ . Arcyd merges 'master' back to 'r/noHung/extendFrob/r' without issue
+ . Arcyd lands 'r/noHung/Warb/r' on 'master' without issue
+ . Arcyd lands 'r/noHung/extendFrob/r' on 'master' without issue
+
+Sad Merge Path
+--------------
+
+Here, almost every merge fails once
+
+1. all three reviews are immediately approved
+ . Arcyd fails to land 'r/noHung/r' on master, set to 'Needs Revision'
 
