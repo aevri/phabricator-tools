@@ -106,20 +106,7 @@ commit.  This seems like a task suitable for a helper tool and is really just
 the general burden of creating a review branch multiplied by the number of
 commits on the branch.
 
-This simple script demonstrates how easy this might be to automate:
-
-    #! /usr/bin/env python
-    import subprocess
-    commit_list = subprocess.check_output(['git', 'rev-list', 'master..'])
-    branch = 'master'
-    for commit in reversed(commit_list.splitlines()):
-        print subprocess.check_output(['git', 'log', '-n', '1', commit])
-        description = raw_input('one word description: ')
-        branch = "r/{}/{}".format(branch, description)
-        print subprocess.check_output(['git', 'branch', branch, commit])
-
-Of course, you'd want something more user-friendly than this but it's not hard
-to imagine how it could be extended.
+There are a number of approaches we might take to lessen that admin burden.
 
 This proposal will focus exclusively on approach (3) and leave discussion of
 the others as a matter for other proposals.
@@ -226,6 +213,25 @@ It appears the remaining choice is the relative importance of 'length',
 Given that ambiguity might lead to frustrating errors and the difference in
 length is not so great (assuming a short prefix), the best of the possible
 current options is therefore scheme 'A'.
+
+-------------------------------------------------------------------------------
+- Assisted branch creation
+-------------------------------------------------------------------------------
+
+This simple script demonstrates how easy this might be to automate:
+
+    #! /usr/bin/env python
+    import subprocess
+    commit_list = subprocess.check_output(['git', 'rev-list', 'master..'])
+    branch = 'master'
+    for commit in reversed(commit_list.splitlines()):
+        print subprocess.check_output(['git', 'log', '-n', '1', commit])
+        description = raw_input('one word description: ')
+        branch = "r/{}/{}".format(branch, description)
+        print subprocess.check_output(['git', 'branch', branch, commit])
+
+Of course, you'd want something more user-friendly than this but it's not hard
+to imagine how it could be extended.
 
 -------------------------------------------------------------------------------
 - Branch dependency workflow
