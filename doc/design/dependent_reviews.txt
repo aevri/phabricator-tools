@@ -165,6 +165,10 @@ Another workaround might be to allow for suffixes to avoid collisions:
 
   (figure 4) abbrev. branch dependency, add suffixes
 
+This last scheme has the huge advantages of being possible and also aided by
+regular bash / Git auto-complete.  Once you have a base branch then you should
+be able to 'tab' your way to success and avoid frustrating typos.
+
 -------------------------------------------------------------------------------
 - Comparison of encoding schemes
 -------------------------------------------------------------------------------
@@ -210,13 +214,19 @@ score equally.
 It appears the remaining choice is the relative importance of 'length',
 'unambiguity' and 'sorts to hierarchy'.
 
-Given that ambiguity might lead to frustrating errors and the difference in
-length is not so great (assuming a short prefix), the best of the possible
-current options is therefore scheme 'A'.
+The great advantage of 'sorts to hierarchy' is that regular Git / bash
+autocomplete can aid in the composition of branch names.
+
+Given that readability and auto-complete are probably the most important
+considerations then it would make sense to prioritise sorts to hierarchy
+and length, therefore sceme 'D' would seem to be the logical choice.
 
 -------------------------------------------------------------------------------
 - Assisted branch creation approaches
 -------------------------------------------------------------------------------
+
+Here are some explorations of possible schemes for assisting users in creating
+valid review hierarchies.
 
 Taking this feature branch as an example again:
 
@@ -233,20 +243,32 @@ Taking this feature branch as an example again:
 We could generate the required review branches manually like so:
 
   $ git checkout feature/mychanges
-  $ git push origin HEAD~2:refs/heads/r/noHung
-  $ git push origin HEAD~1:refs/heads/r/r/noHung/extendFrob
-  $ git push origin HEAD~0:refs/heads/r/r/r/noHung/extendFrob/Warb
+  $ git push origin HEAD~2:refs/heads/r/noHung/r
+  $ git push origin HEAD~1:refs/heads/r/noHung/extendFrob/r
+  $ git push origin HEAD~0:refs/heads/r/noHung/extendFrob/Warb/r
 
   (figure 6) manual submission of review branches
+
+Making this branch structure:
+
+  * (master) latest change on master
+  |
+  | * (feature/mychanges, origin/r/noHung/extendFrob/Warb/r) Thing: extend the
+  | * (origin/r/noHung/extendFrob/r) Thing: extend the frobnitz munger
+  | * (origin/r/noHung/r) Thing: refactor, remove hungarian notation
+  |/
+  * commit that's the merge-base
+
+  - (figure 7) simple feature branch pushed for review
 
 This process could be made less verbose with a trivial git alias:
 
   $ git config alias.pushdep \
-    '! f() {git push origin HEAD~$1:refs/heads/$2}; f()'
+    '! f() {git push origin HEAD~$1:refs/heads/r/$2/r}; f()'
 
-  $ git pushdep 2 r/noHung
-  $ git pushdep 1 r/r/noHung/extendFrob
-  $ git pushdep 0 r/r/r/noHung/extendFrob/Warb
+  $ git pushdep 2 noHung
+  $ git pushdep 1 noHung/extendFrob
+  $ git pushdep 0 noHung/extendFrob/Warb
 
   (figure 7) manual submission of review branches
 
@@ -264,69 +286,102 @@ We could also make an interactive script to reduce burden further:
 
   (figure 8) interactive iterative spawning of review branches
 
-Here is the simple Python script to implement the tool in figure 8:
-
-  #! /usr/bin/env python
-  import subprocess
-  commit_list = subprocess.check_output(['git', 'rev-list', 'master..'])
-  branch = 'master'
-  for commit in reversed(commit_list.splitlines()):
-      print subprocess.check_output(
-          ['git', 'log', '--oneline', '-n', '1', commit])
-      description = raw_input('one word description >> ')
-      print
-      branch = "r/{}/{}".format(branch, description)
-      print subprocess.check_output(['git', 'branch', branch, commit])
-
-  (figure 9) script for interactive iterative spawning of review branches
-
 Of course, you'd want something more user-friendly than this but it's not hard
 to imagine how it could be extended.
 
-Another approach could follow the example of 'git rebase --interactive' in
+Yet another approach could follow the example of 'git rebase --interactive' in
 presenting the user with a simple 'program' to edit, leveraging the power of
 editors like 'vim' to reduce the typing burden.
 
-  description1 0520cc2 Thing: refactor, remove hungarian notation
-  description2 5dff3fc Thing: extend the frobnitz munger
-  description3 4c8effd Thing: extend the warble garble
+  base master
+  push DESCRIPTION 0520cc2 Thing: refactor, remove hungarian notation
+  push DESCRIPTION 5dff3fc Thing: extend the frobnitz munger
+  push DESCRIPTION 4c8effd Thing: extend the warble garble
 
-  # edit the 
+  # Split 0520cc2..4c8e44d into dependent branches
+  #
+  # Commands:
+  #  b, base = set the current base ref (can match a DESCRIPTION)
+  #  p, push = use commit, be sure to edit 'DESCRIPTION'
+  #  r, reword = use commit, but edit the commit message
+  #
+  # These lines can be re-ordered; they are executed from top to bottom.
+  #
+  # If you remove a line here THAT COMMIT WILL NOT BE USED.
+  #
+  # However, if you remove everything, the splitting will be aborted.
+  #
+  # Note that empty commits are commented out
+
+  (figure 9) interactive 'branch-split' session
+
+If we want to get a little carried away then we can go even further and create
+a tree out of the commits, with the assumption that 'Warb' does not depend on
+'extendFrob':
+
+  base master
+  push noHung 0520cc2 Thing: refactor, remove hungarian notation
+  push extendFrob 5dff3fc Thing: extend the frobnitz munger
+
+  base noHung
+  push Warb 4c8effd Thing: extend the warble garble
+
+  # Split 0520cc2..4c8e44d into dependent branches
+  #
+  # Commands:
+  #  b, base = set the current base ref (can match a DESCRIPTION)
+  #  p, push = use commit, be sure to edit 'DESCRIPTION'
+  #  r, reword = use commit, but edit the commit message
+  #
+  # These lines can be re-ordered; they are executed from top to bottom.
+  #
+  # If you remove a line here THAT COMMIT WILL NOT BE USED.
+  #
+  # However, if you remove everything, the splitting will be aborted.
+  #
+  # Note that empty commits are commented out
+
+  (figure 10) advanced interactive 'branch-split' session
+
+This would make the following branch structure:
+
+  * (master) latest change on master
+  |
+  | * (origin/r/noHung/Warb/r) Thing: extend the wable garble
+  | |
+  | | * (feature/mychanges) Thing: extend the warble garble
+  | | * (origin/r/noHung/extendFrob/r) Thing: extend the frobnitz munger
+  | |/
+  | * (origin/r/noHung/r) Thing: refactor, remove hungarian notation
+  |/
+  * commit that's the merge-base
+
+  - (figure 11) advanced feature branch pushed for review
+
+Although creating the branch hierarchy is an additional burden it appears that
+there are some good options for reducing it require effort on only the things
+a human is required for.
 
 -------------------------------------------------------------------------------
 - Branch dependency workflow
 -------------------------------------------------------------------------------
 
 Given that we have a robust scheme for encoding the dependencies between
-branches then we may explore the workflow.
+branches and creating the hierarchy of dependent branches then we may explore
+various use-cases for the workflow.
 
-Taking this feature branch as an example again:
+Taking the advanced example from the previous section:
 
   * (master) latest change on master
   |
-  | * (feature/mychanges) Thing: extend the warble garble
-  | * Thing: extend the frobnitz munger
-  | * Thing: refactor, remove hungarian notation
+  | * (origin/r/noHung/Warb/r) Thing: extend the wable garble
+  | |
+  | | * (feature/mychanges) Thing: extend the warble garble
+  | | * (origin/r/noHung/extendFrob/r) Thing: extend the frobnitz munger
+  | |/
+  | * (origin/r/noHung/r) Thing: refactor, remove hungarian notation
   |/
   * commit that's the merge-base
 
-  - (copy of figure 0) simple feature branch
+  - (copy of figure 11) advanced feature branch pushed for review
 
-We might imagine that the next step would be to create reviews out of each of
-these commits, in the absence of any helper script we might need to type
-something like:
-
-  $ git push origin feature/mychanges~2:refs/heads/r/noHung
-  $ git push origin feature/mychanges~1:refs/heads/r/r/noHung/extendFrob
-  $ git push origin feature/mychanges~0:refs/heads/r/r/r/noHung/extendFrob/Warb
-
-  (figure 6) manual submission of review branches
-
-a simple alias might help simplify this:
-
-  $ git pushdep 2 r/noHung
-  $ git pushdep 1 r/r/noHung/extendFrob
-  $ git pushdep 0 r/r/r/noHung/extendFrob/Warb
-
-
-  $ git config alias.depbranch '! f() {git push origin feature/mychanges~$1:refs/heads
