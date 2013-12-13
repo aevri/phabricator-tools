@@ -215,23 +215,83 @@ length is not so great (assuming a short prefix), the best of the possible
 current options is therefore scheme 'A'.
 
 -------------------------------------------------------------------------------
-- Assisted branch creation
+- Assisted branch creation approaches
 -------------------------------------------------------------------------------
 
-This simple script demonstrates how easy this might be to automate:
+Taking this feature branch as an example again:
 
-    #! /usr/bin/env python
-    import subprocess
-    commit_list = subprocess.check_output(['git', 'rev-list', 'master..'])
-    branch = 'master'
-    for commit in reversed(commit_list.splitlines()):
-        print subprocess.check_output(['git', 'log', '-n', '1', commit])
-        description = raw_input('one word description: ')
-        branch = "r/{}/{}".format(branch, description)
-        print subprocess.check_output(['git', 'branch', branch, commit])
+  * (master) latest change on master
+  |
+  | * (feature/mychanges) Thing: extend the warble garble
+  | * Thing: extend the frobnitz munger
+  | * Thing: refactor, remove hungarian notation
+  |/
+  * commit that's the merge-base
+
+  - (copy of figure 0) simple feature branch
+
+We could generate the required review branches manually like so:
+
+  $ git checkout feature/mychanges
+  $ git push origin HEAD~2:refs/heads/r/noHung
+  $ git push origin HEAD~1:refs/heads/r/r/noHung/extendFrob
+  $ git push origin HEAD~0:refs/heads/r/r/r/noHung/extendFrob/Warb
+
+  (figure 6) manual submission of review branches
+
+This process could be made less verbose with a trivial git alias:
+
+  $ git config alias.pushdep \
+    '! f() {git push origin HEAD~$1:refs/heads/$2}; f()'
+
+  $ git pushdep 2 r/noHung
+  $ git pushdep 1 r/r/noHung/extendFrob
+  $ git pushdep 0 r/r/r/noHung/extendFrob/Warb
+
+  (figure 7) manual submission of review branches
+
+We could also make an interactive script to reduce burden further:
+
+  $ push-dependent-branches
+  0520cc2 Thing: refactor, remove hungarian notation
+  one word description >> noHung
+
+  5dff3fc Thing: extend the frobnitz munger
+  one word description >> extendFrob
+
+  4c8effd (feature/mychanges) Thing: extend the warble garble
+  one word description >> Warb
+
+  (figure 8) interactive iterative spawning of review branches
+
+Here is the simple Python script to implement the tool in figure 8:
+
+  #! /usr/bin/env python
+  import subprocess
+  commit_list = subprocess.check_output(['git', 'rev-list', 'master..'])
+  branch = 'master'
+  for commit in reversed(commit_list.splitlines()):
+      print subprocess.check_output(
+          ['git', 'log', '--oneline', '-n', '1', commit])
+      description = raw_input('one word description >> ')
+      print
+      branch = "r/{}/{}".format(branch, description)
+      print subprocess.check_output(['git', 'branch', branch, commit])
+
+  (figure 9) script for interactive iterative spawning of review branches
 
 Of course, you'd want something more user-friendly than this but it's not hard
 to imagine how it could be extended.
+
+Another approach could follow the example of 'git rebase --interactive' in
+presenting the user with a simple 'program' to edit, leveraging the power of
+editors like 'vim' to reduce the typing burden.
+
+  description1 0520cc2 Thing: refactor, remove hungarian notation
+  description2 5dff3fc Thing: extend the frobnitz munger
+  description3 4c8effd Thing: extend the warble garble
+
+  # edit the 
 
 -------------------------------------------------------------------------------
 - Branch dependency workflow
@@ -259,6 +319,8 @@ something like:
   $ git push origin feature/mychanges~2:refs/heads/r/noHung
   $ git push origin feature/mychanges~1:refs/heads/r/r/noHung/extendFrob
   $ git push origin feature/mychanges~0:refs/heads/r/r/r/noHung/extendFrob/Warb
+
+  (figure 6) manual submission of review branches
 
 a simple alias might help simplify this:
 
