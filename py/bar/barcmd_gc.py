@@ -28,6 +28,7 @@ import sys
 
 import abdt_landinglog
 import phlgit_branch
+import phlgit_showref
 import phlsys_choice
 import phlsys_git
 
@@ -87,7 +88,7 @@ def process(args):
     clone = phlsys_git.GitClone('.')
 
     if args.stat_match:
-        local_branches = phlgit_branch.get_local_with_sha1(clone)
+        local_branches = phlgit_showref.hash_ref_pairs(clone)
         _stat_match(clone, local_branches)
         return
 
@@ -144,15 +145,27 @@ def _stat_match(clone, local_branches):
         else:
             current_stat.append(line.strip())
 
-    get_st = lambda b: clone.call('diff', '--stat', 'origin/master...' + b)
-    raw_branch_stats = [(b, get_st(b)) for sha, b in local_branches]
+    raw_branch_stats = []
+    for sha, b in local_branches:
+        try:
+            stat = clone.call('diff', '--stat', 'origin/master...' + b)
+            raw_branch_stats.append((b, stat))
+        except Exception:
+            pass
 
     for branch, stat in raw_branch_stats:
-        stat_set = set(stat.splitlines())
+        if not stat:
+            continue
+        stat_set = set(line.strip() for line in stat.splitlines())
         for landed in master_stats:
             if stat_set == set(landed.diffs):
                 print branch, 'matches', landed.title
                 print stat
+                print
+            elif stat_set & set(landed.diffs):
+                print branch, 'overlaps', landed.title
+                for match in stat_set & set(landed.diffs):
+                    print match
                 print
 
 
