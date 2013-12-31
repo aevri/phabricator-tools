@@ -23,6 +23,7 @@ Will safely clean up local branches which have already been landed.
 
 from __future__ import absolute_import
 
+import collections
 import sys
 
 import abdt_landinglog
@@ -57,6 +58,11 @@ def setupParser(parser):
         action='store_true',
         help='remove branches which match landed reviews by sha1 only')
 
+    parser.add_argument(
+        '--stat-match',
+        action='store_true',
+        help='consider branches whose diffstat\'s match landed revisions')
+
     should_update = parser.add_mutually_exclusive_group()
 
     should_update.add_argument(
@@ -79,6 +85,11 @@ def process(args):
     # XXX: only supports 'origin' remote at present
 
     clone = phlsys_git.GitClone('.')
+
+    if args.stat_match:
+        local_branches = phlgit_branch.get_local_with_sha1(clone)
+        _stat_match(clone, local_branches)
+        return
 
     _fetch_log(clone, args.update, args.no_update, args.prompt_update)
 
@@ -109,6 +120,40 @@ def process(args):
                 print "done."
             else:
                 print "stopped."
+
+
+def _stat_match(clone, local_branches):
+    master_ref = 'refs/remotes/origin/master'
+    raw_master_stats = clone.call('log', '--oneline', '--stat', master_ref)
+
+    MasterStat = collections.namedtuple(
+        'MasterStat', ['title', 'diffs', 'summary'])
+
+    master_stats = []
+    current_stat = None
+    for line in raw_master_stats.splitlines():
+        # start a new stat if the line isn't indented
+        if line[0] != ' ':
+            if current_stat is not None:
+                master_stats.append(
+                    MasterStat(
+                        title=current_stat[0],
+                        diffs=current_stat[1:-1],
+                        summary=current_stat[-1]))
+            current_stat = [line.strip()]
+        else:
+            current_stat.append(line.strip())
+
+    get_st = lambda b: clone.call('diff', '--stat', 'origin/master...' + b)
+    raw_branch_stats = [(b, get_st(b)) for sha, b in local_branches]
+
+    for branch, stat in raw_branch_stats:
+        stat_set = set(stat.splitlines())
+        for landed in master_stats:
+            if stat_set == set(landed.diffs):
+                print branch, 'matches', landed.title
+                print stat
+                print
 
 
 def _fetch_log(clone, always_update, never_update, prompt_update):
