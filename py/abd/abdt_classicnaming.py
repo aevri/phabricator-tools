@@ -42,6 +42,11 @@ class Naming(object):
             ... # doctest: +NORMALIZE_WHITESPACE
             abdt_naming.TrackerBranch("dev/arcyd/ok/mywork/master/99")
 
+            >>> make_branch('dev/arcyd/trackers/x/ok/r/master/do/99')
+            Traceback (most recent call last):
+                ...
+            Error
+
             >>> make_branch('invalid/mywork/master')
             Traceback (most recent call last):
                 ...
