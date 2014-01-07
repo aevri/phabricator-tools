@@ -136,6 +136,11 @@ def _stat_match(clone, local_branches):
         # start a new stat if the line isn't indented
         if line[0] != ' ':
             if current_stat is not None:
+                diffs = current_stat[1:-1]
+
+                # normalise all spacing to single space and no tabs
+                diffs = [' '.join(l.split()) for l in diffs]
+
                 master_stats.append(
                     MasterStat(
                         title=current_stat[0],
@@ -156,17 +161,34 @@ def _stat_match(clone, local_branches):
     for branch, stat in raw_branch_stats:
         if not stat:
             continue
-        stat_set = set(line.strip() for line in stat.splitlines())
+
+        stat_list = stat.splitlines()
+
+        # normalise all spacing to single space and no tabs
+        stat_list = [' '.join(l.split()) for l in stat_list]
+
+        stat_set = set(stat_list)
         for landed in master_stats:
-            if stat_set == set(landed.diffs):
-                print branch, 'matches', landed.title
+            landed_diff_set = set(landed.diffs)
+
+            if landed_diff_set == stat_set:
+                print 'MATCH:', branch, '|', landed.title
                 print stat
                 print
-            elif stat_set & set(landed.diffs):
-                print branch, 'overlaps', landed.title
-                for match in stat_set & set(landed.diffs):
-                    print match
-                print
+            else:
+                matched = stat_set & landed_diff_set
+                if matched:
+                    unmatched = stat_set ^ landed_diff_set
+                    only_landed = landed_diff_set - stat_set
+                    only_branch = stat_set - landed_diff_set
+
+                    if len(matched) > len(unmatched) / 10:
+                        print 'OVERLAP:', branch, '|', landed.title
+                        for match in matched:
+                            print match
+                        print len(only_landed), 'only landed'
+                        print len(only_branch), 'only branch'
+                        print
 
 
 def _fetch_log(clone, always_update, never_update, prompt_update):
