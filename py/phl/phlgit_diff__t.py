@@ -35,6 +35,7 @@ class Test(unittest.TestCase):
             worker.repo.call("checkout", "fork")
             worker.commit_new_file("add ONLY_FORK", "ONLY_FORK")
             worker.commit_new_file("add ONLY_FORK2", "ONLY_FORK2")
+
             rawDiff = phlgit_diff.raw_diff_range_to_here(
                 worker.repo, "master")
             rawDiff2 = phlgit_diff.raw_diff_range(
@@ -42,15 +43,16 @@ class Test(unittest.TestCase):
             rawDiff3 = phlgit_diff.raw_diff_range(
                 worker.repo, "master", "fork", 1000)
             self.assertEqual(
-                set(["ONLY_FORK", "ONLY_FORK2"]),
+                ["ONLY_FORK", "ONLY_FORK2"],
                 phlgit_diff.parse_filenames_from_raw_diff(rawDiff))
             self.assertEqual(
-                set(["ONLY_FORK", "ONLY_FORK2"]),
+                ["ONLY_FORK", "ONLY_FORK2"],
                 phlgit_diff.parse_filenames_from_raw_diff(rawDiff2))
             self.assertEqual(
-                set(["ONLY_FORK", "ONLY_FORK2"]),
+                ["ONLY_FORK", "ONLY_FORK2"],
                 phlgit_diff.parse_filenames_from_raw_diff(rawDiff3))
 
+            phlgit_diff.parse_raw_diff_to_file_dict(rawDiff)
 
 #------------------------------------------------------------------------------
 # Copyright (C) 2013-2014 Bloomberg Finance L.P.

@@ -150,23 +150,33 @@ def stat_range(repo, base, new):
         "-M")  # automatically detect moves/renames
 
 
+def parse_raw_diff_to_file_dict(diff):
+    lines = diff.splitlines()
+
+    # group the lines into files
+    file_lines = []
+    current_file = []
+    for l in lines:
+        if l.startswith("diff --git "):
+            if current_file:
+                file_lines.append(current_file)
+            current_file = [l]
+        else:
+            current_file.append(l)
+    if current_file:
+        file_lines.append(current_file)
+
+    result = {}
+    name_parser = re.compile("^diff --git a/(.*) b/(.*)$")
+    for f in file_lines:
+        match = name_parser.match(f[0])
+        result[match.group(2)] = '\n'.join(f)
+
+    return result
+
+
 def parse_filenames_from_raw_diff(diff):
-    matches = re.findall(
-        "^diff --git a/(.*) b/(.*)$",
-        diff,
-        flags=re.MULTILINE)
-    if matches:
-        names = zip(*matches)
-        if len(names) != 2:
-            raise Exception(
-                "files aren't pairs in diff: " +
-                diff + str(names))
-        # get a set of unique names from the pairs
-        unames = []
-        unames.extend(names[0])
-        unames.extend(names[1])
-        unames = set(unames)
-        return unames
+    return parse_raw_diff_to_file_dict(diff).keys()
 
 
 #------------------------------------------------------------------------------
