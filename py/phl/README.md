@@ -71,6 +71,8 @@ Utility for working with dicts.
 Helpers for interacting with the filesystem.
 * `phlsys_git.py` -
 Wrapper to call git, with working directory.
+* `phlsys_jsondata.py` -
+Serialise data structures to and from json.
 * `phlsys_makeconduit.py` -
 Create a conduit from the available information.
 * `phlsys_namedtuple.py` -
