@@ -18,10 +18,15 @@ cd "$(dirname "$0")"
 libscripts=$(find py/ -iname '*.py' |  tr '\n' ' ')
 allscripts="$(ls bin/* proto/* meta/docgen/*.py meta/autofix/*.py) $libscripts"
 
+# set up a variable with all the python dirs
+# e.g.
+#   py/gab:py/bar:py/abd:py/aon:py/pig:py/lor:py/phl
+pydirs=$(python -c 'import os,sys; print ":".join(["py/"+d for d in os.listdir("py") if os.path.isdir("py/"+d)])')
+
 ###############################################################################
 # pylint
 ###############################################################################
-PYTHONPATH=py/phl pylint \
+PYTHONPATH=${pydirs} pylint \
     --rcfile=.pylint.rc \
     --errors-only \
     ${libscripts}
@@ -33,7 +38,7 @@ PYTHONPATH=py/phl pylint \
 ## please install pychecker with sudo apt-get install pychecker
 # TODO: find workaround for borked import detection
 # TODO: fix phlcon_differential.createDiff() to not have 16 params
-PYTHONPATH=py/phl:py/abd pychecker \
+PYTHONPATH=${pydirs} pychecker \
     --quiet --only --no-import --exec --constant1 --initattr --changetypes \
     --no-deprecated \
     --maxlines 150 --maxbranches 15 --maxreturns 5 --maxargs 16 --maxlocals 20\
