@@ -23,6 +23,7 @@
 #    .get_repohost_config_rel_path
 #    .create_repo_config
 #    .repo_config_path_list
+#    .lockfile_context
 #    .layout
 #
 # Public Functions:
@@ -35,6 +36,7 @@
 
 from __future__ import absolute_import
 
+import contextlib
 import os
 
 import phlgit_commit
@@ -119,6 +121,7 @@ class Layout(object):
     stderr = 'var/log/stderr'
     phabricator_config_dir = 'config/repository'
     repository_config_dir = 'config/repository'
+    lockfile = 'var/lockfile'
 
     dir_run = 'var/run'
 
@@ -324,6 +327,13 @@ class Accessor(object):
         """
         p = self.layout.repository_config_dir
         return [os.path.join(p, r) for r in os.listdir(p) if r != 'README']
+
+    @contextlib.contextmanager
+    def lockfile_context(self):
+        retry_context = phlsys_fs.lockfile_retry_context
+        with retry_context(self.layout.lockfile, attempts=3, wait_secs=1):
+            yield
+        # TODO: raise some 'usage error' if the lockfile can't be acquired
 
     @property
     def layout(self):
