@@ -1,1 +1,1 @@
-sudo docker.io run --name phab -p 80:80 phab
+sudo docker.io run -d -p 80:80 phab
