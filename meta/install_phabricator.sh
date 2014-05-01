@@ -1,10 +1,10 @@
 set -e  # exit on error
-sudo apt-get install puppet
+sudo apt-get install docker.io
 
 # cd to the dir of this script, so paths are relative
 cd "$(dirname "$0")"
 
-(cd ../vagrant && ./puppet-apply.sh)
+(cd ../docker; docker thing)
 # -----------------------------------------------------------------------------
 # Copyright (C) 2013-2014 Bloomberg Finance L.P.
 #
