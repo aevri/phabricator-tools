@@ -1,3 +1,1 @@
-#!/bin/bash
-source /etc/apache2/envvars
-exec apache2 -D FOREGROUND
+sudo docker.io run --name phab -p 80:80 phab
