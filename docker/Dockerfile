@@ -12,6 +12,7 @@ RUN cd /var/www/phabricator; git clone https://github.com/facebook/arcanist; cd 
 ADD apache-phabricator.conf /etc/apache2/sites-available/phabricator.conf
 RUN a2ensite phabricator.conf
 ADD start-in-vm.sh /start-in-vm.sh
+ADD initial.db /intial.db
 RUN chmod +x /start-in-vm.sh
 CMD ["/start-in-vm.sh"]
 EXPOSE 80
