@@ -223,6 +223,10 @@ class WriteDiffError(Error):
     pass
 
 
+class MissingRevisionsError(Error):
+    pass
+
+
 def create_raw_diff(conduit, diff):
     response = conduit("differential.createrawdiff", {"diff": diff})
     return CreateRawDiffResponse(**response)
@@ -359,6 +363,13 @@ def query(
         r["id"] = int(r["id"])
         r["status"] = int(r["status"])
         query_response_list.append(QueryResponse(**r))
+    if ids is not None:
+        requested_ids = set(ids)
+        response_ids = set([r.id for r in query_response_list])
+        missing_ids = requested_ids - response_ids
+        if missing_ids:
+            raise MissingRevisionsError("missing revisions: {}".format(
+                missing_ids))
     return query_response_list
 
 
