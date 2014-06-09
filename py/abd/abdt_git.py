@@ -316,7 +316,10 @@ class Repo(object):
         phlgit_push.delete(self, self._remote, branch, *args)
 
     def checkout_master_fetch_prune(self):
-        """Fetch from the remote and prune branches.
+        """Checkout master, fetch from the remote and prune branches.
+
+        Please see checkout_master_fetch_special_refs() for why we must
+        checkout master first.
 
         :returns: None
 
