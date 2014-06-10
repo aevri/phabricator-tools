@@ -20,7 +20,7 @@
 #    .push_asymmetrical
 #    .push
 #    .push_delete
-#    .fetch_prune
+#    .checkout_master_fetch_prune
 #    .hash_ref_pairs
 #    .get_remote
 #
@@ -315,13 +315,14 @@ class Repo(object):
         """
         phlgit_push.delete(self, self._remote, branch, *args)
 
-    def fetch_prune(self):
+    def checkout_master_fetch_prune(self):
         """Fetch from the remote and prune branches.
 
         :returns: None
 
         """
         phlgit_fetch.prune_safe(self, self._remote)
+        checkout_master_fetch_special_refs(self, self._remote)
 
     @property
     def hash_ref_pairs(self):
