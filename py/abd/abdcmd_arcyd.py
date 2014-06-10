@@ -52,6 +52,7 @@ import abdcmd_repostatushtml
 import abdcmd_rmrepo
 import abdcmd_start
 import abdcmd_stop
+import abdcmd_fetch
 
 _USAGE_EXAMPLES = """
 usage example:
@@ -128,6 +129,8 @@ def main():
         "stop", abdcmd_stop, subparsers)
     phlsys_subcommand.setup_parser(
         "fsck", abdcmd_fsck, subparsers)
+    phlsys_subcommand.setup_parser(
+        "fetch", abdcmd_fetch, subparsers)
 
     args = parser.parse_args()
 
