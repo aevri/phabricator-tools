@@ -42,6 +42,7 @@ def setupParser(parser):
 
 def process(args):
 
+    _ = args
     fs = abdt_fs.make_default_accessor()
 
     repo_config_path_list = fs.repo_config_path_list()
