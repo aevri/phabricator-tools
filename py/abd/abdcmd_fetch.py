@@ -20,7 +20,6 @@ another, to 'pre-fetch' before actually moving over.
 
 from __future__ import absolute_import
 
-import argparse
 import os
 
 import phlsys_git
@@ -46,16 +45,8 @@ def process(args):
     fs = abdt_fs.make_default_accessor()
 
     repo_config_path_list = fs.repo_config_path_list()
-    repo_name_config_list = []
-    for repo_config_path in repo_config_path_list:
-        print repo_config_path
-        parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
-        abdi_repoargs.setup_parser(parser)
-        repo_config = parser.parse_args(['@' + repo_config_path])
-        repo_name = repo_config_path.split('/')[-1]  # strip off the path
-        repo_name_config = (repo_name, repo_config)
-        abdi_repoargs.validate_args(repo_name_config[1])
-        repo_name_config_list.append(repo_name_config)
+    repo_name_config_list = abdi_repoargs.parse_config_file_list(
+        repo_config_path_list)
 
     url_watcher = phlurl_watcher.Watcher()
 
