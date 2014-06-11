@@ -23,6 +23,7 @@ import phlsys_strtotime
 import phlurl_watcher
 
 import abdt_exhandlers
+import abdt_fs
 import abdt_git
 
 import abdi_operation
@@ -46,21 +47,16 @@ def do(
 
     operations = []
     conduits = {}
-    url_watcher = phlurl_watcher.Watcher()
 
-    urlwatcher_cache_path = os.path.abspath('.arcyd.urlwatcher.cache')
-
-    # load the url watcher cache (if any)
-    if os.path.isfile(urlwatcher_cache_path):
-        with open(urlwatcher_cache_path) as f:
-            url_watcher.load(f)
+    fs_accessor = abdt_fs.make_default_accessor()
+    url_watcher_wrapper = phlurl_watcher.FileCacheWatcherWrapper(
+        fs_accessor.layout.urlwatcher_cache_path)
 
     _append_operations_for_repos(
         operations,
         reporter,
         conduits,
-        url_watcher,
-        urlwatcher_cache_path,
+        url_watcher_wrapper,
         sys_admin_emails,
         repo_configs)
 
@@ -75,7 +71,7 @@ def do(
 
     operations.append(
         abdi_operation.RefreshCaches(
-            conduits, url_watcher, reporter))
+            conduits, url_watcher_wrapper.watcher, reporter))
 
     _process_operations(
         is_no_loop, operations, sys_admin_emails, reporter)
@@ -132,8 +128,7 @@ def _append_operations_for_repos(
         operations,
         reporter,
         conduits,
-        url_watcher,
-        urlwatcher_cache_path,
+        url_watcher_wrapper,
         sys_admin_emails,
         repo_configs):
 
@@ -158,8 +153,7 @@ def _append_operations_for_repos(
             repo_args,
             reporter,
             conduits,
-            url_watcher,
-            urlwatcher_cache_path)
+            url_watcher_wrapper)
 
         on_exception_delay = abdt_exhandlers.make_exception_delay_handler(
             sys_admin_emails, reporter, repo_name)
@@ -189,14 +183,14 @@ def _process_single_repo(
         repo_args,
         reporter,
         conduits,
-        url_watcher,
-        urlwatcher_cache_path):
+        url_watcher_wrapper):
+
+    watcher = url_watcher_wrapper.watcher
     abdi_processrepoargs.do(
-        abd_repo, repo_name, repo_args, reporter, conduits, url_watcher)
+        abd_repo, repo_name, repo_args, reporter, conduits, watcher)
 
     # save the urlwatcher cache
-    with open(urlwatcher_cache_path, 'w') as f:
-        url_watcher.dump(f)
+    url_watcher_wrapper.save()
 
 
 # -----------------------------------------------------------------------------
