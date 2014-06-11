@@ -7,7 +7,7 @@ another, to 'pre-fetch' before actually moving over.
 # =============================================================================
 # CONTENTS
 # -----------------------------------------------------------------------------
-# abdcmd_fetchspecial
+# abdcmd_fetch
 #
 # Public Functions:
 #   getFromfilePrefixChars
