@@ -26,10 +26,10 @@ import os
 import phlsys_git
 import phlurl_watcher
 
-import abdt_fs
-import abdt_git
 import abdi_processrepoargs
 import abdi_repoargs
+import abdt_fs
+import abdt_git
 
 
 def getFromfilePrefixChars():

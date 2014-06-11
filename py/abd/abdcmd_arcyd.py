@@ -44,6 +44,7 @@ import abdcmd_addrepo
 import abdcmd_addrepohost
 import abdcmd_arcydstatushtml
 import abdcmd_devstatushtml
+import abdcmd_fetch
 import abdcmd_fsck
 import abdcmd_init
 import abdcmd_instaweb
@@ -52,7 +53,6 @@ import abdcmd_repostatushtml
 import abdcmd_rmrepo
 import abdcmd_start
 import abdcmd_stop
-import abdcmd_fetch
 
 _USAGE_EXAMPLES = """
 usage example:
