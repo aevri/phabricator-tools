@@ -20,8 +20,6 @@ another, to 'pre-fetch' before actually moving over.
 
 from __future__ import absolute_import
 
-import os
-
 import phlsys_git
 import phlurl_watcher
 
@@ -48,14 +46,8 @@ def process(args):
     repo_name_config_list = abdi_repoargs.parse_config_file_list(
         repo_config_path_list)
 
-    url_watcher = phlurl_watcher.Watcher()
-
-    urlwatcher_cache_path = os.path.abspath('.arcyd.urlwatcher.cache')
-
-    # load the url watcher cache (if any)
-    if os.path.isfile(urlwatcher_cache_path):
-        with open(urlwatcher_cache_path) as f:
-            url_watcher.load(f)
+    url_watcher_wrapper = phlurl_watcher.FileCacheWatcherWrapper(
+        fs.layout.urlwatcher_cache_path)
 
     for repo_name, repo_config in repo_name_config_list:
         print repo_name
@@ -67,15 +59,12 @@ def process(args):
             repo_config.repo_desc)
 
         abdi_processrepoargs._fetch_if_needed(
-            url_watcher,
+            url_watcher_wrapper.watcher,
             snoop_url,
             abd_repo,
             repo_config.repo_desc)
 
-        # save the urlwatcher cache
-        # TODO: git_url_watcher should manage this itself
-        with open(urlwatcher_cache_path, 'w') as f:
-            url_watcher.dump(f)
+        url_watcher_wrapper.save()
 
 
 # -----------------------------------------------------------------------------
