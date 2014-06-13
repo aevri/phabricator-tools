@@ -58,7 +58,7 @@ def process(args):
             "origin",
             repo_config.repo_desc)
 
-        abdi_processrepoargs._fetch_if_needed(
+        abdi_processrepoargs.fetch_if_needed(
             url_watcher_wrapper.watcher,
             snoop_url,
             abd_repo,
