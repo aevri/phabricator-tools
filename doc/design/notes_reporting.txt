@@ -2,8 +2,12 @@
 = Proposal to start monitoring Git notes for Arcyd-managed repositories
 ===============================================================================
 
-There is no way for Arcyd to participate directly in continuous integration at
-present.
+Arcyd should display Git notes in Phabricator reviews, this will make it
+easy to bring CI results into Phabricator reviews.
+
+-------------------------------------------------------------------------------
+- Why involve Arcyd in CI?
+-------------------------------------------------------------------------------
 
 The command-line tool 'arcanist' participates by performing linting and
 unit-tests locally on behalf of the user, according to the configuration in
@@ -17,21 +21,23 @@ It would seem a natural extension of Arcyd from the user perspective to then
 perform the lint and unit steps automatically configured in  the '.arcconfig'
 file upon push and share the results in the review.
 
-This proposal will show how it will be possible to add this functionality
-from the point of view of the user without requiring Arcyd to also become
-a continuous integration system.
-
 -------------------------------------------------------------------------------
-- Sharing human-readable attributes of Git commits using Git notes
+- Why Git notes?
 -------------------------------------------------------------------------------
 
 It's not possible to modify the commit message of a commit without also
 altering it's commit hash, effectively making a new commit.
 
-Git Notes are a facility added to Git in order to make it possible to
+Git notes are a facility added to Git in order to make it possible to
 annotate commits post-creation, without altering their commit hash.
 
+By annotating the relevant commits directly in the Git repository, it's
+possible for all systems related to a repository to share information about
+the commit.
 
+This proposal will show how it will be possible to add this functionality
+from the point of view of the user without requiring Arcyd to also become
+a continuous integration system.
 
 # -----------------------------------------------------------------------------
 # Copyright (C) 2014 Bloomberg Finance L.P.
