@@ -33,16 +33,10 @@ annotate commits post-creation, without altering their commit hash.
 
 By annotating the relevant commits directly in the Git repository, it's
 possible for all systems related to a repository to share information about
-the commit.
+the commit, without the need for an additional system.
 
-This proposal will show how it will be possible to add this functionality
-from the point of view of the user without requiring Arcyd to also become
-a continuous integration system.
+Git Notes are already visible to l
 
-- already have network access to git, accessibility of commits and meta data is 
-the same
-- no need for extra work on system to sit between ci or others and arcyd to 
-exchange notes on commits (protocol, API, maintenance, design)
 - authorization already built in to git
 - consistency model already built into git
 - notes easily accessible to humans
