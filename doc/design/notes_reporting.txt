@@ -39,6 +39,65 @@ This proposal will show how it will be possible to add this functionality
 from the point of view of the user without requiring Arcyd to also become
 a continuous integration system.
 
+- already have network access to git, accessibility of commits and meta data is 
+the same
+- no need for extra work on system to sit between ci or others and arcyd to 
+exchange notes on commits (protocol, API, maintenance, design)
+- authorization already built in to git
+- consistency model already built into git
+- notes easily accessible to humans
+- commit metadata is as durable as the commits themselves
+
+-------------------------------------------------------------------------------
+- limitations of Git notes
+-------------------------------------------------------------------------------
+
+- one note per commit is a lot of notes. For example, a repository with
+  ten thousand commits with one kilobyte of uncompressed notes each would
+  approach ten megabyte of notes.
+
+- pushing and pulling git repositories can be expected to take on the order
+  of a second each time,at least.  Should not be used for high frequency
+  communication.
+
+- git notes are expected to be read and written by humans and may be
+  displayed alongside commits in a number of places.
+
+- git scales well with content edited by humans, other content does not
+  scale well.
+
+- tricky to merge notes on command line
+
+- must explicitly set up to fetch the git notes
+
+-------------------------------------------------------------------------------
+- example of ci and git notes
+-------------------------------------------------------------------------------
+
+Should be unnecessary to mention kind of test as its encoded in namespace (
+check github and git log)
+
+# Passed, # Failed, # Aborted
+
+Limited summary of failures
+Link to details
+
+-------------------------------------------------------------------------------
+- example walkthrough
+-------------------------------------------------------------------------------
+
+- author push working branch
+- ci system annotated head commit
+- author push working branch as review branch
+- arcyd creates review, adds ci notes as comments on review
+- author pushes new commit on review branch
+- ci system annotated head commit
+- arcyd adds ci notes as comments on review
+- review accepted
+- arcyd lands review
+
+Example with conditional push to review branch
+
 # -----------------------------------------------------------------------------
 # Copyright (C) 2014 Bloomberg Finance L.P.
 #
