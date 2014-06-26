@@ -22,50 +22,76 @@ perform the lint and unit steps automatically configured in  the '.arcconfig'
 file upon push and share the results in the review.
 
 -------------------------------------------------------------------------------
-- Why Git notes?
+- What are Git notes?
 -------------------------------------------------------------------------------
 
 It's not possible to modify the commit message of a commit without also
 altering it's commit hash, effectively making a new commit.
 
-Git notes are a facility added to Git in order to make it possible to
-annotate commits post-creation, without altering their commit hash.
+Git notes are a facility added to Git in order to make it possible to annotate
+commits post-creation, without altering their commit hash.
+
+Git notes are metadata on individual commits.
+
+-------------------------------------------------------------------------------
+- Why Git notes?
+-------------------------------------------------------------------------------
+
+It's not possible to modify the commit message of a commit without also
+altering it's commit hash, effectively making a new commit.  Git notes are a
+facility added to Git in order to make it possible to annotate commits
+post-creation, without altering their commit hash.
 
 By annotating the relevant commits directly in the Git repository, it's
 possible for all systems related to a repository to share information about
 the commit, without the need for an additional system.
 
-Git Notes are already visible to l
+Git Notes are visible to humans, via 'git log --notes' and 'git notes'.
+They are also visible in the GitHub commit view [1].  There seems to have
+been some interest in making them visible in GitWeb too [2].
 
-- authorization already built in to git
-- consistency model already built into git
-- notes easily accessible to humans
-- commit metadata is as durable as the commits themselves
-
--------------------------------------------------------------------------------
-- limitations of Git notes
--------------------------------------------------------------------------------
-
-- one note per commit is a lot of notes. For example, a repository with
-  ten thousand commits with one kilobyte of uncompressed notes each would
-  approach ten megabyte of notes.
-
-- pushing and pulling git repositories can be expected to take on the order
-  of a second each time,at least.  Should not be used for high frequency
-  communication.
-
-- git notes are expected to be read and written by humans and may be
-  displayed alongside commits in a number of places.
-
-- git scales well with content edited by humans, other content does not
-  scale well.
-
-- tricky to merge notes on command line
-
-- must explicitly set up to fetch the git notes
+Namespaces for Git Notes mean that it's possible for multiple systems to
+record metadata on individual commits, without knowing about eachother and
+in their own time e.g. 'lint', 'build', 'regression'.
 
 -------------------------------------------------------------------------------
-- example of ci and git notes
+- Limitations of Git notes for machine communication
+-------------------------------------------------------------------------------
+
+One note per commit is a lot of notes. For example, a repository with ten
+thousand commits and 1k of text each would approach 10Mb of notes when not
+compressed.
+
+Pushing and pulling git repositories can be expected to take on the order of a
+second each time.  Therefore Git should not be used for high frequency
+communication.
+
+Polling of Git servers is often discouraged as they are often set up with human
+access patterns in mind.
+
+Git notes are expected to be read and written by humans and may be displayed
+alongside commits in a number of places, whether the user wants this or not.
+
+Git scales well with content edited by humans, other content may result in poor
+performance or complete outage.
+
+Users must explicitly set up to fetch Git notes locally; it's tricky to merge
+Git notes from multiple sources in the same namespace [3].
+
+-------------------------------------------------------------------------------
+- Recommendations on Git notes usage following from limitations
+-------------------------------------------------------------------------------
+
+1. Notes should be concise
+2. Notes should be human-readable
+3. Pushes of notes should be ff-only
+4. At most, a constant number of notes per commit
+5. One notes namespace per system
+
+... examples and counter-examples ...
+
+-------------------------------------------------------------------------------
+- Example of ci and git notes
 -------------------------------------------------------------------------------
 
 Should be unnecessary to mention kind of test as its encoded in namespace (
@@ -91,6 +117,14 @@ Link to details
 - arcyd lands review
 
 Example with conditional push to review branch
+
+-------------------------------------------------------------------------------
+- References
+-------------------------------------------------------------------------------
+
+[1] https://github.com/blog/707-git-notes-display
+[2] http://git.661346.n2.nabble.com/PATCH-0-4-gitweb-preliminary-notes-support-td4514488.html
+[3] http://git-scm.com/2010/08/25/notes.html
 
 # -----------------------------------------------------------------------------
 # Copyright (C) 2014 Bloomberg Finance L.P.
