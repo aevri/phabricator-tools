@@ -82,25 +82,157 @@ Git notes from multiple sources in the same namespace [3].
 - Recommendations on Git notes usage following from limitations
 -------------------------------------------------------------------------------
 
-1. Notes should be concise
-2. Notes should be human-readable
+1. Notes should be for humans to consume for review, not machines
+2. Notes should be concise
 3. Pushes of notes should be ff-only
 4. At most, a constant number of notes per commit
-5. One notes namespace per system
-
-... examples and counter-examples ...
+5. One notes namespace per system, as few systems as possible
 
 -------------------------------------------------------------------------------
-- Example of ci and git notes
+- A counter example of CI and git notes
 -------------------------------------------------------------------------------
 
-Should be unnecessary to mention kind of test as its encoded in namespace (
-check github and git log)
+$ git log -1 --notes=*
 
-# Passed, # Failed, # Aborted
+commit 4ff4fa41cab849c4d1ecae7fcc754090e67741d3
+Author: Angelos Evripiotis <jevripiotis@bloomberg.net>
+Date:   Wed Jun 25 19:05:58 2014 +0100
 
-Limited summary of failures
-Link to details
+    arcyd/acceptance...: test pruning landing log
+
+    Add a test to the arcyd acceptance tests to make sure that we can
+    manually prune the landing log and have that change persist across new
+    reviews.
+
+    Previously this may have gone wrong because arcyd wasn't fetching the
+    special refs with a refspec beginning with '+', which enables non-ff
+    updates.
+
+    Test Plan:
+    $ ./testbed/arcyd/acceptance_tests.sh
+
+Notes (pep8):
+    Fail
+
+    optparse.py:69:11: E401 multiple imports on one line
+    optparse.py:77:1: E302 expected 2 blank lines, found 1
+    optparse.py:88:5: E301 expected 1 blank line, found 0
+    optparse.py:222:34: W602 deprecated form of raising exception
+    optparse.py:347:31: E211 whitespace before '('
+    optparse.py:357:17: E201 whitespace after '{'
+    optparse.py:472:29: E221 multiple spaces before operator
+    optparse.py:544:21: W601 .has_key() is deprecated, use 'in'
+    argparse.py:69:11: E401 multiple imports on one line
+    argparse.py:77:1: E302 expected 2 blank lines, found 1
+    argparse.py:88:5: E301 expected 1 blank line, found 0
+    argparse.py:222:34: W602 deprecated form of raising exception
+    argparse.py:347:31: E211 whitespace before '('
+    argparse.py:357:17: E201 whitespace after '{'
+    argparse.py:472:29: E221 multiple spaces before operator
+    argparse.py:544:21: W601 .has_key() is deprecated, use 'in'
+    myparse.py:69:11: E401 multiple imports on one line
+    myparse.py:77:1: E302 expected 2 blank lines, found 1
+    myparse.py:88:5: E301 expected 1 blank line, found 0
+    myparse.py:222:34: W602 deprecated form of raising exception
+    myparse.py:347:31: E211 whitespace before '('
+    myparse.py:357:17: E201 whitespace after '{'
+    myparse.py:472:29: E221 multiple spaces before operator
+    myparse.py:544:21: W601 .has_key() is deprecated, use 'in'
+
+Notes (jshint):
+    Fail
+
+    No .js files detected
+    134 files considered
+    Maybe this isn't a JS project?
+
+Notes (cppcheck):
+    Fail
+
+    No C++ files detected
+    134 files considered
+    Maybe this isn't a CPP project?
+
+Notes (unit1):
+    Ok
+
+    Test1 Passed
+    Test2 Passed, took 1 second(s)
+    Test3 Passed, took 2.1145 second(s)
+    Test4 Passed, took 152.124100 second(s)
+    Test5 Passed, took 11.0012351 seconds(s)
+
+Notes (unit2):
+    Ok
+
+    120 tests passed, 0 tests failed
+
+Notes (unit3):
+    Ok
+
+    428 tests passed
+
+Notes (regression):
+    Ok
+
+-------------------------------------------------------------------------------
+- A better example of CI and git notes
+-------------------------------------------------------------------------------
+
+$ git log -1 --notes=*
+
+commit 4ff4fa41cab849c4d1ecae7fcc754090e67741d3
+Author: Angelos Evripiotis <jevripiotis@bloomberg.net>
+Date:   Wed Jun 25 19:05:58 2014 +0100
+
+    arcyd/acceptance...: test pruning landing log
+
+    Add a test to the arcyd acceptance tests to make sure that we can
+    manually prune the landing log and have that change persist across new
+    reviews.
+
+    Previously this may have gone wrong because arcyd wasn't fetching the
+    special refs with a refspec beginning with '+', which enables non-ff
+    updates.
+
+    Test Plan:
+    $ ./testbed/arcyd/acceptance_tests.sh
+
+Notes (lint):
+    Fail
+
+    optparse.py:69:11: E401 multiple imports on one line
+    optparse.py:77:1: E302 expected 2 blank lines, found 1
+    optparse.py:88:5: E301 expected 1 blank line, found 0
+    optparse.py:222:34: W602 deprecated form of raising exception
+    optparse.py:347:31: E211 whitespace before '('
+    optparse.py:357:17: E201 whitespace after '{'
+    optparse.py:472:29: E221 multiple spaces before operator
+    optparse.py:544:21: W601 .has_key() is deprecated, use 'in'
+    argparse.py:69:11: E401 multiple imports on one line
+    argparse.py:77:1: E302 expected 2 blank lines, found 1
+
+    .. 20 more results omitted ..
+    https://myci.example/4ff4fa41cab849c4d1ecae7fcc754090e67741d3
+
+Notes (unit):
+    Ok
+
+Notes (regression):
+    Ok
+
+-------------------------------------------------------------------------------
+- Differences between example and counter-example
+-------------------------------------------------------------------------------
+
+- Fewer namespaces, one per major 'pass' over the repo.  Passes grouped by time
+  required.
+
+- Large lists of failures are truncated, we can't store enormous lists of
+  failures, large lists of failures should not pass review, Git notes is
+  not a code review system.
+
+- 'Ok' is used when all tests pass, no need for more information when reviewing
 
 -------------------------------------------------------------------------------
 - example walkthrough
