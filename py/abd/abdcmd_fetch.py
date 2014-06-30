@@ -19,6 +19,7 @@ another, to 'pre-fetch' before actually moving over.
 # =============================================================================
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 import phlsys_git
 import phlurl_watcher
@@ -49,8 +50,10 @@ def process(args):
     url_watcher_wrapper = phlurl_watcher.FileCacheWatcherWrapper(
         fs.layout.urlwatcher_cache_path)
 
+    url_watcher_wrapper.watcher.refresh()
+
     for repo_name, repo_config in repo_name_config_list:
-        print repo_name
+        print(repo_name + '..', end=' ')
         snoop_url = abdi_repoargs.get_repo_snoop_url(repo_config)
 
         abd_repo = abdt_git.Repo(
@@ -58,11 +61,16 @@ def process(args):
             "origin",
             repo_config.repo_desc)
 
-        abdi_processrepoargs.fetch_if_needed(
+        did_fetch = abdi_processrepoargs.fetch_if_needed(
             url_watcher_wrapper.watcher,
             snoop_url,
             abd_repo,
             repo_config.repo_desc)
+
+        if did_fetch:
+            print('fetched')
+        else:
+            print('skipped')
 
         url_watcher_wrapper.save()
 
