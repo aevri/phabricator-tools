@@ -52,6 +52,12 @@ def do(
     url_watcher_wrapper = phlurl_watcher.FileCacheWatcherWrapper(
         fs_accessor.layout.urlwatcher_cache_path)
 
+    # refresh cache after loading and before any repos are processed, otherwise
+    # we may not pull when we need to on the first run around the loop.
+    # TODO: wrap in usual retry handlers so that we can start up in unstable
+    #       environments
+    url_watcher_wrapper.watcher.refresh()
+
     _append_operations_for_repos(
         operations,
         reporter,
