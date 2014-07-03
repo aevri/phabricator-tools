@@ -22,6 +22,7 @@ import phlsys_pid
 import phlsys_signal
 
 import abdi_processrepos
+import abdi_repoargs
 import abdt_fs
 
 
@@ -71,9 +72,13 @@ def process(args):
         if args.no_loop:
             params.append('--no-loop')
 
-    abdi_processrepos.setupParser(parser)
-    args = parser.parse_args(params)
-    abdi_processrepos.process(args, fs.repo_config_path_list())
+        repo_configs = abdi_repoargs.parse_config_file_list(
+            fs.repo_config_path_list())
+
+        abdi_processrepos.setupParser(parser)
+        args = parser.parse_args(params)
+
+    abdi_processrepos.process(args, repo_configs)
 
 
 # -----------------------------------------------------------------------------
