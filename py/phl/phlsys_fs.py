@@ -309,6 +309,17 @@ def ensure_dir(path):
         os.makedirs(path)
 
 
+def read_text_file(path):
+    """Return text content of file at 'path', raise on error.
+
+    :path: the string path of the file to read
+    :returns: string content of file
+
+    """
+    with open(path) as f:
+        return f.read()
+
+
 def write_text_file(path, text):
     """Write the 'text' to the file at 'path', create dirs and file if needed.
 
