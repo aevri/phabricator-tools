@@ -46,16 +46,14 @@ class Test(unittest.TestCase):
                     worker.repo.working_dir))
 
             phlgitx_ignoreident.ensure_repo_ignoring(
-                worker.repo.working_dir,
-                worker.repo)
+                worker.repo.working_dir)
 
             self.assertTrue(
                 phlgitx_ignoreident.is_repo_definitely_ignoring(
                     worker.repo.working_dir))
 
             phlgitx_ignoreident.ensure_repo_ignoring(
-                worker.repo.working_dir,
-                worker.repo)
+                worker.repo.working_dir)
 
     def test_B_WorkaroundSpuriousDiff(self):
         ident_filename = 'ident_file'
@@ -101,9 +99,7 @@ class Test(unittest.TestCase):
                 checkout_fix_ident)
 
             # work around the problem, by ignoring the ident setting
-            phlgitx_ignoreident.ensure_repo_ignoring(
-                w1.repo.working_dir,
-                w1.repo)
+            phlgitx_ignoreident.ensure_repo_ignoring(w1.repo.working_dir)
 
             # try to checkout back to the branch with the fix
             checkout_fix_ident()

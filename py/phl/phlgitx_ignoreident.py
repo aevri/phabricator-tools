@@ -48,7 +48,7 @@ def is_repo_definitely_ignoring(repo_path):
         return content == _REPO_ATTRIBUTES_CONTENT
 
 
-def ensure_repo_ignoring(repo_path, repo):
+def ensure_repo_ignoring(repo_path):
     if is_repo_definitely_ignoring(repo_path):
         # nothing to do
         return
