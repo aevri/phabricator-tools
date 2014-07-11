@@ -14,6 +14,18 @@ static inspection of the source but would be relevant for other uses, e.g.
 automated builds.
 
 """
+# =============================================================================
+# CONTENTS
+# -----------------------------------------------------------------------------
+# phlgitx_ignoreident
+#
+# Public Functions:
+#   is_repo_definitely_ignoring
+#   ensure_repo_ignoring
+#
+# -----------------------------------------------------------------------------
+# (this contents block is generated, edits will be lost)
+# =============================================================================
 
 import os
 
