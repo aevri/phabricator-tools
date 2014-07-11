@@ -45,7 +45,6 @@ def ensure_repo_ignoring(repo_path, repo):
         phlsys_fs.write_text_file(
             repo_attributes_path,
             _REPO_ATTRIBUTES_CONTENT)
-        print("wrote.")
     else:
         # we won't try to do any sort of merging, just escalate
         raise Exception(

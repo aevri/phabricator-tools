@@ -14,11 +14,14 @@
 
 from __future__ import absolute_import
 
+import contextlib
+import os
 import unittest
 
 import phlsys_fs
 import phlgitu_fixture
 import phlgitx_ignoreident
+import phlsys_subprocess
 
 
 class Test(unittest.TestCase):
@@ -45,50 +48,55 @@ class Test(unittest.TestCase):
                     worker.repo.working_dir))
 
     def testFixesProblem(self):
-        ident_path = 'ident_file'
-        with phlgitu_fixture.lone_worker_context() as worker:
-            # enable ident expansion and commit a pre-expanded file
-            worker.commit_new_file(
+        ident_filename = 'ident_file'
+        linked_workers = phlgitu_fixture.CentralisedWithTwoWorkers()
+        with contextlib.closing(linked_workers):
+
+            w0 = linked_workers.w0
+            w1 = linked_workers.w1
+
+            ident_path = os.path.join(w0.repo.working_dir, ident_filename)
+
+            # commit a pre-expanded file
+            w0.commit_new_file(
+                message='add ident, erroneously expanded already',
+                relative_path=ident_filename,
+                contents='$Id: already expanded, whoops! $')
+
+            # enable ident expansion
+            w0.commit_new_file(
                 message='add .gitattributes, enable ident',
                 relative_path='.gitattributes',
                 contents='* ident\n')
-            worker.commit_new_file(
-                message='add ident, erroneously expanded already',
-                relative_path=ident_path,
-                contents='$Id: already expanded, whoops! $')
-            print phlsys_fs.read_text_file(ident_path)
 
-            # checkout onto a new branch to unexpand the ident
-            worker.repo("checkout", "-b", "fix_ident")
+            # checkout onto a new branch to fix the ident
+            w0.repo("checkout", "-b", "fix_ident")
             phlsys_fs.write_text_file(ident_path, "$Id$")
-            print worker.repo('status')
-            worker.repo('commit', '-am', 'fix {}'.format(ident_path))
 
-            # try to checkout back to master
-            worker.repo("checkout", "master")
+            w0.repo('commit', '-am', 'fix {}'.format(ident_filename))
 
-    # def testSimpleFork(self):
-    #     with phlgitu_fixture.lone_worker_context() as worker:
-    #         worker.repo("branch", "fork")
-    #         worker.commit_new_file("add ONLY_MASTER", "ONLY_MASTER")
-    #         worker.repo("checkout", "fork")
-    #         worker.commit_new_file("add ONLY_FORK", "ONLY_FORK")
-    #         worker.commit_new_file("add ONLY_FORK2", "ONLY_FORK2")
-    #         rawDiff = phlgit_diff.raw_diff_range_to_here(
-    #             worker.repo, "master")
-    #         rawDiff2 = phlgit_diff.raw_diff_range(
-    #             worker.repo, "master", "fork")
-    #         rawDiff3 = phlgit_diff.raw_diff_range(
-    #             worker.repo, "master", "fork", 1000)
-    #         self.assertEqual(
-    #             set(["ONLY_FORK", "ONLY_FORK2"]),
-    #             phlgit_diff.parse_filenames_from_raw_diff(rawDiff))
-    #         self.assertEqual(
-    #             set(["ONLY_FORK", "ONLY_FORK2"]),
-    #             phlgit_diff.parse_filenames_from_raw_diff(rawDiff2))
-    #         self.assertEqual(
-    #             set(["ONLY_FORK", "ONLY_FORK2"]),
-    #             phlgit_diff.parse_filenames_from_raw_diff(rawDiff3))
+            # push both branches back to share with 'w1'
+            w0.repo('push', 'origin', 'master:master', 'fix_ident')
+
+            w1.repo('fetch', 'origin')
+            w1.repo('checkout', 'origin/master')
+
+            def checkout_fix_ident():
+                w1.repo('checkout', 'origin/fix_ident')
+
+            # An error will be raised here, as the ident file will appear to
+            # have been modified.
+            self.assertRaises(
+                phlsys_subprocess.CalledProcessError,
+                checkout_fix_ident)
+
+            # work around the problem, by ignoring the ident setting
+            phlgitx_ignoreident.ensure_repo_ignoring(
+                w1.repo.working_dir,
+                w1.repo)
+
+            # try to checkout back to the branch with the fix
+            checkout_fix_ident()
 
 
 # -----------------------------------------------------------------------------
