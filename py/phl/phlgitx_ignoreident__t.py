@@ -6,10 +6,15 @@
 # cover those concerns.
 #
 # Concerns:
-# TODO
+# [ A] New repositories report False for is_repo_definitely_ignoring()
+# [ A] Can 'Ensure' new repositories with ensure_repo_ignoring()
+# [ A] 'Ensured' repositories report True for is_repo_definitely_ignoring()
+# [ A] Can 'Ensure' already 'Ensured' repositories without error
+# [ B] 'Ensuring' repos with pre-expanded files works around spurious diffs
 # -----------------------------------------------------------------------------
 # Tests:
-# TODO
+# [ A] test_A_Breathing
+# [ B] test_B_WorkaroundSpuriousDiff
 # =============================================================================
 
 from __future__ import absolute_import
@@ -32,7 +37,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testBreathing(self):
+    def test_A_Breathing(self):
         with phlgitu_fixture.lone_worker_context() as worker:
 
             self.assertFalse(
@@ -47,7 +52,11 @@ class Test(unittest.TestCase):
                 phlgitx_ignoreident.is_repo_definitely_ignoring(
                     worker.repo.working_dir))
 
-    def testFixesProblem(self):
+            phlgitx_ignoreident.ensure_repo_ignoring(
+                worker.repo.working_dir,
+                worker.repo)
+
+    def test_B_WorkaroundSpuriousDiff(self):
         ident_filename = 'ident_file'
         linked_workers = phlgitu_fixture.CentralisedWithTwoWorkers()
         with contextlib.closing(linked_workers):
