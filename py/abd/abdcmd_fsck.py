@@ -18,6 +18,9 @@ from __future__ import absolute_import
 import argparse
 import os
 
+import phlgitx_ignoreident
+import phlsys_git
+
 import abdi_repo
 import abdi_repoargs
 import abdt_fs
@@ -59,6 +62,20 @@ def process(args):
                     abdi_repo.setup_repo(repo_url, repo_params.repo_path)
                 else:
                     exit_code = 1
+            else:
+                is_ignoring = phlgitx_ignoreident.is_repo_definitely_ignoring
+                git_repo = phlsys_git.Repo(repo_params.repo_path)
+                if not is_ignoring(git_repo.working_dir):
+                    print "'{}' is not ignoring ident attributes".format(
+                        repo_params.repo_path)
+                    if args.fix:
+                        print "setting {} to ignore ident ..".format(
+                        repo_params.repo_path)
+
+                        phlgitx_ignoreident.ensure_repo_ignoring(
+                            git_repo.working_dir, git_repo)
+                    else:
+                        exit_code = 1
 
     if exit_code != 0 and not args.fix:
         print "use '--fix' to attempt to fix the issues"
