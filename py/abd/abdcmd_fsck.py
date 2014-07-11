@@ -70,7 +70,7 @@ def process(args):
                         repo_params.repo_path)
                     if args.fix:
                         print "setting {} to ignore ident ..".format(
-                        repo_params.repo_path)
+                            repo_params.repo_path)
 
                         phlgitx_ignoreident.ensure_repo_ignoring(
                             git_repo.working_dir, git_repo)
