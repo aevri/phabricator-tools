@@ -65,7 +65,7 @@ def ensure_repo_ignoring(repo_path):
             "cannot ensure ignore ident in existing file: {}".format(
                 repo_attributes_path))
 
-    #repo('checkout', 'HEAD')
+
 # -----------------------------------------------------------------------------
 # Copyright (C) 2014 Bloomberg Finance L.P.
 #
