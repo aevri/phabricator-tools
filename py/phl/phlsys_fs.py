@@ -9,6 +9,7 @@
 #
 # Public Functions:
 #   read_file_lock_context
+#   atomic_replace_text_file
 #   write_file_lock_context
 #   lockfile_retry_context
 #   lockfile_context
