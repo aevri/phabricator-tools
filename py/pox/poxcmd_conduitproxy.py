@@ -35,7 +35,6 @@ _USAGE_EXAMPLES = """
 
 logger = logging.getLogger(__name__)  # 'logger' is not allcaps by convention
 
-# TODO: incoming https
 # TODO: authentication
 # TODO: multiple conduit destinations
 
