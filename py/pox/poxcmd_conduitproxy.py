@@ -21,6 +21,8 @@ from __future__ import absolute_import
 import argparse
 import BaseHTTPServer
 import json
+import logging
+import time
 import urlparse
 
 import phlsys_conduit
@@ -29,7 +31,8 @@ import phlsys_makeconduit
 _USAGE_EXAMPLES = """
 """
 
-# TODO: logging
+logger = logging.getLogger(__name__)  # 'logger' is not allcaps by convention
+
 # TODO: authentication
 # TODO: consider thread-safety
 # TODO: multiple conduit destinations
@@ -37,6 +40,16 @@ _USAGE_EXAMPLES = """
 
 
 def main():
+    logging.Formatter.converter = time.gmtime
+    logging.basicConfig(
+        format='%(asctime)s %(message)s',
+        level=logging.DEBUG,
+        filename='conduit-proxy.log')
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logging.getLogger().addHandler(console)
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__,
@@ -91,13 +104,16 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         conduit_data = json.loads(params_data)
         conduit_proxy_data = conduit_data.get('__conduit__', None)
 
+        username = None
+        if conduit_proxy_data:
+            username = conduit_proxy_data.get("user", None)
+
         self.__handle_act_as_user(conduit_proxy_data)
 
-        print
-        print conduit_proxy_data
-        print conduit_method
-        print conduit_data
-        print
+        # TODO: log revision id as well, if relevant
+        logger.info("user {user} - {method}".format(
+            user=username, method=conduit_method))
+
         if conduit_method == 'conduit.connect':
             response = {
                 "result": {},
@@ -107,8 +123,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             response = self.__conduit.raw_call(conduit_method, conduit_data)
         content = json.dumps(response)
-        print content
-        print
+
         return content
 
     def __get_post_body(self):

@@ -283,9 +283,6 @@ class Conduit(object):
         else:
             data = urllib2.urlopen(path, body, _URLLIB_TIMEOUT).read()
 
-        print
-        print "conduit:", data
-        print
         return json.loads(data)
 
     def __call__(self, method, param_dict_in=None):

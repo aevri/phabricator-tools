@@ -1,5 +1,5 @@
 trap "echo 'FAILED!'; exit 1" ERR
-set -x
+#set -x
 set -eu
 set -o pipefail
 
@@ -9,7 +9,9 @@ cd "$(dirname "$0")"
 conduitproxy="$(pwd)/../../proto/conduit-proxy"
 arcyon="$(pwd)/../../bin/arcyon"
 
-$conduitproxy -h
+tempdir=$(mktemp -d)
+olddir=$(pwd)
+cd ${tempdir}
 
 phaburi="http://127.0.0.1"
 phabuser='phab'
@@ -24,23 +26,40 @@ $conduitproxy\
     --cert ${phabcert}\
     --port 8118\
     &
-
 conduitproxypid=$!
-trap "echo 'FAILED!'; kill $conduitproxypid; exit 1" ERR
+
+function cleanup() {
+    set +e
+
+    kill $conduitproxypid
+
+    # clean up
+    cd ${olddir}
+    rm -rf ${tempdir}
+}
+
+trap "echo 'FAILED!'; cleanup; exit 1" ERR
+
+$conduitproxy -h
+
 conduitproxyuri='http://127.0.0.1:8118'
 
 $arcyon query\
     --uri $conduitproxyuri\
-    --user phab\
+    --user blerg\
     --cert blerg\
     --max-results 1
 
 $arcyon query\
     --uri $conduitproxyuri\
-    --user phab\
+    --user blerg\
     --cert blerg\
     --max-results 1
 
+echo
+cat conduit-proxy.log
+echo
+
 trap - ERR
-kill $!
+cleanup
 echo OK
