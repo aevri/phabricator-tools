@@ -69,6 +69,12 @@ def main():
         default=8000,
         help="port to serve the conduit on")
 
+    parser.add_argument(
+        '--secret',
+        metavar="STRING",
+        required=True,
+        help="the magic word used to gain access")
+
     args = parser.parse_args()
 
     # start a webserver
@@ -120,6 +126,10 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if conduit_proxy_data:
             username = conduit_proxy_data.get("user", None)
 
+        certificate = None
+        if conduit_proxy_data:
+            certificate = conduit_proxy_data.get("cert", None)
+
         self.__handle_act_as_user(conduit_proxy_data)
 
         # TODO: log revision id as well, if relevant
@@ -133,7 +143,15 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 "error_info": "This is a conduit proxy, no need to connect",
             }
         else:
-            response = self.__conduit.raw_call(conduit_method, conduit_data)
+            if certificate != self.__conduitproxy_args.secret:
+                response = {
+                    "result": {},
+                    "error_code": phlsys_conduit.CONDUITPROXY_ERROR_BADAUTH,
+                    "error_info": "Incorrect user or cert",
+                }
+            else:
+                response = self.__conduit.raw_call(
+                    conduit_method, conduit_data)
         content = json.dumps(response)
 
         return content
