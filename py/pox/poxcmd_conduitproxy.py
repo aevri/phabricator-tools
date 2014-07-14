@@ -79,7 +79,8 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         print conduit_method
         print conduit_data
         print
-        content = self._conduit(conduit_method, conduit_data)
+        response = self._conduit.raw_call(conduit_method, conduit_data)
+        content = json.dumps(response)
         print content
         print
 
