@@ -108,7 +108,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/json")
         self.end_headers()
         self.wfile.write(content)
-        self.wfile.close()
+        # self.wfile.close()
 
     def __get_content(self, post_body):
         conduit_method = self.path[5:]
