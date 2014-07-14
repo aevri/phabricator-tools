@@ -48,7 +48,7 @@ function cleanup() {
 
 trap "echo 'FAILED!'; cleanup; exit 1" ERR
 
-#$conduitproxy -h
+$conduitproxy -h
 
 conduitproxyuri='https://127.0.0.1:8118'
 
