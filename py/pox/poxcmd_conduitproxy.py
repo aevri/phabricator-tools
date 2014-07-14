@@ -21,6 +21,7 @@ from __future__ import absolute_import
 import argparse
 import BaseHTTPServer
 import json
+import urlparse
 
 import phlsys_makeconduit
 
@@ -69,9 +70,18 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         content_len = int(self.headers.getheader('content-length', 0))
         post_body = self.rfile.read(content_len)
-        conduit_method = self.path
-        conduit_data = json.load(post_body)
+        conduit_method = self.path[5:]
+        query_string_data = urlparse.parse_qs(post_body)
+        params_data = query_string_data['params'][0]
+        conduit_data = json.loads(params_data)
+
+        print
+        print conduit_method
+        print conduit_data
+        print
         content = self._conduit(conduit_method, conduit_data)
+        print content
+        print
 
         self.send_response(200)
         self.send_header("Content-type", "text/json")
