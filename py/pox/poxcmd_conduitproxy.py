@@ -29,6 +29,13 @@ import phlsys_makeconduit
 _USAGE_EXAMPLES = """
 """
 
+# TODO: make all instance variable double underscore to avoid collisions
+# TODO: consider thread-safety
+# TODO: multiple conduit destinations
+# TODO: authentication
+# TODO: logging
+# TODO: incoming https
+
 
 def main():
     parser = argparse.ArgumentParser(
