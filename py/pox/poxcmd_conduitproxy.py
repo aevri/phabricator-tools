@@ -117,18 +117,11 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def __get_content(self, post_body):
         conduit_method = self.path[5:]
-        query_string_data = urlparse.parse_qs(post_body)
-        params_data = query_string_data['params'][0]
-        conduit_data = json.loads(params_data)
+        conduit_data = _get_conduit_data(post_body)
         conduit_proxy_data = conduit_data.get('__conduit__', None)
 
-        username = None
-        if conduit_proxy_data:
-            username = conduit_proxy_data.get("user", None)
-
-        certificate = None
-        if conduit_proxy_data:
-            certificate = conduit_proxy_data.get("cert", None)
+        username = _get_key_or_none(conduit_proxy_data, "user")
+        certificate = _get_key_or_none(conduit_proxy_data, "cert")
 
         self.__handle_act_as_user(conduit_proxy_data)
 
@@ -136,6 +129,15 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         logger.info("user {user} - {method}".format(
             user=username, method=conduit_method))
 
+        response = self.__get_response(
+            conduit_method,
+            conduit_data,
+            certificate)
+
+        content = json.dumps(response)
+        return content
+
+    def __get_response(self, conduit_method, conduit_data, certificate):
         if conduit_method == 'conduit.connect':
             response = {
                 "result": {},
@@ -152,9 +154,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 response = self.__conduit.raw_call(
                     conduit_method, conduit_data)
-        content = json.dumps(response)
-
-        return content
+        return response
 
     def __get_post_body(self):
         content_len = int(self.headers.getheader('content-length', 0))
@@ -173,6 +173,20 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             if self.__conduit.get_act_as_user():
                 self.__conduit.clear_act_as_user()
+
+
+def _get_conduit_data(post_body):
+    query_string_data = urlparse.parse_qs(post_body)
+    params_data = query_string_data['params'][0]
+    conduit_data = json.loads(params_data)
+    return conduit_data
+
+
+def _get_key_or_none(d, key):
+    result = None
+    if d:
+        result = d.get(key, None)
+    return result
 
 
 def _request_handler_factory(instaweb_args):
