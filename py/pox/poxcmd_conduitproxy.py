@@ -29,10 +29,10 @@ import phlsys_makeconduit
 _USAGE_EXAMPLES = """
 """
 
+# TODO: logging
+# TODO: authentication
 # TODO: consider thread-safety
 # TODO: multiple conduit destinations
-# TODO: authentication
-# TODO: logging
 # TODO: incoming https
 
 
