@@ -22,6 +22,8 @@ import argparse
 import BaseHTTPServer
 import json
 import logging
+import os
+import ssl
 import time
 import urlparse
 
@@ -33,10 +35,9 @@ _USAGE_EXAMPLES = """
 
 logger = logging.getLogger(__name__)  # 'logger' is not allcaps by convention
 
-# TODO: authentication
-# TODO: consider thread-safety
-# TODO: multiple conduit destinations
 # TODO: incoming https
+# TODO: authentication
+# TODO: multiple conduit destinations
 
 
 def main():
@@ -58,6 +59,11 @@ def main():
     phlsys_makeconduit.add_argparse_arguments(parser)
 
     parser.add_argument(
+        '--sslcert',
+        metavar="SSLCERT",
+        help="certificate to use if you want https")
+
+    parser.add_argument(
         '--port',
         metavar="PORT",
         type=int,
@@ -70,6 +76,13 @@ def main():
     server_address = ('', args.port)
     factory = _request_handler_factory(args)
     httpd = BaseHTTPServer.HTTPServer(server_address, factory)
+    if args.sslcert:
+        certpath = os.path.abspath(args.sslcert)
+        print certpath
+        httpd.socket = ssl.wrap_socket(
+            httpd.socket,
+            certfile=certpath,
+            server_side=True)
     httpd.serve_forever()
 
 

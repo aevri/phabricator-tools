@@ -20,13 +20,21 @@ afgzquzl3geyjxw426ujcyqdi2t4ktiv7gmrtlnc3hsy2eqsmhvgifn2vah2uidj6u6hhhxo2j3y2w\
 6lcsehs2le4msd5xsn4f333udwvj6aowokq5l2llvfsl3efcucraawtvzw462q2sxmryg5y5rpicdk\
 3lyr3uvot7fxrotwpi3ty2b2sa2kvlpf
 
+# openssl genrsa > privkey.pem
+# openssl req -new -x509 -key privkey.pem -out mycert.pem -days 1095\
+#     -subj "/C=US/ST=Oregon/L=Portland/O=IT/CN=127.0.0.1"
+openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes\
+    -subj "/C=US/ST=Oregon/L=Portland/O=IT/CN=127.0.0.1"
+
 $conduitproxy\
     --uri ${phaburi}\
     --user ${phabuser}\
     --cert ${phabcert}\
+    --sslcert server.pem\
     --port 8118\
     &
 conduitproxypid=$!
+
 
 function cleanup() {
     set +e
@@ -40,9 +48,9 @@ function cleanup() {
 
 trap "echo 'FAILED!'; cleanup; exit 1" ERR
 
-$conduitproxy -h
+#$conduitproxy -h
 
-conduitproxyuri='http://127.0.0.1:8118'
+conduitproxyuri='https://127.0.0.1:8118'
 
 $arcyon query\
     --uri $conduitproxyuri\
