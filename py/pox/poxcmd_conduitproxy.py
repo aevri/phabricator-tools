@@ -29,7 +29,6 @@ import phlsys_makeconduit
 _USAGE_EXAMPLES = """
 """
 
-# TODO: make all instance variable double underscore to avoid collisions
 # TODO: consider thread-safety
 # TODO: multiple conduit destinations
 # TODO: authentication
@@ -63,15 +62,12 @@ def main():
 
 class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
-    # TODO: make all instance variable double underscore to avoid collisions
-    # TODO: consider thread-safety
-
     def __init__(self, conduitproxy_args, *args):
-        self._conduitproxy_args = conduitproxy_args
-        self._conduit = phlsys_makeconduit.make_conduit(
-            self._conduitproxy_args.uri,
-            self._conduitproxy_args.user,
-            self._conduitproxy_args.cert)
+        self.__conduitproxy_args = conduitproxy_args
+        self.__conduit = phlsys_makeconduit.make_conduit(
+            self.__conduitproxy_args.uri,
+            self.__conduitproxy_args.user,
+            self.__conduitproxy_args.cert)
 
         self.path = None  # for pychecker
         self.wfile = None  # for pychecker
@@ -80,7 +76,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_POST(self):
 
         # do this before sending any response as we may raise an exception
-        content = self._get_content(self._get_post_body())
+        content = self.__get_content(self.__get_post_body())
 
         self.send_response(200)
         self.send_header("Content-type", "text/json")
@@ -88,14 +84,14 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write(content)
         self.wfile.close()
 
-    def _get_content(self, post_body):
+    def __get_content(self, post_body):
         conduit_method = self.path[5:]
         query_string_data = urlparse.parse_qs(post_body)
         params_data = query_string_data['params'][0]
         conduit_data = json.loads(params_data)
         conduit_proxy_data = conduit_data.get('__conduit__', None)
 
-        self._handle_act_as_user(conduit_proxy_data)
+        self.__handle_act_as_user(conduit_proxy_data)
 
         print
         print conduit_proxy_data
@@ -109,17 +105,17 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 "error_info": "This is a conduit proxy, no need to connect",
             }
         else:
-            response = self._conduit.raw_call(conduit_method, conduit_data)
+            response = self.__conduit.raw_call(conduit_method, conduit_data)
         content = json.dumps(response)
         print content
         print
         return content
 
-    def _get_post_body(self):
+    def __get_post_body(self):
         content_len = int(self.headers.getheader('content-length', 0))
         return self.rfile.read(content_len)
 
-    def _handle_act_as_user(self, conduit_proxy_data):
+    def __handle_act_as_user(self, conduit_proxy_data):
         act_as_user = None
         if conduit_proxy_data:
             # Note that we may throw here if conduit_proxy_data is not a dict,
@@ -128,10 +124,10 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # TODO: check assumption that it handles this for us
             act_as_user = conduit_proxy_data.get('actAsUser', None)
         if act_as_user:
-            self._conduit.set_act_as_user()
+            self.__conduit.set_act_as_user()
         else:
-            if self._conduit.get_act_as_user():
-                self._conduit.clear_act_as_user()
+            if self.__conduit.get_act_as_user():
+                self.__conduit.clear_act_as_user()
 
 
 def _request_handler_factory(instaweb_args):
