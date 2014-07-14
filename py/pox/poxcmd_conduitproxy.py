@@ -23,6 +23,7 @@ import BaseHTTPServer
 import json
 import urlparse
 
+import phlsys_conduit
 import phlsys_makeconduit
 
 _USAGE_EXAMPLES = """
@@ -74,12 +75,21 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         query_string_data = urlparse.parse_qs(post_body)
         params_data = query_string_data['params'][0]
         conduit_data = json.loads(params_data)
+        conduit_proxy_data = conduit_data.get('__conduit__', None)
 
         print
+        print conduit_proxy_data
         print conduit_method
         print conduit_data
         print
-        response = self._conduit.raw_call(conduit_method, conduit_data)
+        if conduit_method == 'conduit.connect':
+            response = {
+                "result": {},
+                "error_code": phlsys_conduit.CONDUITPROXY_ERROR_CONNECT,
+                "error_info": "This is a conduit proxy, no need to connect",
+            }
+        else:
+            response = self._conduit.raw_call(conduit_method, conduit_data)
         content = json.dumps(response)
         print content
         print

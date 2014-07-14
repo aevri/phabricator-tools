@@ -29,18 +29,17 @@ conduitproxypid=$!
 trap "echo 'FAILED!'; kill $conduitproxypid; exit 1" ERR
 conduitproxyuri='http://127.0.0.1:8118'
 
-$arcyon query\
-    --uri $conduitproxyuri\
-    --user ${phabuser}\
-    --cert ${phabcert}\
-    --max-results 1
-
 # $arcyon query\
 #     --uri $conduitproxyuri\
-#     --user blerg\
-#     --cert blerg\
+#     --user ${phabuser}\
+#     --cert ${phabcert}\
 #     --max-results 1
-# 
+
+$arcyon query\
+    --uri $conduitproxyuri\
+    --user phab\
+    --cert blerg\
+    --max-results 1
 
 trap - ERR
 kill $!
