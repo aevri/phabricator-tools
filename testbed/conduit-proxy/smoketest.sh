@@ -41,6 +41,12 @@ $arcyon query\
     --cert blerg\
     --max-results 1
 
+$arcyon query\
+    --uri $conduitproxyuri\
+    --user phab\
+    --cert blerg\
+    --max-results 1
+
 trap - ERR
 kill $!
 echo OK

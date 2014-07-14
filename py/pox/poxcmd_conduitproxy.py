@@ -69,6 +69,8 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_POST(self):
 
+        # XXX: consider thread-safety
+
         content_len = int(self.headers.getheader('content-length', 0))
         post_body = self.rfile.read(content_len)
         conduit_method = self.path[5:]
@@ -76,6 +78,18 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         params_data = query_string_data['params'][0]
         conduit_data = json.loads(params_data)
         conduit_proxy_data = conduit_data.get('__conduit__', None)
+
+        act_as_user = None
+        if act_as_user:
+            # Note that we may throw here if act_as_user is not a dict, this is
+            # ok because the BaseHTTPRequestHandler will handle it for us
+            # TODO: check assumption that it handles this for us
+            act_as_user = conduit_proxy_data.get('actAsUser', None)
+            if act_as_user:
+                self._conduit.set_act_as_user()
+        else:
+            if self._conduit.get_act_as_user():
+                self._conduit.clear_act_as_user()
 
         print
         print conduit_proxy_data
