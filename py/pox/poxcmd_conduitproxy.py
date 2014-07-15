@@ -236,21 +236,22 @@ def _get_key_or_none(d, key):
     return d.get(key, None) if d else None
 
 
-def _request_handler_factory(instaweb_args):
+def _request_handler_factory(custom_param):
     """Return a function that creates a '__RequestHandler'.
 
     This allows us to provide a 'factory function' suitable for passing to
-    BaseHTTPServer.HTTPServer(), whilst providing our own custom arguments.
+    BaseHTTPServer.HTTPServer(), whilst providing our own custom first
+    argument.
 
     There doesn't appear to be another way for us to construct our
-    __RequestHandler with custom arguments.
+    '__RequestHandler' with a custom argument.
 
-    :returns: a '__RequestHandler' factory function with some pre-baked args
+    :returns: a '__RequestHandler' factory function with a pre-baked argument
 
     """
 
     def factory(*args):
-        return _RequestHandler(instaweb_args, *args)
+        return _RequestHandler(custom_param, *args)
 
     return factory
 
