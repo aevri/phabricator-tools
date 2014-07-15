@@ -111,6 +111,7 @@ def _httpd_serve_forever(args):
 
 
 class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+
     """Handle POST requests by calling out to conduit and reporting back.
 
     Note that we don't have to worry about threading here as httpd is
@@ -173,8 +174,8 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def __get_response(self, conduit_method, conduit_data, certificate):
         """Act on the decoded request and determine the appropriate response.
 
-        Note that this may or may not result in a communication with conduit,
-        depending on the kind of request and authentication.
+        Note that this may or may not result in a communication with
+        conduit, depending on the kind of request and authentication.
 
         """
         if conduit_method == 'conduit.connect':
