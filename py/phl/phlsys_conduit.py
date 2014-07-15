@@ -238,6 +238,7 @@ class Conduit(object):
                     actAsUser=self._act_as_user)
 
         if is_conduitproxy:
+            # conduit proxies don't have sessions, send the cert every time
             self._conduit = {
                 'user': self._username,
                 'cert': self._certificate
