@@ -39,25 +39,18 @@ import phlsys_conduit
 import phlsys_makeconduit
 
 _USAGE_EXAMPLES = """
+usage examples:
+    proxy the local phabricator install on port 8000, with password 'squirrel':
+    $ conduit-proxy --uri http://127.0.0.1 --port 8000 --secret squirrel
 """
 
 logger = logging.getLogger(__name__)  # 'logger' is not allcaps by convention
 
-# TODO: authentication
+# TODO: authentication beyond a single shared secret
 # TODO: multiple conduit destinations
 
 
 def main():
-    logging.Formatter.converter = time.gmtime
-    logging.basicConfig(
-        format='%(asctime)s %(message)s',
-        level=logging.DEBUG,
-        filename='conduit-proxy.log')
-
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    logging.getLogger().addHandler(console)
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__,
@@ -85,7 +78,23 @@ def main():
 
     args = parser.parse_args()
 
-    # start a webserver
+    _setup_logging()
+    _httpd_serve_forever(args)
+
+
+def _setup_logging():
+    logging.Formatter.converter = time.gmtime
+    logging.basicConfig(
+        format='%(asctime)s %(message)s',
+        level=logging.DEBUG,
+        filename='conduit-proxy.log')
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logging.getLogger().addHandler(console)
+
+
+def _httpd_serve_forever(args):
     server_address = ('', args.port)
     factory = _request_handler_factory(args)
     httpd = BaseHTTPServer.HTTPServer(server_address, factory)
