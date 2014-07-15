@@ -177,7 +177,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # TODO: check assumption that it handles this for us
             act_as_user = conduit_proxy_data.get('actAsUser', None)
         if act_as_user:
-            self.__conduit.set_act_as_user()
+            self.__conduit.set_act_as_user(act_as_user)
         else:
             if self.__conduit.get_act_as_user():
                 self.__conduit.clear_act_as_user()
