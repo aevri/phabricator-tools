@@ -12,14 +12,22 @@ giving away admin credentials directly to multiple parties.
 # =============================================================================
 # CONTENTS
 # -----------------------------------------------------------------------------
+# poxcmd_conduitproxy
+#
+# Public Functions:
+#   main
+#
+# Public Assignments:
+#   logger
+#
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
 from __future__ import absolute_import
 
-import argparse
 import BaseHTTPServer
+import argparse
 import json
 import logging
 import os
@@ -198,7 +206,7 @@ def _request_handler_factory(instaweb_args):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2014 Bloomberg Finance L.P.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to

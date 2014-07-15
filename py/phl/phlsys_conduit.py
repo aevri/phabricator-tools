@@ -12,6 +12,7 @@
 #    .get_act_as_user
 #    .get_user
 #    .conduit_uri
+#    .raw_call
 #    .ping
 #
 # Public Functions:
@@ -21,6 +22,8 @@
 #
 # Public Assignments:
 #   SESSION_ERROR
+#   CONDUITPROXY_ERROR_CONNECT
+#   CONDUITPROXY_ERROR_BADAUTH
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
