@@ -2,16 +2,9 @@ trap 'kill $(jobs -p)' EXIT
 
 python writer.py &
 
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
-python reader.py &
+for i in {0..10}; do
+    python reader.py &
+done
 
 jobs
 wait
