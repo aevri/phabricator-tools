@@ -46,8 +46,8 @@ usage examples:
 
 logger = logging.getLogger(__name__)  # 'logger' is not allcaps by convention
 
-# TODO: authentication beyond a single shared secret
-# TODO: multiple conduit destinations
+# TODO: authentication beyond a public secret
+# TODO: support multiple conduit destinations
 
 
 def main():
@@ -83,6 +83,7 @@ def main():
 
 
 def _setup_logging():
+    """Configure the root logger to write to a file and the console."""
     logging.Formatter.converter = time.gmtime
     logging.basicConfig(
         format='%(asctime)s %(message)s',
@@ -95,6 +96,7 @@ def _setup_logging():
 
 
 def _httpd_serve_forever(args):
+    """Use '_RequestHandler' to serve webpages forever, optionally with ssl."""
     server_address = ('', args.port)
     factory = _request_handler_factory(args)
     httpd = BaseHTTPServer.HTTPServer(server_address, factory)
@@ -109,8 +111,16 @@ def _httpd_serve_forever(args):
 
 
 class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    """Handle POST requests by calling out to conduit and reporting back.
+
+    Note that we don't have to worry about threading here as httpd is
+    single-threaded.
+
+    """
 
     def __init__(self, conduitproxy_args, *args):
+
+        # setup the long-running conduit for the proxy
         self.__conduitproxy_args = conduitproxy_args
         self.__conduit = phlsys_makeconduit.make_conduit(
             self.__conduitproxy_args.uri,
@@ -121,22 +131,25 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.rfile = None  # for pychecker
         self.wfile = None  # for pychecker
         self.headers = None  # for pychecker
+
         BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, *args)
 
     def do_POST(self):
+        """Handle http POST requests, override of base class function."""
 
         # do this before sending any response as we may raise an exception
         content = self.__get_content(self.__get_post_body())
 
+        # send the response back to the client
         self.send_response(200)
         self.send_header("Content-type", "text/json")
         self.end_headers()
         self.wfile.write(content)
-        # self.wfile.close()
 
     def __get_content(self, post_body):
+        """Decode the request and determine the appropriate content."""
         conduit_method = self.path[5:]
-        conduit_data = _get_conduit_data(post_body)
+        conduit_data = _object_from_urlencoded_json(post_body)
         conduit_proxy_data = conduit_data.get('__conduit__', None)
 
         username = _get_key_or_none(conduit_proxy_data, "user")
@@ -154,9 +167,16 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             certificate)
 
         content = json.dumps(response)
+
         return content
 
     def __get_response(self, conduit_method, conduit_data, certificate):
+        """Act on the decoded request and determine the appropriate response.
+
+        Note that this may or may not result in a communication with conduit,
+        depending on the kind of request and authentication.
+
+        """
         if conduit_method == 'conduit.connect':
             response = {
                 "result": {},
@@ -176,10 +196,16 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return response
 
     def __get_post_body(self):
+        """Return the content that was supplied to us by the client.
+
+        :returns: string content of request
+
+        """
         content_len = int(self.headers.getheader('content-length', 0))
         return self.rfile.read(content_len)
 
     def __handle_act_as_user(self, conduit_proxy_data):
+        """Set our conduit to impersonate another user, if requested."""
         act_as_user = None
         if conduit_proxy_data:
             # Note that we may throw here if conduit_proxy_data is not a dict,
@@ -194,21 +220,34 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.__conduit.clear_act_as_user()
 
 
-def _get_conduit_data(post_body):
-    query_string_data = urlparse.parse_qs(post_body)
+def _object_from_urlencoded_json(encoded):
+    """Return the python object represented by the supplied 'encoded'.
+
+    :returns: a python object
+
+    """
+    query_string_data = urlparse.parse_qs(encoded)
     params_data = query_string_data['params'][0]
     conduit_data = json.loads(params_data)
     return conduit_data
 
 
 def _get_key_or_none(d, key):
-    result = None
-    if d:
-        result = d.get(key, None)
-    return result
+    return d.get(key, None) if d else None
 
 
 def _request_handler_factory(instaweb_args):
+    """Return a function that creates a '__RequestHandler'.
+
+    This allows us to provide a 'factory function' suitable for passing to
+    BaseHTTPServer.HTTPServer(), whilst providing our own custom arguments.
+
+    There doesn't appear to be another way for us to construct our
+    __RequestHandler with custom arguments.
+
+    :returns: a '__RequestHandler' factory function with some pre-baked args
+
+    """
 
     def factory(*args):
         return _RequestHandler(instaweb_args, *args)
