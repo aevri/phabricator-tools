@@ -109,7 +109,9 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.__conduitproxy_args.cert)
 
         self.path = None  # for pychecker
+        self.rfile = None  # for pychecker
         self.wfile = None  # for pychecker
+        self.headers = None  # for pychecker
         BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, *args)
 
     def do_POST(self):
