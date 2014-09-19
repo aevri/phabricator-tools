@@ -34,7 +34,7 @@ import phlcon_reviewstatecache
 
 FakeResult = collections.namedtuple(
     'phlcon_reviewstatecache__t_FakeResult',
-    ['id', 'status', 'dateModified'])
+    ['id', 'status', 'dateModified', 'authorPHID'])
 
 
 class Test(unittest.TestCase):
@@ -124,7 +124,7 @@ class Test(unittest.TestCase):
             expected_queries[:] = expected_queries[1:]
 
             return [
-                FakeResult(r, str(r) + 'r', str(r) + 'd')
+                FakeResult(r, str(r) + 'r', str(r) + 'd', str(r) + 'ap')
                 for r in actual_revision_list
             ]
 
@@ -145,6 +145,30 @@ class Test(unittest.TestCase):
         for revision in revision_list:
             result = cache_impl.get_state(revision).status
             self.assertEqual(result, str(revision) + 'r')
+
+    def test_E_SetAuthorPhid(self):
+
+        def fake_callable(_):
+            return [FakeResult(1, "status", "mod", "author")]
+
+        cache_impl = phlcon_reviewstatecache._ReviewStateCache(fake_callable)
+
+        # get the initial value into the cache
+        self.assertEqual(
+            cache_impl.get_state(1).author_phid,
+            "author")
+
+        # override the value
+        cache_impl.set_author_phid(1, "new_author")
+        self.assertEqual(
+            cache_impl.get_state(1).author_phid,
+            "new_author")
+
+        # value should be as original after refresh
+        cache_impl.refresh_active_reviews()
+        self.assertEqual(
+            cache_impl.get_state(1).author_phid,
+            "author")
 
 
 # -----------------------------------------------------------------------------
