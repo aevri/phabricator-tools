@@ -180,17 +180,6 @@ def update_in_review(conduit, branch):
     if not diff_result.diff:
         raise abdt_exception.AbdUserException("no difference to review")
 
-    try:
-        _, email, user, _ = abdt_conduitgit.getPrimaryUserDetailsFromBranch(
-            conduit, branch)
-    except abdt_exception.AbdUserException:
-        # TODO: handle this in some way
-        # TODO: use a more specific exception as well
-        raise
-    else:
-        # if user != conduit.get_review_author() then commandeer
-        pass
-
     user_warnings = []
     if diff_result.reduction_list:
         user_warnings.append(abdt_userwarning.LargeDiff(diff_result))
