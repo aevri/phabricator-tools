@@ -57,6 +57,7 @@ class Conduit(object):
         self._conduit = conduit
         self._reviewstate_cache = phlcon_reviewstatecache.ReviewStateCache(
             conduit)
+        self._user_cache = phlcon_user.UsernamePhidCache(conduit)
 
     def describe(self):
         """Return a string description of this conduit for a human to read.
@@ -180,11 +181,8 @@ class Conduit(object):
         return phlcon_differential.parse_commit_message(self._conduit, message)
 
     def _get_author_user(self, revisionid):
-        # TODO: these queries are very expensive, cache them
-        revision = phlcon_differential.query(self._conduit, [revisionid])[0]
-        author_user = phlcon_user.query_usernames_from_phids(
-            self._conduit, [revision.authorPHID])[0]
-        return author_user
+        author_phid = self._reviewstate_cache.get_state(revisionid).author_phid
+        return self._user_cache.get_username(author_phid)
 
     def is_review_accepted(self, revisionid):
         """Return True if the supplied 'revisionid' is in 'accepted' status.
@@ -334,11 +332,13 @@ class Conduit(object):
         :returns: None
 
         """
+        user_phid = self._user_cache.get_phid(username)
         with phlsys_conduit.act_as_user_context(self._conduit, username):
             phlcon_differential.create_comment(
                 self._conduit,
                 revisionid,
                 action=phlcon_differential.Action.claim)
+            self._reviewstate_cache.set_author_phid(revisionid, user_phid)
         self._log(
             'conduit-commandeer',
             'commandeered {} as {}'.format(revisionid, username))

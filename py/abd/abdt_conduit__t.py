@@ -145,6 +145,20 @@ class Test(unittest.TestCase):
         self.assertTrue(self.conduit.is_review_recently_updated(revision))
 
         self.conduit.commandeer_revision_as_user(revision, alice)
+
+        # test that we've cached the author user correctly, Phabricator will
+        # complain here if we don't impersonate the author user when abandoning
+        # the revision
+        self.conduit.abandon_revision(revision)
+
+        # un-abandon
+        with phlsys_conduit.act_as_user_context(self.sys_conduit, alice):
+            phlcon_differential.create_comment(
+                self.sys_conduit,
+                revision,
+                action=phlcon_differential.Action.reclaim)
+        self._invalidate_cache()
+
         self.conduit.commandeer_revision_as_user(revision, bob)
 
         # close non-accepted revision
