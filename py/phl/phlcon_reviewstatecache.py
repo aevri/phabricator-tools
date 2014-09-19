@@ -7,6 +7,7 @@
 # Public Classes:
 #   ReviewStateCache
 #    .get_state
+#    .set_author_phid
 #    .refresh_active_reviews
 #
 # Public Functions:
@@ -27,7 +28,7 @@ import phlcon_differential
 
 ReviewState = collections.namedtuple(
     'phlcon_reviewstatecache__ReviewState',
-    ['status', 'date_modified'])
+    ['status', 'date_modified', 'author_phid'])
 
 
 class ReviewStateCache(object):
@@ -40,6 +41,9 @@ class ReviewStateCache(object):
 
     def get_state(self, review_id):
         return self._cache.get_state(review_id)
+
+    def set_author_phid(self, review_id, author_phid):
+        self._cache.set_author_phid(review_id, author_phid)
 
     def refresh_active_reviews(self):
         self._cache.refresh_active_reviews()
@@ -62,7 +66,8 @@ class _ReviewStateCache(object):
         self._revision_list_status_callable = status_callable
 
     def _make_state(self, response):
-        return ReviewState(response.status, response.dateModified)
+        return ReviewState(
+            response.status, response.dateModified, response.authorPHID)
 
     def get_state(self, review_id):
         assert self._revision_list_status_callable
@@ -72,6 +77,11 @@ class _ReviewStateCache(object):
 
         self._active_reviews.add(review_id)
         return self._review_to_state[review_id]
+
+    def set_author_phid(self, review_id, author_phid):
+        state = self.get_state(review_id)
+        self._review_to_state[review_id] = ReviewState(
+            state.status, state.date_modified, author_phid)
 
     def refresh_active_reviews(self):
         assert self._revision_list_status_callable
