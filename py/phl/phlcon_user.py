@@ -7,11 +7,14 @@
 # Public Classes:
 #   Error
 #   OneOrMoreUnknownUsernames
+#   OneOrMoreUnknownPhids
 #   UnknownUsername
+#   UnknownPhid
 #   UsernamePhidCache
 #    .add_username_hint
 #    .add_username_hint_list
 #    .get_phid
+#    .get_username
 #
 # Public Functions:
 #   is_no_such_error
@@ -56,10 +59,25 @@ class OneOrMoreUnknownUsernames(Error):
                 known_users))
 
 
+class OneOrMoreUnknownPhids(Error):
+
+    def __init__(self, phids, known_users):
+        super(OneOrMoreUnknownPhids, self).__init__(
+            "phids: {}\nknown users: {}".format(
+                phids,
+                known_users))
+
+
 class UnknownUsername(Error):
 
     def __init__(self, username):
         super(UnknownUsername, self).__init__(username)
+
+
+class UnknownPhid(Error):
+
+    def __init__(self, phid):
+        super(UnknownPhid, self).__init__(phid)
 
 
 class UsernamePhidCache(object):
@@ -70,6 +88,7 @@ class UsernamePhidCache(object):
         """Construct a cache attached to the specified 'conduit'."""
         super(UsernamePhidCache, self).__init__()
         self._username_to_phid = {}
+        self._phid_to_username = {}
         self._hinted_usernames = set()
         self._conduit = conduit
 
@@ -106,9 +125,28 @@ class UsernamePhidCache(object):
                     raise UnknownUsername(username)
 
             self._username_to_phid.update(results)
+            phid_to_username = dict((v, k) for k, v in results.iteritems())
+            self._phid_to_username.update(phid_to_username)
             self._hinted_usernames = set()
 
         return self._username_to_phid[username]
+
+    def get_username(self, phid):
+        """Return the username for the specified 'phid'."""
+        if phid not in self._phid_to_username:
+
+            results = make_phid_username_dict(
+                self._conduit, [phid])
+
+            if results is None:
+                raise UnknownPhid(phid)
+
+            self._phid_to_username.update(results)
+            username_to_phid = dict((v, k) for k, v in results.iteritems())
+            self._username_to_phid.update(username_to_phid)
+            self._hinted_usernames = set()
+
+        return self._phid_to_username[phid]
 
 
 def is_no_such_error(e):
@@ -187,15 +225,19 @@ def query_users_from_phids(conduit, phids):
         raise ValueError("phids must be a list")
     d = {"phids": phids, "limit": len(phids)}
 
+    response = None
     try:
         response = conduit("user.query", d)
     except phlsys_conduit.ConduitException as e:
         if not is_no_such_error(e):
             raise
+
+    if response is None:
         return None
-    else:
-        if len(response) != len(phids):
-            raise Exception("unexpected number of entries\n" + str(response))
+
+    if len(response) != len(phids):
+        raise OneOrMoreUnknownPhids(
+            phids, response)
 
     return [QueryResponse(**u) for u in response]
 
