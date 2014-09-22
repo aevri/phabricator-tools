@@ -87,6 +87,18 @@ class Test(unittest.TestCase):
         self.assertEqual(
             usernamePhidCache.get_phid(username),
             phid)
+        self.assertEqual(
+            usernamePhidCache.get_username(phid),
+            username)
+
+        # check that cached-phid and uncached-username works too
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+        self.assertEqual(
+            usernamePhidCache.get_username(phid),
+            username)
+        self.assertEqual(
+            usernamePhidCache.get_phid(username),
+            phid)
 
     def testBadUsername(self):
         bad_username = "#@)4308f:"
@@ -109,6 +121,12 @@ class Test(unittest.TestCase):
         phidDict = phlcon_user.make_phid_username_dict(
             self.conduit, [bad_phid])
         self.assertIsNone(phidDict)
+
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+        self.assertRaises(
+            phlcon_user.UnknownPhid,
+            usernamePhidCache.get_username,
+            bad_phid)
 
     def test_B_BadUsernameGoodUsername(self):
         # [ B] UsernamePhidCache succeeds retrieving good username when bad is
