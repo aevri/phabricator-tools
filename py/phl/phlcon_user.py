@@ -22,6 +22,7 @@
 #   query_users_from_emails
 #   query_users_from_phids
 #   query_users_from_usernames
+#   response_from_attribute
 #   query_usernames_from_phids
 #   make_username_phid_dict
 #   make_phid_username_dict
@@ -174,13 +175,7 @@ def query_user_from_email(conduit, email):
     :returns: a QueryResponse or None
 
     """
-    d = {"emails": [email], "limit": 1}
-    response = None
-    try:
-        response = conduit("user.query", d)
-    except phlsys_conduit.ConduitException as e:
-        if not is_no_such_error(e):
-            raise
+    response = response_from_attribute(conduit, 'emails', [email])
 
     if response:
         if len(response) != 1:
@@ -221,17 +216,7 @@ def query_users_from_phids(conduit, phids):
     :returns: a list of QueryResponse
 
     """
-    if not isinstance(phids, list):
-        raise ValueError("phids must be a list")
-    d = {"phids": phids, "limit": len(phids)}
-
-    response = None
-    try:
-        response = conduit("user.query", d)
-    except phlsys_conduit.ConduitException as e:
-        if not is_no_such_error(e):
-            raise
-
+    response = response_from_attribute(conduit, 'phids', phids)
     if response is None:
         return None
 
@@ -250,16 +235,7 @@ def query_users_from_usernames(conduit, usernames):
     :returns: a list of QueryResponse
 
     """
-    assert isinstance(usernames, list)
-    d = {"usernames": usernames, "limit": len(usernames)}
-
-    response = None
-    try:
-        response = conduit("user.query", d)
-    except phlsys_conduit.ConduitException as e:
-        if not is_no_such_error(e):
-            raise
-
+    response = response_from_attribute(conduit, 'usernames', usernames)
     if response is None:
         return None
 
@@ -268,6 +244,29 @@ def query_users_from_usernames(conduit, usernames):
             usernames, response)
 
     return [QueryResponse(**u) for u in response]
+
+
+def response_from_attribute(conduit, attribute_name, attribute_list):
+    """Return a the response from conduit for the given query.
+
+    :conduit: must support 'call()' like phlsys_conduit
+    :attribute_name: a string naming the attribute to query on
+    :attribute_list: a list of strings corresponding to the attribute type
+    :returns: the response dict
+
+    """
+    if not isinstance(attribute_list, list):
+        raise ValueError("'attribute_list' must be a list")
+    d = {attribute_name: attribute_list, "limit": len(attribute_list)}
+
+    response = None
+    try:
+        response = conduit("user.query", d)
+    except phlsys_conduit.ConduitException as e:
+        if not is_no_such_error(e):
+            raise
+
+    return response
 
 
 def query_usernames_from_phids(conduit, phids):
