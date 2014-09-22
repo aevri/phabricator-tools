@@ -154,7 +154,7 @@ def process(args):
         fields[MessageFields.cc_phids] = args.ccs
 
     # conduit expects PHIDs not plain usernames
-    user_phids = phlcon_user.UserPhidCache(conduit)
+    user_phids = phlcon_user.UsernamePhidCache(conduit)
     for users in fields.itervalues():
         user_phids.add_username_hint_list(users)
     for key in fields.iterkeys():

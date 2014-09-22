@@ -5,7 +5,7 @@
 # phlcon_user
 #
 # Public Classes:
-#   UserPhidCache
+#   UsernamePhidCache
 #    .add_username_hint
 #    .add_username_hint_list
 #    .get_phid
@@ -40,36 +40,36 @@ QueryResponse = phlsys_namedtuple.make_named_tuple(
     ignored=['currentStatus', 'currentStatusUntil'])
 
 
-class UserPhidCache(object):
+class UsernamePhidCache(object):
 
     """Efficiently retrieve the PHID for specified usernames."""
 
     def __init__(self, conduit):
         """Construct a cache attached to the specified 'conduit'."""
-        super(UserPhidCache, self).__init__()
-        self._user_to_phid = {}
-        self._hinted_users = set()
+        super(UsernamePhidCache, self).__init__()
+        self._username_to_phid = {}
+        self._hinted_usernames = set()
         self._conduit = conduit
 
-    def add_username_hint(self, user):
-        """Register 'user' as a user we'll later query."""
-        if user not in self._user_to_phid:
-            self._hinted_users.add(user)
+    def add_username_hint(self, username):
+        """Register 'username' as a username we'll later query."""
+        if username not in self._username_to_phid:
+            self._hinted_usernames.add(username)
 
-    def add_username_hint_list(self, user_list):
-        """Register all 'user_list' as users we'll later query."""
-        for user in user_list:
-            self.add_username_hint(user)
+    def add_username_hint_list(self, username_list):
+        """Register all 'username_list' as users we'll later query."""
+        for username in username_list:
+            self.add_username_hint(username)
 
-    def get_phid(self, user):
-        """Return the PHID for the specified 'user'."""
-        self.add_username_hint(user)
-        if user not in self._user_to_phid:
+    def get_phid(self, username):
+        """Return the PHID for the specified 'username'."""
+        self.add_username_hint(username)
+        if username not in self._username_to_phid:
             results = make_username_phid_dict(
-                self._conduit, list(self._hinted_users))
-            self._user_to_phid.update(results)
-            self._hinted_users = set()
-        return self._user_to_phid[user]
+                self._conduit, list(self._hinted_usernames))
+            self._username_to_phid.update(results)
+            self._hinted_usernames = set()
+        return self._username_to_phid[username]
 
 
 def is_no_such_error(e):

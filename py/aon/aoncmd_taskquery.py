@@ -209,7 +209,7 @@ def process(args):
         args.uri, args.user, args.cert, args.act_as_user)
 
     # conduit expects PHIDs not plain usernames
-    user_phids = phlcon_user.UserPhidCache(conduit)
+    user_phids = phlcon_user.UsernamePhidCache(conduit)
     user_phids.add_username_hint_list(
         _combine_lists_if_not_none(args.owners, args.ccs))
     authors = [user_phids.get_phid(user) for user in args.authors]

@@ -146,7 +146,7 @@ def process(args):
         priority = phlcon_maniphest.PRIORITIES[args.priority]
 
     # conduit expects PHIDs not plain usernames
-    user_phids = phlcon_user.UserPhidCache(conduit)
+    user_phids = phlcon_user.UsernamePhidCache(conduit)
     if args.owner:
         user_phids.add_username_hint(args.owner)
     if args.ccs:
