@@ -287,7 +287,7 @@ def _process_user_fields(me, conduit, args):
     # conduit expects PHIDs not plain usernames
     user_phids = phlcon_user.UserPhidCache(conduit)
     for users in d.itervalues():
-        user_phids.add_hint_list(users)
+        user_phids.add_username_hint_list(users)
 
     for key in d.iterkeys():
         d[key] = [user_phids.get_phid(u) for u in d[key]]
