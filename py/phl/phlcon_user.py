@@ -6,8 +6,8 @@
 #
 # Public Classes:
 #   UserPhidCache
-#    .add_hint
-#    .add_hint_list
+#    .add_username_hint
+#    .add_username_hint_list
 #    .get_phid
 #
 # Public Functions:
@@ -51,19 +51,19 @@ class UserPhidCache(object):
         self._hinted_users = set()
         self._conduit = conduit
 
-    def add_hint(self, user):
+    def add_username_hint(self, user):
         """Register 'user' as a user we'll later query."""
         if user not in self._user_to_phid:
             self._hinted_users.add(user)
 
-    def add_hint_list(self, user_list):
+    def add_username_hint_list(self, user_list):
         """Register all 'user_list' as users we'll later query."""
         for user in user_list:
-            self.add_hint(user)
+            self.add_username_hint(user)
 
     def get_phid(self, user):
         """Return the PHID for the specified 'user'."""
-        self.add_hint(user)
+        self.add_username_hint(user)
         if user not in self._user_to_phid:
             results = make_username_phid_dict(
                 self._conduit, list(self._hinted_users))

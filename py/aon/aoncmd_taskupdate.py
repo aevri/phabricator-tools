@@ -148,9 +148,9 @@ def process(args):
     # conduit expects PHIDs not plain usernames
     user_phids = phlcon_user.UserPhidCache(conduit)
     if args.owner:
-        user_phids.add_hint(args.owner)
+        user_phids.add_username_hint(args.owner)
     if args.ccs:
-        user_phids.add_hint_list(args.ccs)
+        user_phids.add_username_hint_list(args.ccs)
     owner = user_phids.get_phid(args.owner) if args.owner else None
     ccs = [user_phids.get_phid(u) for u in args.ccs] if args.ccs else None
 
