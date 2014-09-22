@@ -5,6 +5,9 @@
 # phlcon_user
 #
 # Public Classes:
+#   Error
+#   OneOrMoreUnknownUsernames
+#   UnknownUsername
 #   UsernamePhidCache
 #    .add_username_hint
 #    .add_username_hint_list
@@ -40,6 +43,25 @@ QueryResponse = phlsys_namedtuple.make_named_tuple(
     ignored=['currentStatus', 'currentStatusUntil'])
 
 
+class Error(Exception):
+    pass
+
+
+class OneOrMoreUnknownUsernames(Error):
+
+    def __init__(self, usernames, known_users):
+        super(OneOrMoreUnknownUsernames, self).__init__(
+            "usernames: {}\nknown users: {}".format(
+                usernames,
+                known_users))
+
+
+class UnknownUsername(Error):
+
+    def __init__(self, username):
+        super(UnknownUsername, self).__init__(username)
+
+
 class UsernamePhidCache(object):
 
     """Efficiently retrieve the PHID for specified usernames."""
@@ -65,10 +87,27 @@ class UsernamePhidCache(object):
         """Return the PHID for the specified 'username'."""
         self.add_username_hint(username)
         if username not in self._username_to_phid:
-            results = make_username_phid_dict(
-                self._conduit, list(self._hinted_usernames))
+
+            try:
+                results = make_username_phid_dict(
+                    self._conduit, list(self._hinted_usernames))
+            except OneOrMoreUnknownUsernames:
+                results = None
+
+            # if one of the usernames is invalid then the whole query may fail,
+            # in this case we'll just retry this single username and clear the
+            # hint list so that we may continue, albeit with degraded
+            # performance
+            if results is None:
+                self._hinted_usernames = set()
+                results = make_username_phid_dict(
+                    self._conduit, [username])
+                if results is None:
+                    raise UnknownUsername(username)
+
             self._username_to_phid.update(results)
             self._hinted_usernames = set()
+
         return self._username_to_phid[username]
 
 
@@ -164,8 +203,6 @@ def query_users_from_phids(conduit, phids):
 def query_users_from_usernames(conduit, usernames):
     """Return a list of QueryResponse based on the provided usernames.
 
-    Return None if any of 'usernames' is invalid.
-
     :conduit: must support 'call()' like phlsys_conduit
     :usernames: a list of strings corresponding to usernames
     :returns: a list of QueryResponse
@@ -185,7 +222,8 @@ def query_users_from_usernames(conduit, usernames):
         return None
 
     if len(response) != len(usernames):
-        raise Exception("unexpected number of entries")
+        raise OneOrMoreUnknownUsernames(
+            usernames, response)
 
     return [QueryResponse(**u) for u in response]
 
