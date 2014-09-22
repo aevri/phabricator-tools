@@ -16,10 +16,11 @@ import phlcon_user
 # cover those concerns.
 #
 # Concerns:
-# TODO
+# [ B] UsernamePhidCache succeeds retrieving good username when bad is hinted
 # -----------------------------------------------------------------------------
 # Tests:
-# TODO
+# [ A] test_A_Breathing
+# [ B] test_B_BadUsernameGoodUsername
 # =============================================================================
 
 
@@ -30,6 +31,7 @@ class Test(unittest.TestCase):
         self.conduit = None
         self.test_user = phldef_conduit.ALICE.user
         self.test_email = phldef_conduit.ALICE.email
+        self.test_phid = phldef_conduit.ALICE.phid
 
     def setUp(self):
         test_data = phldef_conduit
@@ -81,6 +83,11 @@ class Test(unittest.TestCase):
         self.assertEqual(len(phidDict), 1)
         self.assertEqual(phidDict[phid], username)
 
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+        self.assertEqual(
+            usernamePhidCache.get_phid(username),
+            phid)
+
     def testBadUsername(self):
         bad_username = "#@)4308f:"
         users = phlcon_user.query_users_from_usernames(
@@ -91,11 +98,32 @@ class Test(unittest.TestCase):
             self.conduit, [bad_username])
         self.assertIsNone(userDict)
 
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+        self.assertRaises(
+            phlcon_user.UnknownUsername,
+            usernamePhidCache.get_phid,
+            bad_username)
+
     def testBadPhid(self):
         bad_phid = "asd9f87"
         phidDict = phlcon_user.make_phid_username_dict(
             self.conduit, [bad_phid])
         self.assertIsNone(phidDict)
+
+    def test_B_BadUsernameGoodUsername(self):
+        # [ B] UsernamePhidCache succeeds retrieving good username when bad is
+        #      hinted
+        bad_username = "#@)4308f:"
+        good_username = self.test_user
+        good_phid = self.test_phid
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+
+        usernamePhidCache.add_username_hint(bad_username)
+
+        self.assertEqual(
+            usernamePhidCache.get_phid(good_username),
+            good_phid)
+
 
 # -----------------------------------------------------------------------------
 # Copyright (C) 2013-2014 Bloomberg Finance L.P.
