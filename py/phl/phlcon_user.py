@@ -13,8 +13,8 @@
 #   UsernamePhidCache
 #    .add_username_hint
 #    .add_username_hint_list
-#    .get_phid
-#    .get_username
+#    .get_phid_from_username
+#    .get_username_from_phid
 #
 # Public Functions:
 #   is_no_such_error
@@ -103,7 +103,7 @@ class UsernamePhidCache(object):
         for username in username_list:
             self.add_username_hint(username)
 
-    def get_phid(self, username):
+    def get_phid_from_username(self, username):
         """Return the PHID for the specified 'username'."""
         self.add_username_hint(username)
         if username not in self._username_to_phid:
@@ -132,7 +132,7 @@ class UsernamePhidCache(object):
 
         return self._username_to_phid[username]
 
-    def get_username(self, phid):
+    def get_username_from_phid(self, phid):
         """Return the username for the specified 'phid'."""
         if phid not in self._phid_to_username:
 

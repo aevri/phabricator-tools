@@ -290,7 +290,7 @@ def _process_user_fields(me, conduit, args):
         user_phids.add_username_hint_list(users)
 
     for key in d.iterkeys():
-        d[key] = [user_phids.get_phid(u) for u in d[key]]
+        d[key] = [user_phids.get_phid_from_username(u) for u in d[key]]
 
     return d
 
