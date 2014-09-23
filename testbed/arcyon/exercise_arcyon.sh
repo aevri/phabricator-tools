@@ -49,6 +49,7 @@ $arcyon comment $id2 --attach-inlines
 
 taskid=$($arcyon task-create 'exercise task-create' -d 'description' -p wish -o alice --ccs phab bob --format-id)
 $arcyon task-query
+$arcyon task-query --authors alice --owners alice --ccs alice
 taskid2=$($arcyon task-query --max-results 1 --format-ids)
 
 if [ "$taskid" != "$taskid2" ]; then
