@@ -85,19 +85,19 @@ class Test(unittest.TestCase):
 
         usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
         self.assertEqual(
-            usernamePhidCache.get_phid(username),
+            usernamePhidCache.get_phid_from_username(username),
             phid)
         self.assertEqual(
-            usernamePhidCache.get_username(phid),
+            usernamePhidCache.get_username_from_phid(phid),
             username)
 
         # check that cached-phid and uncached-username works too
         usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
         self.assertEqual(
-            usernamePhidCache.get_username(phid),
+            usernamePhidCache.get_username_from_phid(phid),
             username)
         self.assertEqual(
-            usernamePhidCache.get_phid(username),
+            usernamePhidCache.get_phid_from_username(username),
             phid)
 
     def testBadUsername(self):
@@ -113,7 +113,7 @@ class Test(unittest.TestCase):
         usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
         self.assertRaises(
             phlcon_user.UnknownUsername,
-            usernamePhidCache.get_phid,
+            usernamePhidCache.get_phid_from_username,
             bad_username)
 
     def testBadPhid(self):
@@ -125,7 +125,7 @@ class Test(unittest.TestCase):
         usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
         self.assertRaises(
             phlcon_user.UnknownPhid,
-            usernamePhidCache.get_username,
+            usernamePhidCache.get_username_from_phid,
             bad_phid)
 
     def test_B_BadUsernameGoodUsername(self):
@@ -139,7 +139,7 @@ class Test(unittest.TestCase):
         usernamePhidCache.add_username_hint(bad_username)
 
         self.assertEqual(
-            usernamePhidCache.get_phid(good_username),
+            usernamePhidCache.get_phid_from_username(good_username),
             good_phid)
 
 
