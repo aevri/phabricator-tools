@@ -9,6 +9,7 @@
 #   ensure_keys
 #   ensure_keys_default
 #   set_if_true
+#   invert
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
@@ -106,6 +107,23 @@ def set_if_true(dic, key, value):
     """
     if value:
         dic[key] = value
+
+
+def invert(dic):
+    """Return a new dict based on 'dic', where the keys and values are swapped.
+
+    Behaviour is undefined if there are duplicate values in 'dic'.
+
+    Usage examples:
+        >>> d = {'a': 1, 'b': 2}
+        >>> invert(d) == {1: 'a', 2: 'b'}
+        True
+
+    :dic: the reference dictionary
+    :returns: an inverted version of 'dic'
+
+    """
+    return dict((v, k) for k, v in dic.iteritems())
 
 
 # -----------------------------------------------------------------------------
