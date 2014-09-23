@@ -37,6 +37,7 @@
 from __future__ import absolute_import
 
 import phlsys_conduit
+import phlsys_dictutil
 import phlsys_namedtuple
 
 
@@ -126,7 +127,7 @@ class UsernamePhidCache(object):
                     raise UnknownUsername(username)
 
             self._username_to_phid.update(results)
-            phid_to_username = dict((v, k) for k, v in results.iteritems())
+            phid_to_username = phlsys_dictutil.invert(results)
             self._phid_to_username.update(phid_to_username)
             self._hinted_usernames = set()
 
@@ -143,7 +144,7 @@ class UsernamePhidCache(object):
                 raise UnknownPhid(phid)
 
             self._phid_to_username.update(results)
-            username_to_phid = dict((v, k) for k, v in results.iteritems())
+            username_to_phid = phlsys_dictutil.invert(results)
             self._username_to_phid.update(username_to_phid)
             self._hinted_usernames -= set(username_to_phid.iterkeys())
 
