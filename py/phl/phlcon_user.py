@@ -82,6 +82,12 @@ class UnknownPhid(Error):
         super(UnknownPhid, self).__init__(phid)
 
 
+class UnknownEmail(Error):
+
+    def __init__(self, email):
+        super(UnknownEmail, self).__init__(email)
+
+
 class UsernamePhidCache(object):
 
     """Efficiently retrieve the PHID for specified usernames."""
@@ -91,6 +97,7 @@ class UsernamePhidCache(object):
         super(UsernamePhidCache, self).__init__()
         self._username_to_phid = {}
         self._phid_to_username = {}
+        self._email_to_username_phid = {}
         self._hinted_usernames = set()
         self._conduit = conduit
 
@@ -149,6 +156,21 @@ class UsernamePhidCache(object):
             self._hinted_usernames -= set(username_to_phid.iterkeys())
 
         return self._phid_to_username[phid]
+
+    def get_username_phid(self, email):
+        """Return the username and phid for the specified 'email'."""
+        if email not in self._email_to_username_phid:
+
+            user = query_user_from_email(self._conduit, email)
+            if user is None:
+                raise UnknownEmail(email)
+
+            self._email_to_username_phid[email] = (user.userName, user.phid)
+            self._phid_to_username[user.phid] = user.userName
+            self._username_to_phid[user.userName] = user.phid
+            self._hinted_usernames.discard(user.userName)
+
+        return self._email_to_username_phid[email]
 
 
 def is_no_such_error(e):
