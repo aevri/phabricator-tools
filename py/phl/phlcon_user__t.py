@@ -91,6 +91,15 @@ class Test(unittest.TestCase):
             usernamePhidCache.get_username(phid),
             username)
 
+        # check that cached-phid and uncached-username works too
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+        self.assertEqual(
+            usernamePhidCache.get_username(phid),
+            username)
+        self.assertEqual(
+            usernamePhidCache.get_phid(username),
+            phid)
+
     def testBadUsername(self):
         bad_username = "#@)4308f:"
         users = phlcon_user.query_users_from_usernames(

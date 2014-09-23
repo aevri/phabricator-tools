@@ -145,7 +145,7 @@ class UsernamePhidCache(object):
             self._phid_to_username.update(results)
             username_to_phid = dict((v, k) for k, v in results.iteritems())
             self._username_to_phid.update(username_to_phid)
-            self._hinted_usernames = set()
+            self._hinted_usernames -= set(username_to_phid.iterkeys())
 
         return self._phid_to_username[phid]
 
