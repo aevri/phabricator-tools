@@ -182,7 +182,7 @@ class Conduit(object):
 
     def _get_author_user(self, revisionid):
         author_phid = self._reviewstate_cache.get_state(revisionid).author_phid
-        return self._user_cache.get_username(author_phid)
+        return self._user_cache.get_username_from_phid(author_phid)
 
     def is_review_accepted(self, revisionid):
         """Return True if the supplied 'revisionid' is in 'accepted' status.
@@ -332,7 +332,7 @@ class Conduit(object):
         :returns: None
 
         """
-        user_phid = self._user_cache.get_phid(username)
+        user_phid = self._user_cache.get_phid_from_username(username)
         with phlsys_conduit.act_as_user_context(self._conduit, username):
             phlcon_differential.create_comment(
                 self._conduit,

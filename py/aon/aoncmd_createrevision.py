@@ -157,8 +157,9 @@ def process(args):
     user_phids = phlcon_user.UsernamePhidCache(conduit)
     for users in fields.itervalues():
         user_phids.add_username_hint_list(users)
+    get_phid = user_phids.get_phid_from_username
     for key in fields.iterkeys():
-        fields[key] = [user_phids.get_phid(u) for u in fields[key]]
+        fields[key] = [get_phid(u) for u in fields[key]]
 
     fields[MessageFields.title] = args.title
     fields[MessageFields.test_plan] = args.test_plan

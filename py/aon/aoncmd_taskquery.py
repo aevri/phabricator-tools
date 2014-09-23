@@ -212,9 +212,11 @@ def process(args):
     user_phids = phlcon_user.UsernamePhidCache(conduit)
     user_phids.add_username_hint_list(
         _combine_lists_if_not_none(args.owners, args.ccs))
-    authors = [user_phids.get_phid(user) for user in args.authors]
-    owners = [user_phids.get_phid(user) for user in args.owners]
-    ccs = [user_phids.get_phid(user) for user in args.ccs]
+
+    get_phid = user_phids.get_phid_from_username
+    authors = [get_phid(user) for user in args.authors]
+    owners = [get_phid(user) for user in args.owners]
+    ccs = [get_phid(user) for user in args.ccs]
 
     # conduit expects PHIDs not plain project names
     projects = None

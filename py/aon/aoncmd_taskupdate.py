@@ -151,8 +151,10 @@ def process(args):
         user_phids.add_username_hint(args.owner)
     if args.ccs:
         user_phids.add_username_hint_list(args.ccs)
-    owner = user_phids.get_phid(args.owner) if args.owner else None
-    ccs = [user_phids.get_phid(u) for u in args.ccs] if args.ccs else None
+
+    get_phid = user_phids.get_phid_from_username
+    owner = get_phid(args.owner) if args.owner else None
+    ccs = [get_phid(u) for u in args.ccs] if args.ccs else None
 
     # conduit expects PHIDs not plain project names
     projects = None
