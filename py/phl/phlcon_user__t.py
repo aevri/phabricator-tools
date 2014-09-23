@@ -17,10 +17,16 @@ import phlcon_user
 #
 # Concerns:
 # [ B] UsernamePhidCache succeeds retrieving good username when bad is hinted
+# [ C] UsernamePhidCache succeeds retrieving username and phid from known email
+# [ D] UsernamePhidCache raises when retrieving from unknown email
+# [ C] UsernamePhidCache retrieves correctly after ok results from email
+# [ D] UsernamePhidCache retrieves correctly after bad results from email
 # -----------------------------------------------------------------------------
 # Tests:
 # [ A] test_A_Breathing
 # [ B] test_B_BadUsernameGoodUsername
+# [ C] test_C_KnownEmail
+# [ D] test_D_UnknownEmail
 # =============================================================================
 
 
@@ -141,6 +147,42 @@ class Test(unittest.TestCase):
         self.assertEqual(
             usernamePhidCache.get_phid(good_username),
             good_phid)
+
+    def test_C_KnownEmail(self):
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+
+        # [ C] UsernamePhidCache succeeds retrieving username and phid from
+        # known email
+        self.assertEqual(
+            usernamePhidCache.get_username_phid(self.test_email),
+            (self.test_user, self.test_phid))
+
+        # [ C] UsernamePhidCache retrieves correctly after ok results from
+        # email
+        self.assertEqual(
+            usernamePhidCache.get_username(self.test_phid),
+            self.test_user)
+        self.assertEqual(
+            usernamePhidCache.get_phid(self.test_user),
+            self.test_phid)
+
+    def test_D_UnknownEmail(self):
+        usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
+
+        # [ D] UsernamePhidCache raises when retrieving from unknown email
+        self.assertRaises(
+            phlcon_user.UnknownEmail,
+            usernamePhidCache.get_username_phid,
+            "noone@server.invalid")
+
+        # [ D] UsernamePhidCache retrieves correctly after bad results from
+        # email
+        self.assertEqual(
+            usernamePhidCache.get_username(self.test_phid),
+            self.test_user)
+        self.assertEqual(
+            usernamePhidCache.get_phid(self.test_user),
+            self.test_phid)
 
 
 # -----------------------------------------------------------------------------
