@@ -110,24 +110,24 @@ class UsernamePhidCache(object):
         if username not in self._username_to_phid:
 
             try:
-                results = make_username_phid_dict(
+                username_to_phid = make_username_phid_dict(
                     self._conduit, list(self._hinted_usernames))
             except OneOrMoreUnknownUsernames:
-                results = None
+                username_to_phid = None
 
             # if one of the usernames is invalid then the whole query may fail,
             # in this case we'll just retry this single username and clear the
             # hint list so that we may continue, albeit with degraded
             # performance
-            if results is None:
+            if username_to_phid is None:
                 self._hinted_usernames = set()
-                results = make_username_phid_dict(
+                username_to_phid = make_username_phid_dict(
                     self._conduit, [username])
-                if results is None:
+                if username_to_phid is None:
                     raise UnknownUsername(username)
 
-            self._username_to_phid.update(results)
-            phid_to_username = phlsys_dictutil.invert(results)
+            self._username_to_phid.update(username_to_phid)
+            phid_to_username = phlsys_dictutil.invert(username_to_phid)
             self._phid_to_username.update(phid_to_username)
             self._hinted_usernames = set()
 
@@ -137,14 +137,14 @@ class UsernamePhidCache(object):
         """Return the username for the specified 'phid'."""
         if phid not in self._phid_to_username:
 
-            results = make_phid_username_dict(
+            phid_to_username = make_phid_username_dict(
                 self._conduit, [phid])
 
-            if results is None:
+            if phid_to_username is None:
                 raise UnknownPhid(phid)
 
-            self._phid_to_username.update(results)
-            username_to_phid = phlsys_dictutil.invert(results)
+            self._phid_to_username.update(phid_to_username)
+            username_to_phid = phlsys_dictutil.invert(phid_to_username)
             self._username_to_phid.update(username_to_phid)
             self._hinted_usernames -= set(username_to_phid.iterkeys())
 
