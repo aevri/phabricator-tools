@@ -180,7 +180,7 @@ class Conduit(object):
         message = phlsys_textconvert.to_unicode(message)
         return phlcon_differential.parse_commit_message(self._conduit, message)
 
-    def _get_author_user(self, revisionid):
+    def _get_author_username(self, revisionid):
         author_phid = self._reviewstate_cache.get_state(revisionid).author_phid
         return self._user_cache.get_username_from_phid(author_phid)
 
@@ -241,7 +241,7 @@ class Conduit(object):
             raise abdt_exception.AbdUserException(
                 "can't update a closed revision")
 
-        author_user = self._get_author_user(revisionid)
+        author_user = self._get_author_username(revisionid)
         with phlsys_conduit.act_as_user_context(self._conduit, author_user):
             diffid = phlcon_differential.create_raw_diff(
                 self._conduit, raw_diff).id
@@ -262,7 +262,7 @@ class Conduit(object):
         :returns: None
 
         """
-        author_user = self._get_author_user(revisionid)
+        author_user = self._get_author_username(revisionid)
         with phlsys_conduit.act_as_user_context(self._conduit, author_user):
             phlcon_differential.create_comment(
                 self._conduit,
@@ -279,7 +279,7 @@ class Conduit(object):
         :returns: None
 
         """
-        author_user = self._get_author_user(revisionid)
+        author_user = self._get_author_username(revisionid)
         with phlsys_conduit.act_as_user_context(self._conduit, author_user):
             phlcon_differential.close(self._conduit, revisionid)
         self._log(
@@ -293,7 +293,7 @@ class Conduit(object):
         :returns: None
 
         """
-        author_user = self._get_author_user(revisionid)
+        author_user = self._get_author_username(revisionid)
         with phlsys_conduit.act_as_user_context(self._conduit, author_user):
             phlcon_differential.create_comment(
                 self._conduit,
