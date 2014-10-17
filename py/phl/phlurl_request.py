@@ -27,6 +27,7 @@ import collections
 import httplib
 import traceback
 import urlparse
+import base64
 
 _HTTPLIB_TIMEOUT = 600
 
@@ -52,7 +53,7 @@ def join_url(base_url, leaf):
 
 SplitUrlResult = collections.namedtuple(
     'phlurl_request__SplitUrlResult',
-    ['url', 'scheme', 'hostname', 'port', 'path'])
+    ['url', 'scheme', 'hostname', 'port', 'path', 'username', 'password'])
 
 GroupUrlResult = collections.namedtuple(
     'phlurl_request__GroupUrlResult',
@@ -106,7 +107,7 @@ def split_url(url):
         path = url.path
 
     return SplitUrlResult(
-        original_url, url.scheme, url.hostname, url.port, path)
+        original_url, url.scheme, url.hostname, url.port, path, url.username, url.password)
     # pylint: enable=E1103
 
 
@@ -143,26 +144,31 @@ def group_urls(url_list):
         else:
             raise Error(str(url) + ' is neither http or https')
         connection = (request.hostname, request.port)
-        result = (request.path, request.url)
-        d[connection].append(result)
+        d[connection].append(request)
     return GroupUrlResult(http=http_requests, https=https_requests)
 
 
-def _request(connection, verb, path, url):
+def _request(connection, verb, request):
     try:
-        connection.request(verb, path)
+        headers={}
+        if request.username:
+            auth = base64.b64encode('%s:%s' % (request.username, request.password))
+            headers['Authorization']='Basic %s' % auth
+        connection.request(method=verb,
+                           url=request.path,
+                           headers=headers)
         content = connection.getresponse().read()
         return content
     except Exception as e:
         tb = traceback.format_exc()
-        message = """Was trying to {verb} the url {url}.
+        message = """Was trying to {verb} the url {request.url}.
 
 This exception was triggered from this original exception:
     {exception}
 
 Here is the original traceback:
 {traceback}
-        """.format(verb=verb, url=url, exception=repr(e), traceback=tb).strip()
+        """.format(verb=verb, request=request, exception=repr(e), traceback=tb).strip()
         raise Error(message)
 
 
@@ -184,14 +190,14 @@ def get_many(url_list):
     for host_port, request_list in urls.http.iteritems():
         http = httplib.HTTPConnection(
             host_port[0], host_port[1], timeout=_HTTPLIB_TIMEOUT)
-        for path, url in request_list:
-            results[url] = _request(http, 'GET', path, url)
+        for request in request_list:
+            results[request.url] = _request(http, 'GET', request)
 
     for host_port, request_list in urls.https.iteritems():
         https = httplib.HTTPSConnection(
             host_port[0], host_port[1], timeout=_HTTPLIB_TIMEOUT)
-        for path, url in request_list:
-            results[url] = _request(https, 'GET', path, url)
+        for request in request_list:
+            results[request.url] = _request(https, 'GET', request)
 
     return results
 
