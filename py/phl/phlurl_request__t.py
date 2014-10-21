@@ -58,6 +58,18 @@ class BasicAuthHttpReqHandler(HttpReqHandler):
             self.end_headers()
             self.wfile.write(auth)
 
+def create_redirect_handler(host, port):
+
+    class RedirectHttpReqHandler(HttpReqHandler):
+
+        def do_GET(self):
+            self.send_response(301)
+            self.send_header('Location', 'http://%s:%s%s' % (host, port, self.path))
+            self.end_headers()
+            self.wfile.write('Moved permanently')
+
+    return RedirectHttpReqHandler
+
 
 def httpd_serve_forever(parent_pipe, req_handler):
     httpd = SocketServer.TCPServer(("localhost", 0), req_handler, False)
@@ -162,6 +174,22 @@ class HttpTest_Auth(unittest.TestCase):
                          {'http://%s:%s/index' % (self.httpd_host, self.httpd_port): (401, 'Authentication required'),
                           'http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port): (200, 'Basic Zm9vOmJhcg=='),
                           'http://baz:buz@%s:%s/index' % (self.httpd_host, self.httpd_port): (200, 'Basic YmF6OmJ1eg==')})
+
+
+class HttpTest_Redirect(unittest.TestCase):
+
+    def setUp(self):
+        self.dst_httpd_process, self.dst_httpd_host, self.dst_httpd_port = start_httpd(BasicAuthHttpReqHandler)
+        self.src_httpd_process, self.src_httpd_host, self.src_httpd_port = start_httpd(create_redirect_handler(self.dst_httpd_host,
+                                                                                                               self.dst_httpd_port))
+
+    def tearDown(self):
+        self.src_httpd_process.terminate()
+        self.dst_httpd_process.terminate()
+
+    def test_get(self):
+        self.assertEqual(phlurl_request.get('http://%s:%s/index' % (self.src_httpd_host, self.src_httpd_port)), (200, 'OK'))
+
 
 
 # -----------------------------------------------------------------------------
