@@ -32,7 +32,7 @@ class _MockRequesterObject(object):
     def get(self, url):
         # make sure the result is different each time
         self._request_count += 1
-        return str(self._request_count) + url
+        return (200, str(self._request_count) + url)
 
     def get_many(self, url_list):
         result = {}

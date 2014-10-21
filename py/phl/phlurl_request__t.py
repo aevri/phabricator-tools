@@ -130,15 +130,15 @@ class HttpTest(unittest.TestCase):
         self.httpd_process.terminate()
 
     def test_get(self):   
-        self.assertEqual(phlurl_request.get('http://%s:%s/index' % (self.httpd_host, self.httpd_port)), 'OK')
+        self.assertEqual(phlurl_request.get('http://%s:%s/index' % (self.httpd_host, self.httpd_port)), (200, 'OK'))
 
     def test_get_many(self):
         self.assertEqual(phlurl_request.get_many(['http://%s:%s/a' % (self.httpd_host, self.httpd_port),
                                                   'http://%s:%s/b' % (self.httpd_host, self.httpd_port),
                                                   'http://%s:%s/c' % (self.httpd_host, self.httpd_port)]),
-                         {'http://%s:%s/a' % (self.httpd_host, self.httpd_port): 'OK',
-                          'http://%s:%s/b' % (self.httpd_host, self.httpd_port): 'OK',
-                          'http://%s:%s/c' % (self.httpd_host, self.httpd_port): 'OK'})
+                         {'http://%s:%s/a' % (self.httpd_host, self.httpd_port): (200, 'OK'),
+                          'http://%s:%s/b' % (self.httpd_host, self.httpd_port): (200, 'OK'),
+                          'http://%s:%s/c' % (self.httpd_host, self.httpd_port): (200, 'OK')})
 
 
 class HttpTest_Auth(unittest.TestCase):
@@ -150,16 +150,18 @@ class HttpTest_Auth(unittest.TestCase):
         self.httpd_process.terminate()
 
     def test_get(self):   
-        self.assertEqual(phlurl_request.get('http://%s:%s/index' % (self.httpd_host, self.httpd_port)), 'Authentication required')
-        self.assertEqual(phlurl_request.get('http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port)), 'Basic Zm9vOmJhcg==')
+        self.assertEqual(phlurl_request.get('http://%s:%s/index' % (self.httpd_host, self.httpd_port)),
+                         (401, 'Authentication required'))
+        self.assertEqual(phlurl_request.get('http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port)),
+                         (200, 'Basic Zm9vOmJhcg=='))
 
     def test_get_many(self):
         self.assertEqual(phlurl_request.get_many(['http://%s:%s/index' % (self.httpd_host, self.httpd_port),
                                                   'http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port),
                                                   'http://baz:buz@%s:%s/index' % (self.httpd_host, self.httpd_port)]),
-                         {'http://%s:%s/index' % (self.httpd_host, self.httpd_port): 'Authentication required',
-                          'http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port): 'Basic Zm9vOmJhcg==',
-                          'http://baz:buz@%s:%s/index' % (self.httpd_host, self.httpd_port): 'Basic YmF6OmJ1eg=='})
+                         {'http://%s:%s/index' % (self.httpd_host, self.httpd_port): (401, 'Authentication required'),
+                          'http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port): (200, 'Basic Zm9vOmJhcg=='),
+                          'http://baz:buz@%s:%s/index' % (self.httpd_host, self.httpd_port): (200, 'Basic YmF6OmJ1eg==')})
 
 
 # -----------------------------------------------------------------------------
