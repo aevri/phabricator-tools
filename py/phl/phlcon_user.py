@@ -270,7 +270,7 @@ def query_users_from_usernames(conduit, usernames):
 
 
 def response_from_attribute(conduit, attribute_name, attribute_list):
-    """Return a the response from conduit for the given query.
+    """Return the response from conduit for the given query.
 
     :conduit: must support 'call()' like phlsys_conduit
     :attribute_name: a string naming the attribute to query on
