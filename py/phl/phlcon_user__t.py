@@ -118,7 +118,7 @@ class Test(unittest.TestCase):
 
         usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
         self.assertRaises(
-            phlcon_user.UnknownUsername,
+            phlcon_user.UnknownUsernameError,
             usernamePhidCache.get_phid_from_username,
             bad_username)
 
@@ -130,7 +130,7 @@ class Test(unittest.TestCase):
 
         usernamePhidCache = phlcon_user.UsernamePhidCache(self.conduit)
         self.assertRaises(
-            phlcon_user.UnknownPhid,
+            phlcon_user.UnknownPhidError,
             usernamePhidCache.get_username_from_phid,
             bad_phid)
 
@@ -171,7 +171,7 @@ class Test(unittest.TestCase):
 
         # [ D] UsernamePhidCache raises when retrieving from unknown email
         self.assertRaises(
-            phlcon_user.UnknownEmail,
+            phlcon_user.UnknownEmailError,
             usernamePhidCache.get_username_phid,
             "noone@server.invalid")
 

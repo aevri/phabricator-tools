@@ -6,10 +6,10 @@
 #
 # Public Classes:
 #   Error
-#   OneOrMoreUnknownUsernames
-#   OneOrMoreUnknownPhids
-#   UnknownUsername
-#   UnknownPhid
+#   OneOrMoreUnknownUsernamesError
+#   OneOrMoreUnknownPhidsError
+#   UnknownUsernameError
+#   UnknownPhidError
 #   UsernamePhidCache
 #    .add_username_hint
 #    .add_username_hint_list
@@ -52,40 +52,40 @@ class Error(Exception):
     pass
 
 
-class OneOrMoreUnknownUsernames(Error):
+class OneOrMoreUnknownUsernamesError(Error):
 
     def __init__(self, usernames, known_users):
-        super(OneOrMoreUnknownUsernames, self).__init__(
+        super(OneOrMoreUnknownUsernamesError, self).__init__(
             "usernames: {}\nknown users: {}".format(
                 usernames,
                 known_users))
 
 
-class OneOrMoreUnknownPhids(Error):
+class OneOrMoreUnknownPhidsError(Error):
 
     def __init__(self, phids, known_users):
-        super(OneOrMoreUnknownPhids, self).__init__(
+        super(OneOrMoreUnknownPhidsError, self).__init__(
             "phids: {}\nknown users: {}".format(
                 phids,
                 known_users))
 
 
-class UnknownUsername(Error):
+class UnknownUsernameError(Error):
 
     def __init__(self, username):
-        super(UnknownUsername, self).__init__(username)
+        super(UnknownUsernameError, self).__init__(username)
 
 
-class UnknownPhid(Error):
+class UnknownPhidError(Error):
 
     def __init__(self, phid):
-        super(UnknownPhid, self).__init__(phid)
+        super(UnknownPhidError, self).__init__(phid)
 
 
-class UnknownEmail(Error):
+class UnknownEmailError(Error):
 
     def __init__(self, email):
-        super(UnknownEmail, self).__init__(email)
+        super(UnknownEmailError, self).__init__(email)
 
 
 class UsernamePhidCache(object):
@@ -119,7 +119,7 @@ class UsernamePhidCache(object):
             try:
                 username_to_phid = make_username_phid_dict(
                     self._conduit, list(self._hinted_usernames))
-            except OneOrMoreUnknownUsernames:
+            except OneOrMoreUnknownUsernamesError:
                 username_to_phid = None
 
             # if one of the usernames is invalid then the whole query may fail,
@@ -131,7 +131,7 @@ class UsernamePhidCache(object):
                 username_to_phid = make_username_phid_dict(
                     self._conduit, [username])
                 if username_to_phid is None:
-                    raise UnknownUsername(username)
+                    raise UnknownUsernameError(username)
 
             self._username_to_phid.update(username_to_phid)
             phid_to_username = phlsys_dictutil.invert(username_to_phid)
@@ -148,7 +148,7 @@ class UsernamePhidCache(object):
                 self._conduit, [phid])
 
             if phid_to_username is None:
-                raise UnknownPhid(phid)
+                raise UnknownPhidError(phid)
 
             self._phid_to_username.update(phid_to_username)
             username_to_phid = phlsys_dictutil.invert(phid_to_username)
@@ -163,7 +163,7 @@ class UsernamePhidCache(object):
 
             user = query_user_from_email(self._conduit, email)
             if user is None:
-                raise UnknownEmail(email)
+                raise UnknownEmailError(email)
 
             self._email_to_username_phid[email] = (user.userName, user.phid)
             self._phid_to_username[user.phid] = user.userName
@@ -244,7 +244,7 @@ def query_users_from_phids(conduit, phids):
         return None
 
     if len(response) != len(phids):
-        raise OneOrMoreUnknownPhids(
+        raise OneOrMoreUnknownPhidsError(
             phids, response)
 
     return [QueryResponse(**u) for u in response]
@@ -263,7 +263,7 @@ def query_users_from_usernames(conduit, usernames):
         return None
 
     if len(response) != len(usernames):
-        raise OneOrMoreUnknownUsernames(
+        raise OneOrMoreUnknownUsernamesError(
             usernames, response)
 
     return [QueryResponse(**u) for u in response]
