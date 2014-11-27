@@ -14,17 +14,12 @@
 
 from __future__ import absolute_import
 
-import contextlib
 import logging
-import os
 
 import phlmail_sender
 import phlsys_sendmail
 
-import abdt_arcydreporter
 import abdt_exhandlers
-import abdt_logging
-import abdt_shareddictoutput
 
 import abdi_operation
 import abdi_processrepolist
@@ -114,32 +109,21 @@ def process(args, repo_configs):
         phlsys_sendmail.Sendmail.set_default_params_from_type(
             args.sendmail_type)
 
-    reporter_data = abdt_shareddictoutput.ToFile(args.status_path)
-    reporter = abdt_arcydreporter.ArcydReporter(
-        reporter_data, args.arcyd_email, args.io_log_file)
-
     mail_sender = phlmail_sender.MailSender(
         phlsys_sendmail.Sendmail(), args.arcyd_email)
 
-    if args.external_error_logger:
-        full_path = os.path.abspath(args.external_error_logger)
-        reporter.set_external_system_error_logger(full_path)
-
     on_exception = abdt_exhandlers.make_exception_message_handler(
         args.sys_admin_emails,
-        reporter,
         None,
         "arcyd stopped with exception",
         "")
 
-    arcyd_reporter_context = abdt_logging.arcyd_reporter_context
-    with contextlib.closing(reporter), arcyd_reporter_context(reporter):
-        _processrepolist(
-            args, repo_configs, reporter, on_exception, mail_sender)
+    _processrepolist(
+        args, repo_configs, on_exception, mail_sender)
 
 
 def _processrepolist(
-        args, repo_configs, reporter, on_exception, mail_sender):
+        args, repo_configs, on_exception, mail_sender):
     try:
         abdi_processrepolist.do(
             repo_configs,
@@ -148,7 +132,6 @@ def _processrepolist(
             args.sleep_secs,
             args.no_loop,
             args.external_report_command,
-            reporter,
             mail_sender)
     except abdi_operation.KillFileError:
         _LOGGER.info("kill file handled, stopping")
