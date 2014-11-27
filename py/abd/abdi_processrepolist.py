@@ -37,6 +37,7 @@ def do(
         sleep_secs,
         is_no_loop,
         external_report_command,
+        reporter,
         mail_sender):
 
     # TODO: test write access to repos here
@@ -56,22 +57,27 @@ def do(
 
     _append_operations_for_repos(
         operations,
+        reporter,
         conduits,
         url_watcher_wrapper,
         sys_admin_emails,
         repo_configs,
         mail_sender)
 
-    _append_interrupt_operations(operations, kill_file, sleep_secs)
+    _append_interrupt_operations(
+        operations,
+        kill_file,
+        sleep_secs,
+        reporter)
 
     operations.append(
         abdi_operation.RefreshCaches(
-            conduits, url_watcher_wrapper.watcher))
+            conduits, url_watcher_wrapper.watcher, reporter))
 
     if external_report_command:
         full_path = os.path.abspath(external_report_command)
         operations.append(
-            abdi_operation.CycleReportJson(full_path))
+            abdi_operation.CycleReportJson(full_path, reporter))
 
     _process_operations(is_no_loop, operations)
 
@@ -86,7 +92,11 @@ def _process_operations(is_no_loop, operations):
         phlsys_scheduleunreliables.process_loop_forever(list(operations))
 
 
-def _append_interrupt_operations(operations, kill_file, sleep_secs):
+def _append_interrupt_operations(
+        operations,
+        kill_file,
+        sleep_secs,
+        reporter):
 
     operations.append(
         abdi_operation.CheckSpecialFiles(
@@ -94,11 +104,12 @@ def _append_interrupt_operations(operations, kill_file, sleep_secs):
 
     operations.append(
         abdi_operation.Sleep(
-            sleep_secs))
+            sleep_secs, reporter))
 
 
 def _append_operations_for_repos(
         operations,
+        reporter,
         conduits,
         url_watcher_wrapper,
         sys_admin_emails,
@@ -124,12 +135,13 @@ def _append_operations_for_repos(
             abd_repo,
             repo_name,
             repo_args,
+            reporter,
             conduits,
             url_watcher_wrapper,
             mail_sender)
 
         on_exception_delay = abdt_exhandlers.make_exception_delay_handler(
-            sys_admin_emails, repo_name)
+            sys_admin_emails, reporter, repo_name)
 
         operation = phlsys_scheduleunreliables.DelayedRetryNotifyOperation(
             process_func,
@@ -143,6 +155,7 @@ def _process_single_repo(
         abd_repo,
         repo_name,
         repo_args,
+        reporter,
         conduits,
         url_watcher_wrapper,
         mail_sender):
@@ -150,7 +163,13 @@ def _process_single_repo(
     watcher = url_watcher_wrapper.watcher
 
     abdi_processrepoargs.do(
-        abd_repo, repo_name, repo_args, conduits, watcher, mail_sender)
+        abd_repo,
+        repo_name,
+        repo_args,
+        reporter,
+        conduits,
+        watcher,
+        mail_sender)
 
     # save the urlwatcher cache
     url_watcher_wrapper.save()

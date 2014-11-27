@@ -39,35 +39,45 @@ _LOGGER = logging.getLogger(__name__)
 
 class Sleep(object):
 
-    def __init__(self, secs):
+    def __init__(self, secs, reporter):
         self._secs = secs
+        self._reporter = reporter
 
     def do(self):
         sleep_remaining = self._secs
+        self._reporter.start_sleep(sleep_remaining)
         while sleep_remaining > 0:
+            self._reporter.update_sleep(sleep_remaining)
             time.sleep(1)
             sleep_remaining -= 1
+        self._reporter.finish_sleep()
         return True
 
 
 class RefreshCaches(object):
 
-    def __init__(self, conduits, url_watcher):
+    def __init__(self, conduits, url_watcher, reporter):
         super(RefreshCaches, self).__init__()
         self._conduits = conduits
         self._url_watcher = url_watcher
+        self._reporter = reporter
 
     def do(self):
-        for key in self._conduits:
-            conduit = self._conduits[key]
+        self._reporter.start_cache_refresh()
+
+        with self._reporter.tag_timer_context('refresh conduit cache'):
+            for key in self._conduits:
+                conduit = self._conduits[key]
+                abdt_tryloop.critical_tryloop(
+                    conduit.refresh_cache_on_cycle,
+                    abdt_errident.CONDUIT_REFRESH,
+                    conduit.describe())
+
+        with self._reporter.tag_timer_context('refresh git watcher'):
             abdt_tryloop.critical_tryloop(
-                conduit.refresh_cache_on_cycle,
-                abdt_errident.CONDUIT_REFRESH,
-                conduit.describe())
+                self._url_watcher.refresh, abdt_errident.GIT_SNOOP, '')
 
-        abdt_tryloop.critical_tryloop(
-            self._url_watcher.refresh, abdt_errident.GIT_SNOOP, '')
-
+        self._reporter.finish_cache_refresh()
         return True
 
 
@@ -87,14 +97,41 @@ class CheckSpecialFiles(object):
         return True
 
 
+class _NumericalSampleDiffer(object):
+
+    "Track the sizes of steps between successive samples of a value."
+
+    def __init__(self):
+        self._last_value = None
+
+    def sample(self, value):
+        """Return the difference from last sample to this one.
+
+        Return None if there was no previous sample.
+
+        :value: the numerical value of the current sample
+        :returns: None or numerical difference
+
+        """
+        diff = None
+        if self._last_value is not None:
+            diff = value - self._last_value
+        self._last_value = value
+        return diff
+
+
 class CycleReportJson(object):
 
     "Pipes a json report object to stdin of 'report_command' every cycle."
 
-    def __init__(self, report_command):
+    def __init__(self, report_command, reporter):
         self._report_command = report_command
+        self._reporter = reporter
         self._timer = phlsys_timer.Timer()
         self._timer.start()
+        self._count_user_action = _NumericalSampleDiffer()
+        self._count_repo_start = _NumericalSampleDiffer()
+        self._count_repo_fetch = _NumericalSampleDiffer()
         self._is_first_cycle = True
 
         strToTime = phlsys_strtotime.duration_string_to_time_delta
@@ -104,6 +141,12 @@ class CycleReportJson(object):
 
         report = {
             "cycle_time_secs": self._timer.restart(),
+            "count_user_action": self._count_user_action.sample(
+                self._reporter.count_user_action),
+            "count_repo": self._count_repo_start.sample(
+                self._reporter.count_repo_start),
+            "count_repo_fetch": self._count_repo_fetch.sample(
+                self._reporter.count_repo_fetch),
         }
 
         report_json = json.dumps(report)
