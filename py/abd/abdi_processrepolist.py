@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 
 import functools
+import multiprocessing
 import os
 import sys
 
@@ -31,6 +32,31 @@ import abdi_processrepoargs
 
 
 def do(
+        repo_configs,
+        sys_admin_emails,
+        kill_file,
+        sleep_secs,
+        is_no_loop,
+        external_report_command,
+        mail_sender):
+
+    args = (
+        repo_configs,
+        sys_admin_emails,
+        kill_file,
+        sleep_secs,
+        is_no_loop,
+        external_report_command,
+        mail_sender
+    )
+
+    p = multiprocessing.Process(target=multiprocessing_worker, args=args)
+    #p.daemon = False
+    p.start()
+    p.join()
+
+
+def multiprocessing_worker(
         repo_configs,
         sys_admin_emails,
         kill_file,
