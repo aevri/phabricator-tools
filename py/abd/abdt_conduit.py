@@ -355,7 +355,6 @@ class Conduit(object):
             self._multi_conduit, username)
 
 
-
 # -----------------------------------------------------------------------------
 # Copyright (C) 2013-2014 Bloomberg Finance L.P.
 #
