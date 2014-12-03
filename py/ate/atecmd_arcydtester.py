@@ -97,6 +97,7 @@ class _Fixture(object):
         self._repos = []
         for i in xrange(repo_count):
             repo_path = os.path.join(self._repo_root_dir, 'repo-{}'.format(i))
+            os.makedirs(repo_path)
             self._repos.append(_SharedRepo(repo_path))
 
     def close(self):
