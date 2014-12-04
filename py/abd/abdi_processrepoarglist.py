@@ -124,7 +124,7 @@ def do(
         # - conduits, support limited number of connections at the same time
         # - limit max connections to git hosts
         #
-        manager = _WorkerManager(max_workers=1)
+        manager = _WorkerManager(max_workers=5)
         for r in repos:
             manager.add([r])
         manager.join_all()
