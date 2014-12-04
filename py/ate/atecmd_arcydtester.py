@@ -266,7 +266,7 @@ def _do_tests():
                 worker = fixture.repos[i].alice
                 worker.fetch()
                 print worker.list_reviews()
-                fixture.launch_debug_shell()
+                # fixture.launch_debug_shell()
                 assert len(worker.list_reviews()) == 1
 
 
