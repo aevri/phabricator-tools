@@ -339,6 +339,38 @@ class Conduit(object):
         return self("conduit.ping")
 
 
+class MultiResource(object):
+
+    def __init__(self, max_resources, factory):
+        if max_resources < 1:
+            raise ValueError(
+                'max_resources should be at least 1, got {}'.format(
+                    max_resources))
+        self._unused_resources = []
+        self._used_resources = []
+        self._condition = threading.Condition()
+        self._max_resources = max_resources
+        self._factory = factory
+
+    @contextlib.contextmanager
+    def resource_context():
+        with self._condition:
+            while not self._unused_resources:
+                total = len(self._used_resources)
+                if total < self._max_resources:
+                    self._unused_resources.append(self._factory())
+                else:
+                    self._condition.wait()
+            resource = self._unused_resources.pop()
+            self._used_resources.append(resource)
+        try:
+            yield resource
+        finally:
+            with self._condition:
+                self._unused_resources.append(resource)
+                self._condition.notify()
+
+
 class MultiConduit(object):
 
     """A conduit that supports multi-threading."""
@@ -347,21 +379,26 @@ class MultiConduit(object):
         self._args = args
         self._kwargs = kwargs
         self._thread_act_as_users = {}
-        self._conduit = Conduit(*args, **kwargs)
-        self._lock = threading.Lock()
+
+        def factory():
+            return Conduit(*args, **kwargs)
+
+        self._conduits = MultiResource(2, factory)
+
 
     def call_as_user(self, user, *args, **kwargs):
-        with self._lock:
-            with act_as_user_context(self._conduit, user):
-                return self._conduit(*args, **kwargs)
+        with self._conduits.resource_context() as conduit:
+            with act_as_user_context(conduit, user):
+                return conduit(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
-        with self._lock:
-            return self._conduit(*args, **kwargs)
+        with self._conduits.resource_context() as conduit:
+            return conduit(*args, **kwargs)
 
     @property
     def conduit_uri(self):
-        return self._conduit.conduit_uri
+        with self._conduits.resource_context() as conduit:
+            return conduit.conduit_uri
 
 
 class CallMultiConduitAsUser(object):
