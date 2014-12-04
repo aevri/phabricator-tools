@@ -226,7 +226,7 @@ def _do_tests():
     barc_cmd_path = os.path.join(root_dir, 'proto', 'barc')
 
     # pychecker makes us declare this before 'with'
-    repo_count = 1
+    repo_count = 10
     with phlsys_timer.print_duration_context("Fixture setup"):
         fixture = _Fixture(
             arcyd_cmd_path, barc_cmd_path, repo_count=repo_count)
