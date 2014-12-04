@@ -258,7 +258,7 @@ def _do_tests():
                 worker.push_new_review_branch('review1')
 
         with phlsys_timer.print_duration_context("Processing reviews"):
-            arcyd.run_once()
+            print arcyd.run_once()
             print arcyd.debug_log()
 
         with phlsys_timer.print_duration_context("Listing reviews"):

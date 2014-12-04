@@ -18,6 +18,7 @@ import logging
 import os
 import threading
 import time
+import traceback
 
 import phlsys_conduit
 import phlsys_git
@@ -203,7 +204,16 @@ class _ArcydManagedRepository(object):
                 self._url_watcher_wrapper.watcher,
                 self._mail_sender)
         except Exception:
-            self._on_exception(None)
+            print "exception"
+            print traceback.format_exc()
+            print "printed"
+            try:
+                self._on_exception(None)
+            except Exception:
+                print "failed to handle"
+                print traceback.format_exc()
+            else:
+                print "handled"
             self._is_disabled = True
 
 
