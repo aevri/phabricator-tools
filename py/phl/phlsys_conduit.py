@@ -346,7 +346,7 @@ class MultiResource(object):
             raise ValueError(
                 'max_resources should be at least 1, got {}'.format(
                     max_resources))
-        self._unused_resources = []
+        self._free_resources = []
         self._used_resources = []
         self._condition = threading.Condition()
         self._max_resources = max_resources
@@ -355,19 +355,18 @@ class MultiResource(object):
     @contextlib.contextmanager
     def resource_context():
         with self._condition:
-            while not self._unused_resources:
-                total = len(self._used_resources)
-                if total < self._max_resources:
-                    self._unused_resources.append(self._factory())
+            while not self._free_resources:
+                if len(self._used_resources) < self._max_resources:
+                    self._free_resources.append(self._factory())
                 else:
                     self._condition.wait()
-            resource = self._unused_resources.pop()
+            resource = self._free_resources.pop()
             self._used_resources.append(resource)
         try:
             yield resource
         finally:
             with self._condition:
-                self._unused_resources.append(resource)
+                self._free_resources.append(resource)
                 self._condition.notify()
 
 
@@ -376,15 +375,11 @@ class MultiConduit(object):
     """A conduit that supports multi-threading."""
 
     def __init__(self, *args, **kwargs):
-        self._args = args
-        self._kwargs = kwargs
-        self._thread_act_as_users = {}
 
         def factory():
             return Conduit(*args, **kwargs)
 
-        self._conduits = MultiResource(2, factory)
-
+        self._conduits = MultiResource(1, factory)
 
     def call_as_user(self, user, *args, **kwargs):
         with self._conduits.resource_context() as conduit:
