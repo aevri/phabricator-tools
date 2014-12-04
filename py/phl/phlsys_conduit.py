@@ -379,7 +379,13 @@ class MultiConduit(object):
         def factory():
             return Conduit(*args, **kwargs)
 
-        self._conduits = MultiResource(1, factory)
+        # Phabricator supports 5 simultaneous connections per user
+        # by default:
+        #
+        #   conf/default.conf.php:  'auth.sessions.conduit'       => 5,
+        #
+        max_sessions_per_user = 5
+        self._conduits = MultiResource(max_sessions_per_user, factory)
 
     def call_as_user(self, user, *args, **kwargs):
         with self._conduits.resource_context() as conduit:
