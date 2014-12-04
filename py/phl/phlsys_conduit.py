@@ -353,7 +353,7 @@ class MultiResource(object):
         self._factory = factory
 
     @contextlib.contextmanager
-    def resource_context():
+    def resource_context(self):
         with self._condition:
             while not self._free_resources:
                 if len(self._used_resources) < self._max_resources:
