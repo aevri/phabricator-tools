@@ -18,6 +18,7 @@ import contextlib
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 
 import phldef_conduit
@@ -199,6 +200,11 @@ class _Fixture(object):
     def close(self):
         shutil.rmtree(self._root_dir)
 
+    def launch_debug_shell(self):
+        with phlsys_fs.chdir_context(self._root_dir):
+            print "Launching debug shell, exit the shell to continue ..."
+            subprocess.call('bash')
+
     @property
     def repos(self):
         return self._repos
@@ -259,6 +265,8 @@ def _do_tests():
             for i in xrange(repo_count):
                 worker = fixture.repos[i].alice
                 worker.fetch()
+                print worker.list_reviews()
+                fixture.launch_debug_shell()
                 assert len(worker.list_reviews()) == 1
 
 
