@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Interactively gets details from user to construct an arc style commit
 message, amend the last commit with the new message, generate and execute
