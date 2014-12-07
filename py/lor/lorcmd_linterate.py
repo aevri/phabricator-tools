@@ -92,7 +92,8 @@ def main():
         print("ERROR - insufficient information")
         print(e)
         print()
-        print("N.B. you may also specify uri, user or cert explicitly like so:")
+        print(
+            "N.B. you may also specify uri, user or cert explicitly like so:")
         print("  --uri URI           address of phabricator instance")
         print("  --user USERNAME     username of user to connect as")
         print("  --cert CERTIFICATE  certificate for user Phabrictor account")
@@ -149,7 +150,9 @@ def yield_revisions(conduit, args):
         # filter out revisions with nothing new
         # be careful to convert revision.id to string or it won't match history
         revision_list = [
-            x for x in revision_list if set(history.get(x.phid, [])) != set(x.diffs)]
+            x for x in revision_list
+            if set(history.get(x.phid, [])) != set(x.diffs)
+        ]
 
     for revision in revision_list:
         diff = phlcon_differential.get_revision_diff(conduit, revision.id)
