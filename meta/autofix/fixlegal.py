@@ -28,7 +28,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import print_function
+
 
 import argparse
 import collections
@@ -91,8 +91,8 @@ def main():
         file_list = subprocess.check_output(
             ['git', 'ls-tree', '-r', '--name-only', 'HEAD']).splitlines()
 
-    file_list = filter(should_process_file, file_list)
-    file_list = filter(os.path.isfile, file_list)
+    file_list = list(filter(should_process_file, file_list))
+    file_list = list(filter(os.path.isfile, file_list))
 
     for f in file_list:
         # rewrite the file if necessary

@@ -46,7 +46,7 @@ def dictValuesToLists(d):
 
 def writeDictToFile(filename, d):
     with open(filename, 'w') as f:
-        for item in d.iteritems():
+        for item in d.items():
             f.write(str(item) + '\n')
 
 

@@ -41,11 +41,11 @@ appear in the help pages.
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import print_function
+
 
 import argparse
 import ast
-import cStringIO
+import io
 import contextlib
 import os
 import sys
@@ -65,7 +65,7 @@ def main():
 
     block_marker = '# ' + ('=' * 77)
 
-    with contextlib.closing(cStringIO.StringIO()) as s:
+    with contextlib.closing(io.StringIO()) as s:
         print(block_marker, file=s)
         print("# CONTENTS", file=s)
         print("#", "-" * 77, file=s)
@@ -98,7 +98,7 @@ def process_module(
 
     name = os.path.splitext(os.path.basename(m))[0]
 
-    with contextlib.closing(cStringIO.StringIO()) as contents:
+    with contextlib.closing(io.StringIO()) as contents:
         contents.write(contents_signature)
         print_contents(contents, name, classes, functions, assignments)
         print(block_marker, file=contents)
@@ -183,7 +183,7 @@ def print_contents(f, name, classes, functions, assignments):
 
 
 def find_likely_insertion_point(module_text):
-    with contextlib.closing(cStringIO.StringIO(module_text)) as text:
+    with contextlib.closing(io.StringIO(module_text)) as text:
         tokens = list(tokenize.generate_tokens(text.readline))
     first = tokens[0]
     if first[0] == tokenize.STRING:
