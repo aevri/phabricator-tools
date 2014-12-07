@@ -28,6 +28,7 @@
 
 import contextlib
 import fcntl
+import io
 import os
 import shutil
 import sys
@@ -50,14 +51,15 @@ def read_file_lock_context(filename):
     Usage example:
 
         >>> with chtmpdir_context():
-        ...     with open('testfile', 'w') as f:
+        ...     with io.open('testfile', 'w') as f:
         ...         f.write('hello')
         ...     with read_file_lock_context('testfile') as f:
         ...         print(f.read())
+        5
         hello
 
     """
-    with open(filename, 'r') as file_object:
+    with io.open(filename, 'r') as file_object:
         fcntl.flock(file_object, fcntl.LOCK_SH)
         try:
             yield file_object
@@ -80,14 +82,15 @@ def write_file_lock_context(filename):
         ...         f.write('hello')
         ...     with read_file_lock_context('testfile') as f:
         ...         print(f.read())
+        5
         hello
 
     """
     # 'touch' the file to make sure we can open it for 'r+'
-    with open(filename, 'a'):
+    with io.open(filename, 'a'):
         pass
 
-    with open(filename, 'r+') as file_object:
+    with io.open(filename, 'r+') as file_object:
         fcntl.flock(file_object, fcntl.LOCK_EX)
         file_object.truncate()
         try:
@@ -316,7 +319,7 @@ def read_text_file(path):
     :returns: string content of file
 
     """
-    with open(path) as f:
+    with io.open(path) as f:
         return f.read()
 
 
@@ -331,7 +334,7 @@ def write_text_file(path, text):
     dir_path = os.path.dirname(path)
     if dir_path:
         ensure_dir(dir_path)
-    with open(path, 'w') as f:
+    with io.open(path, 'w') as f:
         f.write(text)
 
 
