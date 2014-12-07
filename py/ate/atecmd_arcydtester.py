@@ -202,10 +202,13 @@ class _Fixture(object):
             phab_uri,
             repo_count,
             arcyd_count):
+
         if repo_count < 1:
-            raise Exception
+            raise Exception("repo_count must be 1 or more, got {}".format(
+                repo_count))
         if arcyd_count < 1:
-            raise Exception
+            raise Exception("arcyd_count must be 1 or more, got {}".format(
+                arcyd_count))
 
         self._root_dir = tempfile.mkdtemp()
 
@@ -316,7 +319,6 @@ def _do_tests():
 
         with phlsys_timer.print_duration_context("Update nothing"):
             arcyd.run_once()
-
 
         # launch a debug shell for the user to poke around in
         # fixture.launch_debug_shell()

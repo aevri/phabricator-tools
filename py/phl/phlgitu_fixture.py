@@ -258,8 +258,9 @@ class CentralisedWithWorkers(object):
     def __init__(self, contributor_count):
         super(CentralisedWithWorkers, self).__init__()
         if contributor_count < 1:
-            raise Exception
-
+            raise Exception(
+                "contributor_count must be 1 or more, got {}".format(
+                    contributor_count))
         self._central_repo = phlsys_git.Repo(tempfile.mkdtemp())
         self._central_repo("init", "--bare")
 
