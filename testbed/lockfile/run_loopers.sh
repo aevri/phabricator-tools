@@ -4,10 +4,10 @@ trap 'kill $(jobs -p)' EXIT
 rm testfile
 rm lockfile
 
-python looping_writer.py &
-python looping_writer.py &
-python looping_writer.py &
-python looping_writer.py &
+python3 looping_writer.py &
+python3 looping_writer.py &
+python3 looping_writer.py &
+python3 looping_writer.py &
 
 jobs
 wait

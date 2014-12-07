@@ -2,16 +2,16 @@
 rm testfile
 rm lockfile
 
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
-python single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
+python3 single_writer.py &
 
 wait
 cat testfile

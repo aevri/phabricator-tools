@@ -33,13 +33,13 @@ printf "."
 ###############################################################################
 # sort imports
 ###############################################################################
-python meta/autofix/fiximports.py $libscripts
+python3 meta/autofix/fiximports.py $libscripts
 printf "."
 
 ###############################################################################
 # fix legal notices
 ###############################################################################
-python meta/autofix/fixlegal.py . --different-since origin/master
+python3 meta/autofix/fixlegal.py . --different-since origin/master
 printf "."
 
 # -----------------------------------------------------------------------------

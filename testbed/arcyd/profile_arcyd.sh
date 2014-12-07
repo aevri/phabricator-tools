@@ -2,7 +2,7 @@
 
 # The Python 'cProfile' module is widely available and can be invoked from the
 # command-line, this will record results in the 'arcyd.profile' file.
-python -m cProfile -o arcyd.profile $(which arcyd) start --foreground --no-loop
+python3 -m cProfile -o arcyd.profile $(which arcyd) start --foreground --no-loop
 
 # Analyse the profile interactively using the 'pstats' module
 echo 'Starting "pstats" to interactively analyse the profile.'
@@ -12,7 +12,7 @@ echo '  sort cumulative'
 echo '  stats 30'
 echo
 echo 'Type "help" to list all commands.'
-python -m pstats arcyd.profile
+python3 -m pstats arcyd.profile
 # -----------------------------------------------------------------------------
 # Copyright (C) 2014 Bloomberg Finance L.P.
 #
