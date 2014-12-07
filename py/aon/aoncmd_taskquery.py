@@ -49,8 +49,8 @@ output formats:
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 
 import json
 import pprint
@@ -69,7 +69,7 @@ def getFromfilePrefixChars():
 def setupParser(parser):
 
     # make a list of priority names in increasing order of importance
-    priority_name_list = phlcon_maniphest.PRIORITIES.keys()
+    priority_name_list = list(phlcon_maniphest.PRIORITIES.keys())
     priority_name_list.sort(
         key=lambda x: phlcon_maniphest.PRIORITIES[x])
 
@@ -95,7 +95,7 @@ def setupParser(parser):
         help="filter by priority of the task")
     opt.add_argument(
         '--order',
-        choices=phlcon_maniphest.ORDERS.keys(),
+        choices=list(phlcon_maniphest.ORDERS.keys()),
         default=None,
         type=str,
         help="the ordering of the returned results")
@@ -140,7 +140,7 @@ def setupParser(parser):
         '--status',
         type=str,
         default=None,
-        choices=phlcon_maniphest.STATUS_FILTERS.keys(),
+        choices=list(phlcon_maniphest.STATUS_FILTERS.keys()),
         help='a single status type to restrict items to')
     opt.add_argument(
         '--text',

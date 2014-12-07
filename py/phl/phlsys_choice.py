@@ -13,7 +13,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 
 def yes_or_no(prompt, default="yes"):
@@ -93,14 +93,13 @@ def prompt_with_options(prompt, options, default):
     lead_options = [o[0] for o in options]
     if default is not None:
         assert default in lead_options
-        lead_options = map(
-            lambda x: x.upper() if x == default else x, lead_options)
+        lead_options = [x.upper() if x == default else x for x in lead_options]
 
     hint = '[{}]'.format('/'.join(lead_options))
 
     while True:
-        print '{} {}'.format(prompt, hint),
-        choice = raw_input().lower()
+        print('{} {}'.format(prompt, hint), end=' ')
+        choice = input().lower()
 
         if default is not None and choice == '':
             choice = default
@@ -109,10 +108,10 @@ def prompt_with_options(prompt, options, default):
             if choice in option_list:
                 return option_list
 
-        print "Please choose from:"
+        print("Please choose from:")
         for option_list in options:
-            print "  {}".format(' or '.join(option_list))
-        print
+            print("  {}".format(' or '.join(option_list)))
+        print()
 
 
 # -----------------------------------------------------------------------------

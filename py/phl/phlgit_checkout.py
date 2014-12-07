@@ -15,7 +15,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 
 def new_branch_force_based_on(repo, new_branch, base):

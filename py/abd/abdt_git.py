@@ -37,7 +37,7 @@
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
 # =============================================================================
-from __future__ import absolute_import
+
 
 import phlgit_branch
 import phlgit_checkout
@@ -370,7 +370,7 @@ def _get_branch_to_hash(repo):
 
 def get_managed_branches(repo, repo_desc, naming, branch_link_callable=None):
     branch_to_hash = _get_branch_to_hash(repo)
-    branch_pairs = abdt_naming.get_branch_pairs(branch_to_hash.keys(), naming)
+    branch_pairs = abdt_naming.get_branch_pairs(list(branch_to_hash.keys()), naming)
 
     managed_branches = []
     lander = abdt_lander.squash

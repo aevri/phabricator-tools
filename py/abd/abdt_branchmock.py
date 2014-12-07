@@ -54,7 +54,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import phldef_conduit
 import phlsys_tracedecorator
@@ -199,9 +199,9 @@ class BranchMock(object):
 
     def _log(self, message):
         if self._data.review_branch is not None:
-            print self._data.review_branch + ':', message
+            print(self._data.review_branch + ':', message)
         else:
-            print '(NULL branch):', message
+            print('(NULL branch):', message)
 
     def is_abandoned(self):
         """Return True if the author's branch no longer exists."""

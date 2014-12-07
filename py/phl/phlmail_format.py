@@ -11,7 +11,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import email.mime.text
 import types
@@ -31,13 +31,13 @@ def text(subject, message, from_address, to_addresses, cc_addresses=None):
     :returns: string mime-text
 
     """
-    assert not isinstance(to_addresses, types.StringTypes), "'to' is string"
+    assert not isinstance(to_addresses, str), "'to' is string"
     msg = email.mime.text.MIMEText(message)
     msg['subject'] = subject
     msg['from'] = from_address
     msg['to'] = ', '.join(to_addresses)
     if cc_addresses:
-        assert not isinstance(cc_addresses, types.StringTypes), "cc is string"
+        assert not isinstance(cc_addresses, str), "cc is string"
         msg['cc'] = ', '.join(cc_addresses)
     return msg.as_string()
 

@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
 # =============================================================================
-from __future__ import absolute_import
+
 
 import textwrap
 import types
@@ -32,7 +32,7 @@ class Mailer(object):
         """
         self._mail_sender = mail_sender
         assert not isinstance(
-            admin_emails, types.StringTypes), "should be list not string"
+            admin_emails, str), "should be list not string"
         self._admin_emails = admin_emails
         self._repository_name = repository_name
         self._uri = uri

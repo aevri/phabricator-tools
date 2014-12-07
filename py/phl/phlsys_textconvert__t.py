@@ -1,6 +1,6 @@
 """Test suite for phlsys_textconvert."""
 
-from __future__ import absolute_import
+
 
 import string
 import unittest
@@ -16,82 +16,82 @@ class Test(unittest.TestCase):
         self.assertIsInstance(value, type(dst))
 
     def test_empty(self):
-        self._check_unicode_to_ascii(u"", "")
+        self._check_unicode_to_ascii("", "")
 
     def test_ascii_printable(self):
         self._check_unicode_to_ascii(
-            unicode(string.printable),
+            str(string.printable),
             str(string.printable))
 
     def test_trailing_leading_space(self):
-        self._check_unicode_to_ascii(u"trailing  ", "trailing  ")
-        self._check_unicode_to_ascii(u"  leading", "  leading")
-        self._check_unicode_to_ascii(u"trailing\t\t", "trailing\t\t")
-        self._check_unicode_to_ascii(u"\t\tleading", "\t\tleading")
+        self._check_unicode_to_ascii("trailing  ", "trailing  ")
+        self._check_unicode_to_ascii("  leading", "  leading")
+        self._check_unicode_to_ascii("trailing\t\t", "trailing\t\t")
+        self._check_unicode_to_ascii("\t\tleading", "\t\tleading")
 
     def test_newlines(self):
-        self._check_unicode_to_ascii(u"new\nline", "new\nline")
-        self._check_unicode_to_ascii(u"windows\r\nline", "windows\r\nline")
-        self._check_unicode_to_ascii(u"\nline", "\nline")
-        self._check_unicode_to_ascii(u"\r\nline", "\r\nline")
-        self._check_unicode_to_ascii(u"new\n", "new\n")
-        self._check_unicode_to_ascii(u"windows\r\n", "windows\r\n")
+        self._check_unicode_to_ascii("new\nline", "new\nline")
+        self._check_unicode_to_ascii("windows\r\nline", "windows\r\nline")
+        self._check_unicode_to_ascii("\nline", "\nline")
+        self._check_unicode_to_ascii("\r\nline", "\r\nline")
+        self._check_unicode_to_ascii("new\n", "new\n")
+        self._check_unicode_to_ascii("windows\r\n", "windows\r\n")
 
     def test_nuls(self):
-        self._check_unicode_to_ascii(u"nul\0middle", "nul\0middle")
-        self._check_unicode_to_ascii(u"nul-end\0", "nul-end\0")
-        self._check_unicode_to_ascii(u"\0nul-start", "\0nul-start")
+        self._check_unicode_to_ascii("nul\0middle", "nul\0middle")
+        self._check_unicode_to_ascii("nul-end\0", "nul-end\0")
+        self._check_unicode_to_ascii("\0nul-start", "\0nul-start")
 
     def test_ellipses(self):
-        self._check_unicode_to_ascii(u"time passed\u2026", "time passed...")
+        self._check_unicode_to_ascii("time passed\u2026", "time passed...")
 
     def test_hyphenation_point(self):
-        self._check_unicode_to_ascii(u"hy\u2027phen\u2027ate", "hy?phen?ate")
+        self._check_unicode_to_ascii("hy\u2027phen\u2027ate", "hy?phen?ate")
 
     def test_dashes(self):
-        self._check_unicode_to_ascii(u"\u2010", "-")
-        self._check_unicode_to_ascii(u"\u2011", "-")
-        self._check_unicode_to_ascii(u"\u2013", "-")
-        self._check_unicode_to_ascii(u"\u2013", "-")
-        self._check_unicode_to_ascii(u"\u2014", "-")
-        self._check_unicode_to_ascii(u"\u2015", "-")
-        self._check_unicode_to_ascii(u"\u2212", "-")
+        self._check_unicode_to_ascii("\u2010", "-")
+        self._check_unicode_to_ascii("\u2011", "-")
+        self._check_unicode_to_ascii("\u2013", "-")
+        self._check_unicode_to_ascii("\u2013", "-")
+        self._check_unicode_to_ascii("\u2014", "-")
+        self._check_unicode_to_ascii("\u2015", "-")
+        self._check_unicode_to_ascii("\u2212", "-")
 
     def test_quotes(self):
-        self._check_unicode_to_ascii(u"\u00b4", "'")
-        self._check_unicode_to_ascii(u"\u2018", "'")
-        self._check_unicode_to_ascii(u"\u2019", "'")
-        self._check_unicode_to_ascii(u"\u201c", '"')
-        self._check_unicode_to_ascii(u"\u201d", '"')
+        self._check_unicode_to_ascii("\u00b4", "'")
+        self._check_unicode_to_ascii("\u2018", "'")
+        self._check_unicode_to_ascii("\u2019", "'")
+        self._check_unicode_to_ascii("\u201c", '"')
+        self._check_unicode_to_ascii("\u201d", '"')
 
     def test_bullets(self):
-        self._check_unicode_to_ascii(u"\u00b7", "*")
-        self._check_unicode_to_ascii(u"\u2022", "*")
-        self._check_unicode_to_ascii(u"\u2023", ">")
-        self._check_unicode_to_ascii(u"\u2024", "*")
-        self._check_unicode_to_ascii(u"\u2043", "-")
-        self._check_unicode_to_ascii(u"\u25b8", ">")
-        self._check_unicode_to_ascii(u"\u25e6", "o")
+        self._check_unicode_to_ascii("\u00b7", "*")
+        self._check_unicode_to_ascii("\u2022", "*")
+        self._check_unicode_to_ascii("\u2023", ">")
+        self._check_unicode_to_ascii("\u2024", "*")
+        self._check_unicode_to_ascii("\u2043", "-")
+        self._check_unicode_to_ascii("\u25b8", ">")
+        self._check_unicode_to_ascii("\u25e6", "o")
 
     def test_A_Breathing(self):
 
         # test we can convert unicode to unicode
-        phlsys_textconvert.to_unicode(unicode('hello'))
+        phlsys_textconvert.to_unicode(str('hello'))
 
         # test we can convert str to unicode
         self.assertIsInstance(
             phlsys_textconvert.to_unicode('hello'),
-            unicode)
+            str)
 
         # test invalid characters get replaced by the replacement character
         self.assertEqual(
             phlsys_textconvert.to_unicode('\xFF'),
-            u'\uFFFD')
+            '\uFFFD')
 
         # test 'horizontal ellipses' as UTF8 get replaced
         self.assertEqual(
             phlsys_textconvert.to_unicode('\xe2\x80\xa6'),
-            u'\uFFFD\uFFFD\uFFFD')
+            '\uFFFD\uFFFD\uFFFD')
 
         # test we can convert ascii to ascii
         phlsys_textconvert.ensure_ascii('hello')

@@ -21,12 +21,12 @@
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
 # =============================================================================
-from __future__ import absolute_import
+
 
 import collections
-import httplib
+import http.client
 import traceback
-import urlparse
+import urllib.parse
 
 _HTTPLIB_TIMEOUT = 600
 
@@ -96,7 +96,7 @@ def split_url(url):
 
     """
     original_url = url
-    url = urlparse.urlsplit(url)
+    url = urllib.parse.urlsplit(url)
 
     # pylint: disable=E1103
     # pylint doesn't seem to know the members of SplitResult
@@ -181,14 +181,14 @@ def get_many(url_list):
     urls = group_urls(url_list)
     results = {}
 
-    for host_port, request_list in urls.http.iteritems():
-        http = httplib.HTTPConnection(
+    for host_port, request_list in urls.http.items():
+        http = http.client.HTTPConnection(
             host_port[0], host_port[1], timeout=_HTTPLIB_TIMEOUT)
         for path, url in request_list:
             results[url] = _request(http, 'GET', path, url)
 
-    for host_port, request_list in urls.https.iteritems():
-        https = httplib.HTTPSConnection(
+    for host_port, request_list in urls.https.items():
+        https = http.client.HTTPSConnection(
             host_port[0], host_port[1], timeout=_HTTPLIB_TIMEOUT)
         for path, url in request_list:
             results[url] = _request(https, 'GET', path, url)

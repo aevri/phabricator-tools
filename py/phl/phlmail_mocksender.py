@@ -18,7 +18,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import collections
 import types
@@ -38,8 +38,8 @@ class MailSender(object):
         self._mails = []
 
     def send(self, subject, message, to_addresses, cc_addresses=None):
-        assert not isinstance(to_addresses, types.StringTypes)
-        assert not isinstance(cc_addresses, types.StringTypes)
+        assert not isinstance(to_addresses, str)
+        assert not isinstance(cc_addresses, str)
         mail = Mail(subject, message, to_addresses, cc_addresses)
         for address in to_addresses:
             self._mailboxes[address].append(mail)

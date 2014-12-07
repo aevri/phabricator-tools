@@ -20,7 +20,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import collections
 import xml.etree.ElementTree
@@ -75,13 +75,13 @@ def parse_output(output):
                 line_numbers.append(int(line.get('line')))
 
             if message is None:
-                raise Error('could not find message: {}'.format(error.items()))
+                raise Error('could not find message: {}'.format(list(error.items())))
             if severity is None:
                 raise Error(
-                    'could not find severity: {}'.format(error.items()))
+                    'could not find severity: {}'.format(list(error.items())))
             if identity is None:
                 raise Error(
-                    'could not find identity: {}'.format(error.items()))
+                    'could not find identity: {}'.format(list(error.items())))
             if path is None:
                 # oddly this happens with the 'toomanyconfigs' error type
                 # we'll continue without adding it in this case

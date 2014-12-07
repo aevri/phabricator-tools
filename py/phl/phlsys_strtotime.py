@@ -12,7 +12,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import datetime
 
@@ -57,7 +57,7 @@ def duration_string_to_time_delta(s):
     clauses = s.split()
     if len(clauses) % 2:
         raise ValueError("odd number of clauses: " + s)
-    pairs = zip(clauses[::2], clauses[1::2])
+    pairs = list(zip(clauses[::2], clauses[1::2]))
     d = {p[1]: float(p[0]) for p in pairs}
     if len(d) != len(pairs):
         raise ValueError("duplicated clauses: " + s)

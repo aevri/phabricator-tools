@@ -1,6 +1,6 @@
 """Test suite for phlsys_namedtuple."""
 
-from __future__ import absolute_import
+
 
 import unittest
 import warnings

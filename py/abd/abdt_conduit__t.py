@@ -45,7 +45,7 @@
 # [ D] test_D_CanCreateRevisionAsUser
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import unittest
 
@@ -83,7 +83,7 @@ class Test(unittest.TestCase):
 
     def test_A_Breathing(self):
         # [ A] can describe a conduit with non-empty string
-        self.assertIsInstance(self.conduit.describe(), basestring)
+        self.assertIsInstance(self.conduit.describe(), str)
         self.assertGreater(len(self.conduit.describe()), 0)
 
         # generally exercise all of the conduit methods
@@ -204,7 +204,7 @@ class Test(unittest.TestCase):
         valid_emails = [email for email in data if data[email] is not None]
         valid_users = [data[email] for email in valid_emails]
         invalid_emails = [email for email in data if data[email] is None]
-        all_emails = data.keys()
+        all_emails = list(data.keys())
         all_users = [data[email] for email in all_emails]
 
         # test all valid emails
@@ -224,7 +224,7 @@ class Test(unittest.TestCase):
         self.assertListEqual(self.conduit.query_users_from_emails([]), [])
 
         # test individual emails
-        for (email, user) in data.iteritems():
+        for (email, user) in data.items():
             self.assertListEqual(
                 self.conduit.query_users_from_emails([email]), [user])
 

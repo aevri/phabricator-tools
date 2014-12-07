@@ -25,7 +25,7 @@ parameters.
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import collections
 import warnings
@@ -82,17 +82,17 @@ def make_named_tuple(name, required, defaults, ignored):
     """
     required_attr = set(required)
     default_attr = dict(defaults)
-    default_attr_keys = default_attr.viewkeys()
+    default_attr_keys = default_attr.keys()
     ignored_attr = set(ignored)
     expected_attr = required_attr | default_attr_keys
     assert not (default_attr_keys & required_attr)
     assert not (default_attr_keys & ignored_attr)
     assert not (ignored_attr & required_attr)
-    NamedTuple = collections.namedtuple(name, required + defaults.keys())
+    NamedTuple = collections.namedtuple(name, required + list(defaults.keys()))
 
     # define the factory function
     def make_instance(**kwargs):
-        keys = kwargs.viewkeys()
+        keys = kwargs.keys()
 
         # remove all ignored_attr from kwargs
         ignored_keys = keys & ignored_attr

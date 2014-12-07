@@ -36,8 +36,8 @@ usage examples:
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 
 import sys
 import textwrap
@@ -55,7 +55,7 @@ def getFromfilePrefixChars():
 def setupParser(parser):
 
     # make a list of priority names in increasing order of importance
-    priority_name_list = phlcon_maniphest.PRIORITIES.keys()
+    priority_name_list = list(phlcon_maniphest.PRIORITIES.keys())
     priority_name_list.sort(
         key=lambda x: phlcon_maniphest.PRIORITIES[x])
 

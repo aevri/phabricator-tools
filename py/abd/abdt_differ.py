@@ -23,7 +23,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import collections
 
@@ -131,7 +131,7 @@ def make_raw_diff(repo, base, branch, max_diff_size_utf8_bytes):
     """
     raw_diff = phlgit_diff.raw_diff_range(
         repo, base, branch, _FULL_DIFF_CONTEXT_LINES)
-    new_raw_diff = unicode(raw_diff, errors='replace')
+    new_raw_diff = str(raw_diff, errors='replace')
     full_diff_size_utf8_bytes = len(new_raw_diff.encode("utf-8"))
     diff_size_utf8_bytes = full_diff_size_utf8_bytes
 
@@ -149,7 +149,7 @@ def make_raw_diff(repo, base, branch, max_diff_size_utf8_bytes):
         if diff_size_utf8_bytes > max_diff_size_utf8_bytes:
             raw_diff = phlgit_diff.raw_diff_range(
                 repo, base, branch, context_lines)
-            new_raw_diff = unicode(raw_diff, errors='replace')
+            new_raw_diff = str(raw_diff, errors='replace')
             diff_size_utf8_bytes = len(new_raw_diff.encode("utf-8"))
             reduction_list.append(
                 LessContextReduction(
@@ -159,7 +159,7 @@ def make_raw_diff(repo, base, branch, max_diff_size_utf8_bytes):
     # if the diff is still too big then regen with no context
     if diff_size_utf8_bytes > max_diff_size_utf8_bytes:
         raw_diff = phlgit_diff.raw_diff_range(repo, base, branch, None)
-        new_raw_diff = unicode(raw_diff, errors='replace')
+        new_raw_diff = str(raw_diff, errors='replace')
         diff_size_utf8_bytes = len(new_raw_diff.encode("utf-8"))
         reduction_list.append(
             RemoveContextReduction(
@@ -171,7 +171,7 @@ def make_raw_diff(repo, base, branch, max_diff_size_utf8_bytes):
         content = "this diff is very large, it has been reduced to a summary:"
         content = '\n\n'.join([content, stat])
         raw_diff = phlgit_diff.create_add_file('diffstat', content)
-        new_raw_diff = unicode(raw_diff, errors='replace')
+        new_raw_diff = str(raw_diff, errors='replace')
         diff_size_utf8_bytes = len(new_raw_diff.encode("utf-8"))
         reduction_list.append(
             DiffStatReduction(

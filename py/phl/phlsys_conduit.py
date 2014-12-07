@@ -32,16 +32,16 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import contextlib
 import hashlib
 import json
 import logging
 import time
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 
 import phldef_conduit
 
@@ -109,7 +109,7 @@ def make_conduit_uri(uri):
     :returns: the expected conduit uri
 
     """
-    url = urlparse.urlparse(uri)
+    url = urllib.parse.urlparse(uri)
     # pylint: disable=E1101
     expected = url.scheme + "://" + url.netloc + "/api/"
     # pylint: enable=E1101
@@ -274,7 +274,7 @@ class Conduit(object):
 
         params = json.dumps(message_dict)
 
-        body = urllib.urlencode({
+        body = urllib.parse.urlencode({
             "params": params,
             "output": "json",
         })
@@ -285,11 +285,11 @@ class Conduit(object):
                 proxy['https'] = self._https_proxy
             if self._http_proxy:
                 proxy['http'] = self._http_proxy
-            proxy_handler = urllib2.ProxyHandler(proxy)
-            opener = urllib2.build_opener(proxy_handler)
+            proxy_handler = urllib.request.ProxyHandler(proxy)
+            opener = urllib.request.build_opener(proxy_handler)
             data = opener.open(path, body, _URLLIB_TIMEOUT).read()
         else:
-            data = urllib2.urlopen(path, body, _URLLIB_TIMEOUT).read()
+            data = urllib.request.urlopen(path, body, _URLLIB_TIMEOUT).read()
 
         return json.loads(data)
 

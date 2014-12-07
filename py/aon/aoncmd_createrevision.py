@@ -32,7 +32,7 @@ usage examples:
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import argparse
 
@@ -155,9 +155,9 @@ def process(args):
 
     # conduit expects PHIDs not plain usernames
     user_phids = phlcon_user.UserPhidCache(conduit)
-    for users in fields.itervalues():
+    for users in fields.values():
         user_phids.add_hint_list(users)
-    for key in fields.iterkeys():
+    for key in fields.keys():
         fields[key] = [user_phids.get_phid(u) for u in fields[key]]
 
     fields[MessageFields.title] = args.title
@@ -170,16 +170,16 @@ def process(args):
     result = conduit("differential.createrevision", d)
 
     if args.format_id:
-        print result["revisionid"]
+        print(result["revisionid"])
     elif args.format_url:
-        print result["uri"]
+        print(result["uri"])
     else:  # args.format_summary:
-        print (
+        print((
             "Created a new revision '{rev_id}', you can view it at this URL:\n"
             "  {url}"
         ).format(
             rev_id=result["revisionid"],
-            url=result["uri"])
+            url=result["uri"]))
 
 
 # -----------------------------------------------------------------------------

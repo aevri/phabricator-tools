@@ -19,7 +19,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import collections
 import hashlib
@@ -89,8 +89,8 @@ class Watcher(object):
     def refresh(self):
         # XXX: it's safe to refresh multiple times - the 'has changed' flag
         #      is only consumed on 'has_url_recently_changed'
-        url_contents = self._requester_object.get_many(self._results.keys())
-        for url, contents in url_contents.iteritems():
+        url_contents = self._requester_object.get_many(list(self._results.keys()))
+        for url, contents in url_contents.items():
             old_result = self._results[url]
 
             # Note that hash objects can't be compared directly so we much
@@ -118,7 +118,7 @@ class Watcher(object):
         """
         results = json.load(f)
         self._results = dict(
-            (k, _HashHexdigestHasChanged(*v)) for k, v in results.iteritems())
+            (k, _HashHexdigestHasChanged(*v)) for k, v in results.items())
 
     def dump(self, f):
         """Dump data to the supplied file pointer.

@@ -24,16 +24,16 @@ giving away admin credentials directly to multiple parties.
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
 
-import BaseHTTPServer
+
+import http.server
 import argparse
 import json
 import logging
 import os
 import ssl
 import time
-import urlparse
+import urllib.parse
 
 import phlsys_conduit
 import phlsys_makeconduit
@@ -99,10 +99,10 @@ def _httpd_serve_forever(args):
     """Use '_RequestHandler' to serve webpages forever, optionally with ssl."""
     server_address = ('', args.port)
     factory = _request_handler_factory(args)
-    httpd = BaseHTTPServer.HTTPServer(server_address, factory)
+    httpd = http.server.HTTPServer(server_address, factory)
     if args.sslcert:
         certpath = os.path.abspath(args.sslcert)
-        print certpath
+        print(certpath)
         httpd.socket = ssl.wrap_socket(
             httpd.socket,
             certfile=certpath,
@@ -110,7 +110,7 @@ def _httpd_serve_forever(args):
     httpd.serve_forever()
 
 
-class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class _RequestHandler(http.server.BaseHTTPRequestHandler):
 
     """Handle POST requests by calling out to conduit and reporting back.
 
@@ -133,7 +133,7 @@ class _RequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile = None  # for pychecker
         self.headers = None  # for pychecker
 
-        BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, *args)
+        http.server.BaseHTTPRequestHandler.__init__(self, *args)
 
     def do_POST(self):
         """Handle http POST requests, override of base class function."""
@@ -227,7 +227,7 @@ def _object_from_urlencoded_json(encoded):
     :returns: a python object
 
     """
-    query_string_data = urlparse.parse_qs(encoded)
+    query_string_data = urllib.parse.parse_qs(encoded)
     params_data = query_string_data['params'][0]
     conduit_data = json.loads(params_data)
     return conduit_data

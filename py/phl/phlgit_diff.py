@@ -16,7 +16,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import os
 import re
@@ -156,7 +156,7 @@ def parse_filenames_from_raw_diff(diff):
         diff,
         flags=re.MULTILINE)
     if matches:
-        names = zip(*matches)
+        names = list(zip(*matches))
         if len(names) != 2:
             raise Exception(
                 "files aren't pairs in diff: " +

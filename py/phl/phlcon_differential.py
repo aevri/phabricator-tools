@@ -50,7 +50,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import os
 
@@ -116,7 +116,7 @@ REVIEWER_ACTIONS = {
 
 # Enumerate all the actions either a reviewer or author may perform
 # map the strings that appear in the web UI to string that conduit expects
-USER_ACTIONS = dict(AUTHOR_ACTIONS.items() + REVIEWER_ACTIONS.items())
+USER_ACTIONS = dict(list(AUTHOR_ACTIONS.items()) + list(REVIEWER_ACTIONS.items()))
 
 
 # Enumerate some of the fields that Differential expects to be able fill out
@@ -517,7 +517,7 @@ def _write_hunks(hunk_list, base_path, extra_path, diff_prefix_ignore_char):
                     if line.startswith(diff_prefix_ignore_char):
                         pass
                     else:
-                        print >> outfile, line[1:]
+                        print(line[1:], file=outfile)
     except IOError as e:
         raise WriteDiffError(e)
     except UnicodeEncodeError as e:

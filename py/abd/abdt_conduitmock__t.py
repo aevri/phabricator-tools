@@ -13,7 +13,7 @@
 # [ B] test_B_InterfaceMatchesRealConduit
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import unittest
 

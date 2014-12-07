@@ -22,7 +22,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import phlsys_namedtuple
 
@@ -50,7 +50,7 @@ PRIORITY_DESCRIPTIONS = {
 
 # from ManiphestTaskPriority.php
 PRIORITY_DESCRIPTIONS_TO_VALUES = {
-    desc: val for val, desc in PRIORITY_DESCRIPTIONS.iteritems()
+    desc: val for val, desc in PRIORITY_DESCRIPTIONS.items()
 }
 
 # from ManiphestTaskStatus.php
@@ -228,7 +228,7 @@ def query(
     if response:
         # oddly we get an empty list instead of a dictionary if no results, so
         # iteritems() isn't appropriate in that case.
-        result = [CreateTaskResponse(**v) for k, v in response.iteritems()]
+        result = [CreateTaskResponse(**v) for k, v in response.items()]
 
         # order is broken because conduit returns a dict (unordered) instead of
         # a list, we have to impose order here instead, note that it's still

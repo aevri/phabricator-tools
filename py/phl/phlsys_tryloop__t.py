@@ -1,6 +1,6 @@
 """Test suite for phlsys_tryloop."""
 
-from __future__ import absolute_import
+
 
 import datetime
 import itertools
@@ -108,9 +108,9 @@ class Test(unittest.TestCase):
             raise TestException()
 
         def on_exception(e, delay):
-            print e
+            print(e)
             if delay is not None:
-                print delay.total_seconds()
+                print(delay.total_seconds())
             on_exception_counter.append(1)
 
         numDelays = 4

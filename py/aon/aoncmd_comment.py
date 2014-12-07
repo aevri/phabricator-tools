@@ -25,7 +25,7 @@ usage examples:
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import argparse
 import sys
@@ -43,7 +43,7 @@ def setupParser(parser):
     actions = parser.add_argument_group(
         'action arguments',
         'use any of ' + textwrap.fill(
-            str(phlcon_differential.USER_ACTIONS.keys())))
+            str(list(phlcon_differential.USER_ACTIONS.keys()))))
 
     parser.add_argument(
         'ids',
@@ -78,7 +78,7 @@ def setupParser(parser):
         help="attach pending inline comments")
     actions.add_argument(
         '--action', '-a',
-        choices=phlcon_differential.USER_ACTIONS.keys(),
+        choices=list(phlcon_differential.USER_ACTIONS.keys()),
         metavar="ACTION",
         default='comment',
         type=str,
@@ -106,13 +106,13 @@ def process(args):
         ids.extend([int(i) for i in args.ids_file.read().split()])
 
     if not ids:
-        print "error: you have not specified any revision ids"
+        print("error: you have not specified any revision ids")
         sys.exit(1)
 
     for i in ids:
         d["revision_id"] = i
         result = conduit("differential.createcomment", d)
-        print result
+        print(result)
 
 
 # -----------------------------------------------------------------------------

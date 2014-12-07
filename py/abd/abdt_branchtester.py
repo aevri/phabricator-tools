@@ -20,7 +20,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 # =============================================================================
 #                                   TEST PLAN
@@ -119,10 +119,10 @@ def check_XC_MoveBetweenAllMarkedStates(fixture):
     }
     for initial in suite['initial_states']:
         for transition in suite['transitions']:
-            print '', initial.__name__
-            print '', transition.__name__
+            print('', initial.__name__)
+            print('', transition.__name__)
             initial()
-            print 'rev_id', branch.review_id_or_none()
+            print('rev_id', branch.review_id_or_none())
             transition()
             branch.clear_mark()
 
@@ -135,11 +135,11 @@ def check_XC_MoveBetweenAllMarkedStates(fixture):
     for initial in suite['initial_states']:
         for transition1 in suite['transitions']:
             for transition2 in suite['transitions']:
-                print '', initial.__name__
-                print '', transition1.__name__
-                print '', transition2.__name__
+                print('', initial.__name__)
+                print('', transition1.__name__)
+                print('', transition2.__name__)
                 initial()
-                print 'rev_id', branch.review_id_or_none()
+                print('rev_id', branch.review_id_or_none())
                 transition1()
                 transition2()
                 branch.clear_mark()

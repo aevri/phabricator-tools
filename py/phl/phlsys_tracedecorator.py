@@ -12,7 +12,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import functools
 import inspect
@@ -62,7 +62,7 @@ def method_tracer(object_to_string):
             callstring = object_to_string(self) + '.' + f.__name__ + '('
             callstring += ','.join([pprint.pformat(arg) for arg in args])
             callstring += ')'
-            print callstring, '->', pprint.pformat(ret)
+            print(callstring, '->', pprint.pformat(ret))
             return ret
         return wrapper
     return decorator
@@ -88,7 +88,7 @@ def decorate_object_methods(object_, object_to_string):
 
     """
     tracer = method_tracer(object_to_string)
-    for name, attribute in object_.__class__.__dict__.iteritems():
+    for name, attribute in object_.__class__.__dict__.items():
         if inspect.isfunction(attribute):
             new_method = types.MethodType(tracer(attribute), object_)
             object_.__dict__[name] = new_method

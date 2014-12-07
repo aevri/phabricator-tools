@@ -18,7 +18,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 
 def code_block(message, lang=None, name=None, lines=None, isBad=False):
@@ -94,7 +94,7 @@ def dict_to_table(dictionary):
     if dictionary:
         block = "\n"
 
-        for (key, value) in dictionary.iteritems():
+        for (key, value) in dictionary.items():
             block += "| **" + str(key) + "** | " + str(value) + " |\n"
 
         block += "\n"

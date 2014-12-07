@@ -14,7 +14,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import copy
 
@@ -31,7 +31,7 @@ def copy_dict_no_nones(d):
     :returns: a copy of 'd' minus any keys mapping to 'None'
 
     """
-    return {k: v for k, v in d.iteritems() if v is not None}
+    return {k: v for k, v in d.items() if v is not None}
 
 
 def ensure_keys(d, keys):

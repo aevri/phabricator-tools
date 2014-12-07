@@ -12,7 +12,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import os
 
@@ -140,7 +140,7 @@ def _processrepolist(
             mail_sender)
     except BaseException:
         on_exception("Arcyd will now stop")
-        print "stopping"
+        print("stopping")
         raise
 
 

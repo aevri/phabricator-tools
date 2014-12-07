@@ -14,7 +14,7 @@
 # [ B] test_B_RawDiffNewCommits
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import os
 import unittest

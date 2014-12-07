@@ -11,7 +11,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import argparse
 import contextlib
@@ -203,18 +203,16 @@ class _Fixture(object):
             repo_count,
             arcyd_count):
         if repo_count < 1:
-            raise(Exception("repo_count must be 1 or more, got {}".format(
-                repo_count)))
+            raise Exception
         if arcyd_count < 1:
-            raise(Exception("arcyd_count must be 1 or more, got {}".format(
-                arcyd_count)))
+            raise Exception
 
         self._root_dir = tempfile.mkdtemp()
 
         self._repo_root_dir = os.path.join(self._root_dir, 'repos')
         os.makedirs(self._repo_root_dir)
         self._repos = []
-        for i in xrange(repo_count):
+        for i in range(repo_count):
             repo_path = os.path.join(self._repo_root_dir, 'repo-{}'.format(i))
             os.makedirs(repo_path)
             self._repos.append(
@@ -224,7 +222,7 @@ class _Fixture(object):
         self._arcyd_root_dir = os.path.join(self._root_dir, 'arcyds')
         os.makedirs(self._arcyd_root_dir)
         self._arcyds = []
-        for i in xrange(arcyd_count):
+        for i in range(arcyd_count):
             arcyd_path = os.path.join(
                 self._arcyd_root_dir, 'arcyd-{}'.format(i))
             os.makedirs(arcyd_path)
@@ -235,7 +233,7 @@ class _Fixture(object):
 
     def launch_debug_shell(self):
         with phlsys_fs.chdir_context(self._root_dir):
-            print "Launching debug shell, exit the shell to continue ..."
+            print("Launching debug shell, exit the shell to continue ...")
             subprocess.call('bash')
 
     @property
@@ -293,11 +291,11 @@ def _do_tests():
                 '--repo-url-format', repo_url_format)
 
         with phlsys_timer.print_duration_context("Add repos to arcyd"):
-            for i in xrange(repo_count):
+            for i in range(repo_count):
                 arcyd('add-repo', 'localphab', 'localdir', 'repo-{}'.format(i))
 
         with phlsys_timer.print_duration_context("Pushing reviews"):
-            for i in xrange(repo_count):
+            for i in range(repo_count):
                 worker = fixture.repos[i].alice
                 worker.push_new_review_branch('review1')
 
@@ -305,7 +303,7 @@ def _do_tests():
             arcyd.run_once()
 
         with phlsys_timer.print_duration_context("Accepting reviews"):
-            for i in xrange(repo_count):
+            for i in range(repo_count):
                 bob = fixture.repos[i].bob
                 bob.fetch()
                 reviews = bob.list_reviews()

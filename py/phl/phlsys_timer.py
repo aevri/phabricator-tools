@@ -19,7 +19,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import contextlib
 import datetime
@@ -29,7 +29,7 @@ import datetime
 def print_duration_context(name):
     with timer_context() as t:
         yield
-        print "{} took {} secs".format(name, t.duration)
+        print("{} took {} secs".format(name, t.duration))
 
 
 @contextlib.contextmanager

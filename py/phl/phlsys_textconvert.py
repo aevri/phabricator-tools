@@ -16,33 +16,33 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import unicodedata
 
 # Unicode characters with sensible ASCII equivalents
 UNICODE_REPLACEMENTS = {
-    u"\u2010": u"-",    # Hyphen
-    u"\u2011": u"-",    # Non-breaking hyphen
-    u"\u2013": u"-",    # Figure dash
-    u"\u2013": u"-",    # En-dash
-    u"\u2014": u"-",    # Em-dash
-    u"\u2015": u"-",    # Horizontal bar
-    u"\u2212": u"-",    # Minus sign
+    "\u2010": "-",    # Hyphen
+    "\u2011": "-",    # Non-breaking hyphen
+    "\u2013": "-",    # Figure dash
+    "\u2013": "-",    # En-dash
+    "\u2014": "-",    # Em-dash
+    "\u2015": "-",    # Horizontal bar
+    "\u2212": "-",    # Minus sign
 
-    u"\u00b4": u"'",    # Acute accent
-    u"\u2018": u"'",    # Left single quote
-    u"\u2019": u"'",    # Right single quote
-    u"\u201c": u'"',    # Left double quote
-    u"\u201d": u'"',    # Right double quote
+    "\u00b4": "'",    # Acute accent
+    "\u2018": "'",    # Left single quote
+    "\u2019": "'",    # Right single quote
+    "\u201c": '"',    # Left double quote
+    "\u201d": '"',    # Right double quote
 
-    u"\u00b7": u"*",    # Middle dot
-    u"\u2022": u"*",    # Bullet
-    u"\u2023": u">",    # Triangular bullet
-    u"\u2024": u"*",    # One dot leader
-    u"\u2043": u"-",    # Hyphen bullet
-    u"\u25b8": u">",    # Black right-pointing small triangle
-    u"\u25e6": u"o",    # White bullet
+    "\u00b7": "*",    # Middle dot
+    "\u2022": "*",    # Bullet
+    "\u2023": ">",    # Triangular bullet
+    "\u2024": "*",    # One dot leader
+    "\u2043": "-",    # Hyphen bullet
+    "\u25b8": ">",    # Black right-pointing small triangle
+    "\u25e6": "o",    # White bullet
 }
 
 
@@ -71,7 +71,7 @@ def lossy_unicode_to_ascii(unicode_str):
     # first, apply a set of pre-defined substitutions to preserve common cases
     # like em-dashes and smart quotes.
     substituted = unicode_str
-    for src, dst in UNICODE_REPLACEMENTS.iteritems():
+    for src, dst in UNICODE_REPLACEMENTS.items():
         substituted = substituted.replace(src, dst)
 
     # next, decompose all the glyphs as much as possible - often multiple
@@ -102,10 +102,10 @@ def to_unicode(s, errors=None):
     if errors is None:
         errors = 'replace'
 
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s
     elif isinstance(s, str):
-        return unicode(s, errors=errors)
+        return str(s, errors=errors)
     else:
         raise TypeError('not a str or unicode')
 

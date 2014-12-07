@@ -60,7 +60,7 @@ output formats:
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import datetime
 import json
@@ -249,10 +249,10 @@ def _setupParserFilters(filters, self_filters, user_filters, time_filters):
 
 
 def _set_human_times_since(r, kind, since):
-    r[u"humanTimeSinceDate" + kind] = phlsys_timedeltatostr.quantized(since)
-    r[u"daysSinceDate" + kind] = phlsys_timedeltatostr.in_days(since)
-    r[u"weeksSinceDate" + kind] = phlsys_timedeltatostr.in_weeks(since)
-    r[u"monthsSinceDate" + kind] = phlsys_timedeltatostr.in_months(since)
+    r["humanTimeSinceDate" + kind] = phlsys_timedeltatostr.quantized(since)
+    r["daysSinceDate" + kind] = phlsys_timedeltatostr.in_days(since)
+    r["weeksSinceDate" + kind] = phlsys_timedeltatostr.in_weeks(since)
+    r["monthsSinceDate" + kind] = phlsys_timedeltatostr.in_months(since)
 
 
 class ValidationError(Exception):
@@ -287,10 +287,10 @@ def _process_user_fields(me, conduit, args):
 
     # conduit expects PHIDs not plain usernames
     user_phids = phlcon_user.UserPhidCache(conduit)
-    for users in d.itervalues():
+    for users in d.values():
         user_phids.add_hint_list(users)
 
-    for key in d.iterkeys():
+    for key in d.keys():
         d[key] = [user_phids.get_phid(u) for u in d[key]]
 
     return d
@@ -359,9 +359,9 @@ def _translate_user_phids(conduit, results):
 
     # do the translation
     for r in results:
-        r[u"authorUsername"] = phidToUser[r["authorPHID"]]
-        r[u"ccUsernames"] = [phidToUser[u] for u in r["ccs"]]
-        r[u"reviewerUsernames"] = [phidToUser[u] for u in r["reviewers"]]
+        r["authorUsername"] = phidToUser[r["authorPHID"]]
+        r["ccUsernames"] = [phidToUser[u] for u in r["ccs"]]
+        r["reviewerUsernames"] = [phidToUser[u] for u in r["reviewers"]]
 
 
 def _exclude_on_update_age(args, results):
@@ -392,8 +392,8 @@ def _set_human_times(results):
         _set_human_times_since(r, 'Modified', since_modified)
         _set_human_times_since(r, 'Created', since_created)
 
-        r[u"humanDateModified"] = str(date_modified)
-        r[u"humanDateCreated"] = str(date_created)
+        r["humanDateModified"] = str(date_modified)
+        r["humanDateCreated"] = str(date_created)
 
 
 def _output_results(args, results):
@@ -401,24 +401,24 @@ def _output_results(args, results):
         args.format_type = "short"
     if args.format_type:
         if args.format_type == "json":
-            print json.dumps(results, sort_keys=True, indent=2)
+            print(json.dumps(results, sort_keys=True, indent=2))
         elif args.format_type == "python":
             pprint.pprint(results)
         elif args.format_type == "short":
             shortTemplate = string.Template("$id / $statusName / $title")
             for x in results:
-                print shortTemplate.safe_substitute(x)
+                print(shortTemplate.safe_substitute(x))
         elif args.format_type == "ids":
             shortTemplate = string.Template("$id")
             for x in results:
-                print shortTemplate.safe_substitute(x)
+                print(shortTemplate.safe_substitute(x))
         else:
             raise Exception("unsupported format")
     else:  # args.format_string
         assert args.format_string
         template = string.Template(args.format_string)
         for x in results:
-            print template.safe_substitute(x)
+            print(template.safe_substitute(x))
 
 
 # -----------------------------------------------------------------------------

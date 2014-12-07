@@ -35,7 +35,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import contextlib
 import os
@@ -258,15 +258,13 @@ class CentralisedWithWorkers(object):
     def __init__(self, contributor_count):
         super(CentralisedWithWorkers, self).__init__()
         if contributor_count < 1:
-            raise(
-                Exception("contributor_count must be 1 or more, got {}".format(
-                    contributor_count)))
+            raise Exception
 
         self._central_repo = phlsys_git.Repo(tempfile.mkdtemp())
         self._central_repo("init", "--bare")
 
         self._workers = []
-        for i in xrange(contributor_count):
+        for i in range(contributor_count):
             self._workers.append(
                 Worker(phlsys_git.Repo(tempfile.mkdtemp())))
             self.workers[-1].repo("init")

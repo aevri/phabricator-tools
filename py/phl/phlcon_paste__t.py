@@ -1,6 +1,6 @@
 """Test suite for phlcon_paste."""
 
-from __future__ import absolute_import
+
 
 import unittest
 

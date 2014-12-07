@@ -44,7 +44,7 @@
 # [XD] check_XD_valid_reviews
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import collections
 
@@ -155,8 +155,8 @@ def check_XD_valid_reviews(fixture, naming, names_to_properties):
 
     tracker_names = []
 
-    for name, properties in names_to_properties.iteritems():
-        print properties
+    for name, properties in names_to_properties.items():
+        print(properties)
         review = naming.make_review_branch_from_name(name)
 
         # [XD] ReviewBranches created by the scheme have the expected

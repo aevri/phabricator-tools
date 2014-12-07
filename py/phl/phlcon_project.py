@@ -16,7 +16,7 @@
 # (this contents block is generated, edits will be lost)
 # =============================================================================
 
-from __future__ import absolute_import
+
 
 import phlsys_namedtuple
 
@@ -46,7 +46,7 @@ def query_some(conduit, max_items, offset):
     # the new version of the API stores the items under the 'data' key
     data = response['data'] if 'data' in response else response
 
-    results = [QueryResponse(**r) for phid, r in data.iteritems()]
+    results = [QueryResponse(**r) for phid, r in data.items()]
     return results
 
 

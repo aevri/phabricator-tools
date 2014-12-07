@@ -1,6 +1,6 @@
 """Test suite for abdt_branchmock."""
 
-from __future__ import absolute_import
+
 
 import unittest
 
