@@ -95,6 +95,8 @@ def run(*args, **kwargs):
     #       return the return value via the RunResult
     workingDir = kwargs.pop("workingDir", None)
     stdin = kwargs.pop("stdin", None)
+    if stdin:
+        stdin = bytes(stdin, 'ascii')
     assert not kwargs
     cmd = args
     try:
@@ -103,7 +105,8 @@ def run(*args, **kwargs):
             cwd=workingDir,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE,
+            universal_newlines=True)
         out, err = p.communicate(input=stdin)
     except OSError:
         sys.stderr.write(
