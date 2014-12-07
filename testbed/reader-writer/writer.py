@@ -15,7 +15,7 @@ import phlsys_fs
 
 while True:
     d = {}
-    for i in xrange(0, random.randint(1, 1000)):
+    for i in range(0, random.randint(1, 1000)):
         d[i] = random.randint(1, 1000)
 
     with phlsys_fs.write_file_lock_context('test-file') as f:
