@@ -256,7 +256,8 @@ class Conduit(object):
     def _authenticate_make_message(self):
         token = str(int(time.time()))
         # pylint: disable=E1101
-        signature = hashlib.sha1(token + self._certificate).hexdigest()
+        pre_signature_bytes = bytes(token + self._certificate, 'ascii')
+        signature = hashlib.sha1(pre_signature_bytes).hexdigest()
         # pylint: enable=E1101
 
         return {
@@ -278,6 +279,8 @@ class Conduit(object):
             "output": "json",
         })
 
+        body = bytes(body, 'ascii')
+
         if self._https_proxy or self._http_proxy:
             proxy = {}
             if self._https_proxy:
@@ -290,6 +293,7 @@ class Conduit(object):
         else:
             data = urllib.request.urlopen(path, body, _URLLIB_TIMEOUT).read()
 
+        data = str(data, 'ascii')
         return json.loads(data)
 
     def __call__(self, method, param_dict_in=None):
