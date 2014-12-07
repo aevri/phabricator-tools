@@ -43,7 +43,7 @@ class Watcher(object):
             self._requester_object = phlurl_request
 
     def _request_and_set_has_changed(self, url, has_changed):
-        content = self._requester_object.get(url)
+        content = bytes(self._requester_object.get(url), 'ascii')
         # pylint: disable=E1101
         self._results[url] = _HashHexdigestHasChanged(
             hashlib.sha1(content).hexdigest(), has_changed)
@@ -92,6 +92,7 @@ class Watcher(object):
             list(self._results.keys()))
         for url, contents in url_contents.items():
             old_result = self._results[url]
+            contents = bytes(contents, 'ascii')
 
             # Note that hash objects can't be compared directly so we much
             # first convert them to a representation that can be compared, in
