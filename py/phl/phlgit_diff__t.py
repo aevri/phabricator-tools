@@ -42,13 +42,13 @@ class Test(unittest.TestCase):
             rawDiff3 = phlgit_diff.raw_diff_range(
                 worker.repo, "master", "fork", 1000)
             self.assertEqual(
-                set(["ONLY_FORK", "ONLY_FORK2"]),
+                {"ONLY_FORK", "ONLY_FORK2"},
                 phlgit_diff.parse_filenames_from_raw_diff(rawDiff))
             self.assertEqual(
-                set(["ONLY_FORK", "ONLY_FORK2"]),
+                {"ONLY_FORK", "ONLY_FORK2"},
                 phlgit_diff.parse_filenames_from_raw_diff(rawDiff2))
             self.assertEqual(
-                set(["ONLY_FORK", "ONLY_FORK2"]),
+                {"ONLY_FORK", "ONLY_FORK2"},
                 phlgit_diff.parse_filenames_from_raw_diff(rawDiff3))
 
 

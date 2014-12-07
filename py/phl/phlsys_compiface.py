@@ -180,8 +180,8 @@ def check_public_ifaces_match(cls1, cls2):
     cls1_interface = list(cls1.__dict__.keys())
     cls2_interface = list(cls2.__dict__.keys())
 
-    cls1_public_interface = set([i for i in cls1_interface if i[0] != '_'])
-    cls2_public_interface = set([i for i in cls2_interface if i[0] != '_'])
+    cls1_public_interface = {i for i in cls1_interface if i[0] != '_'}
+    cls2_public_interface = {i for i in cls2_interface if i[0] != '_'}
 
     if cls1_public_interface != cls2_public_interface:
         print("interfaces differ:", cls1_name, "and", cls2_name)
