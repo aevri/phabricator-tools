@@ -103,10 +103,10 @@ def to_unicode(s, errors=None):
 
     if isinstance(s, str):
         return s
-    elif isinstance(s, str):
-        return str(s, errors=errors)
+    elif isinstance(s, bytes):
+        return str(s, 'ascii', errors=errors)
     else:
-        raise TypeError('not a str or unicode')
+        raise TypeError('not a str or bytes')
 
 
 def ensure_ascii(s):
@@ -117,14 +117,14 @@ def ensure_ascii(s):
 
     If the supplied 's' is not a str then raise TypeError.
 
-    :s: a str, should be ascii
-    :returns: an ascii str
+    :s: a bytes, should be ascii
+    :returns: an ascii bytes
 
     """
-    if not isinstance(s, str):
-        raise TypeError('not a str')
+    if not isinstance(s, bytes):
+        raise TypeError('not a bytes')
 
-    return ''.join([c if ord(c) < 128 else '?' for c in s])
+    return bytes(c if c < 128 else ord('?') for c in s)
 
 
 # -----------------------------------------------------------------------------
