@@ -13,8 +13,6 @@
 # =============================================================================
 
 
-
-
 def object_(repo, ref):
     """Return the content of the specified object.
 

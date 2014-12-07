@@ -23,8 +23,6 @@
 # =============================================================================
 
 
-
-
 class AbdBaseException(Exception):
 
     def __init__(self, message):

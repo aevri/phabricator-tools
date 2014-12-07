@@ -12,8 +12,6 @@
 # =============================================================================
 
 
-
-
 def after_prefix(string, prefix):
     """Return 'string' with 'prefix' removed.
 

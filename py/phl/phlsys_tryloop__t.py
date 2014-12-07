@@ -1,7 +1,6 @@
 """Test suite for phlsys_tryloop."""
 
 
-
 import datetime
 import itertools
 import unittest

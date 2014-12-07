@@ -12,8 +12,6 @@
 # =============================================================================
 
 
-
-
 def commits(repo, *commits):
     """Return list of strings of commit SHA1s reachable from each in 'commits'.
 

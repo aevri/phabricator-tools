@@ -14,8 +14,6 @@
 # =============================================================================
 
 
-
-
 def yes_or_no(prompt, default="yes"):
     """Return True if the user chooses 'yes', False if they choose 'no'.
 

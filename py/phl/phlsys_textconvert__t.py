@@ -1,7 +1,6 @@
 """Test suite for phlsys_textconvert."""
 
 
-
 import string
 import unittest
 

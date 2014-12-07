@@ -19,8 +19,6 @@ Otherwise all entries in the index are compared.
 # =============================================================================
 
 
-
-
 def is_index_dirty(repo):
     """Return True if there are staged changes, False otherwise.
 

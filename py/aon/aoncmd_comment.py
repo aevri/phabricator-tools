@@ -26,7 +26,6 @@ usage examples:
 # =============================================================================
 
 
-
 import argparse
 import sys
 import textwrap

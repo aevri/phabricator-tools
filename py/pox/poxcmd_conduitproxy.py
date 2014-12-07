@@ -25,7 +25,6 @@ giving away admin credentials directly to multiple parties.
 # =============================================================================
 
 
-
 import http.server
 import argparse
 import json

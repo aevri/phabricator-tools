@@ -24,7 +24,6 @@
 # TODO: add emails too
 
 
-
 import collections
 
 Account = collections.namedtuple(

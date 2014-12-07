@@ -61,7 +61,6 @@ output formats:
 # =============================================================================
 
 
-
 import datetime
 import json
 import pprint

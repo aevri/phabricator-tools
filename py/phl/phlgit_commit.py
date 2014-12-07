@@ -13,8 +13,6 @@
 # =============================================================================
 
 
-
-
 def index(repo, message):
     """Create a new commit from the contents of the index.
 

@@ -13,8 +13,6 @@
 # =============================================================================
 
 
-
-
 def names(repo):
     """Return a list of string names of the refs in the supplied repo.
 

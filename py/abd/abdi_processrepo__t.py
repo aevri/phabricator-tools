@@ -1,7 +1,6 @@
 """Test suite for abdi_processrepo."""
 
 
-
 import types
 import unittest
 

@@ -17,7 +17,6 @@
 # =============================================================================
 
 
-
 import unicodedata
 
 # Unicode characters with sensible ASCII equivalents

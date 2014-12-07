@@ -14,7 +14,6 @@
 # =============================================================================
 
 
-
 import os
 
 import phlgitx_ignoreattributes
@@ -248,7 +247,8 @@ def _check_repo_remote(args, repo_name, repo_config):
                 all_ok = False
     except phlsys_subprocess.CalledProcessError as e:
         all_ok = False
-        print("error ensuring reserve branch for {repo}".format(repo=repo_name))
+        print(
+            "error ensuring reserve branch for {repo}".format(repo=repo_name))
         _print_indented(4, e.stdout)
         _print_indented(4, e.stderr)
         print()

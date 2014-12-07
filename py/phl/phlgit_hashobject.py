@@ -12,8 +12,6 @@
 # =============================================================================
 
 
-
-
 def write_string(repo, s):
     """Return the hash of the supplied string 's' and write the object.
 

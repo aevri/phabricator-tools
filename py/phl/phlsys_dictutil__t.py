@@ -1,7 +1,6 @@
 """Test suite for phlsys_dictutil."""
 
 
-
 import copy
 import unittest
 

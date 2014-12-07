@@ -1,7 +1,6 @@
 """Test suite for phlsys_namedtuple."""
 
 
-
 import unittest
 import warnings
 

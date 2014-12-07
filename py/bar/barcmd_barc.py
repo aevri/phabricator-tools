@@ -16,7 +16,6 @@ Essentially a prescriptive tool for supporting arcyd's branch-based workflow.
 # =============================================================================
 
 
-
 import argparse
 
 import phlsys_subcommand

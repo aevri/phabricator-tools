@@ -12,8 +12,6 @@
 # =============================================================================
 
 
-
-
 def onto_upstream(repo, upstream):
     """Rebase HEAD onto the supplied 'upstream'.
 

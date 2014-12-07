@@ -1,7 +1,6 @@
 """Test suite for phlcon_paste."""
 
 
-
 import unittest
 
 import phldef_conduit

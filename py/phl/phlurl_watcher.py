@@ -20,7 +20,6 @@
 # =============================================================================
 
 
-
 import collections
 import hashlib
 import json
@@ -89,7 +88,8 @@ class Watcher(object):
     def refresh(self):
         # XXX: it's safe to refresh multiple times - the 'has changed' flag
         #      is only consumed on 'has_url_recently_changed'
-        url_contents = self._requester_object.get_many(list(self._results.keys()))
+        url_contents = self._requester_object.get_many(
+            list(self._results.keys()))
         for url, contents in url_contents.items():
             old_result = self._results[url]
 

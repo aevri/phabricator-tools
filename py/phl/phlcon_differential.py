@@ -51,7 +51,6 @@
 # =============================================================================
 
 
-
 import os
 
 import phlsys_conduit
@@ -116,7 +115,8 @@ REVIEWER_ACTIONS = {
 
 # Enumerate all the actions either a reviewer or author may perform
 # map the strings that appear in the web UI to string that conduit expects
-USER_ACTIONS = dict(list(AUTHOR_ACTIONS.items()) + list(REVIEWER_ACTIONS.items()))
+USER_ACTIONS = dict(list(AUTHOR_ACTIONS.items())
+                    + list(REVIEWER_ACTIONS.items()))
 
 
 # Enumerate some of the fields that Differential expects to be able fill out

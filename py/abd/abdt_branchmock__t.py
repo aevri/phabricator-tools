@@ -1,7 +1,6 @@
 """Test suite for abdt_branchmock."""
 
 
-
 import unittest
 
 import phlsys_compiface

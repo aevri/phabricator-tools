@@ -20,7 +20,6 @@
 # =============================================================================
 
 
-
 import collections
 
 import phlcon_differential

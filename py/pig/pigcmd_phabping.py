@@ -21,7 +21,6 @@ For benchmarking Phabricator you might want to take a look at 'Apache Bench'.
 # =============================================================================
 
 
-
 import argparse
 import collections
 import itertools

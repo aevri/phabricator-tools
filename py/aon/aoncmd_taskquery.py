@@ -50,8 +50,6 @@ output formats:
 # =============================================================================
 
 
-
-
 import json
 import pprint
 import textwrap

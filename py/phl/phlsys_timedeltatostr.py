@@ -24,8 +24,6 @@
 # =============================================================================
 
 
-
-
 class UnitToSeconds(object):  # XXX: will derive from Enum in Python 3.4+
     year = 60 * 60 * 24 * 365  # XXX: based on average days per year
     month = 60 * 60 * 24 * 30  # XXX: based on average days per month

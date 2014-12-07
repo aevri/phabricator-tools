@@ -33,11 +33,9 @@ kinds of error identifiers to expect.
 # =============================================================================
 
 
-
 #
 # tryloop identifiers
 #
-
 # abdi_processrepos
 CONDUIT_REFRESH = "conduit-refresh"
 GIT_SNOOP = "git-snoop"

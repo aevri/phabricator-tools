@@ -23,7 +23,6 @@ information is provided.
 # =============================================================================
 
 
-
 import difflib
 
 import phlsys_arcconfig

@@ -30,7 +30,6 @@ or calculated from commits that you provide as parameters.
 # =============================================================================
 
 
-
 import argparse
 import collections
 import re

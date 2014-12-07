@@ -21,7 +21,6 @@
 # =============================================================================
 
 
-
 # =============================================================================
 #                                   TEST PLAN
 # -----------------------------------------------------------------------------
@@ -60,8 +59,6 @@
 # N.B. the functions begin with 'check' not 'test' so that the 'nose' test
 #      runner won't try to run them for itself and fail
 # =============================================================================
-
-
 def check_XB_UntrackedBranch(fixture):
     base, branch_name, branch = fixture._setup_for_untracked_branch()
     assert_branch_is_new(fixture, branch, branch_name, base)

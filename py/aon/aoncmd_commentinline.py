@@ -27,7 +27,6 @@ usage examples:
 # =============================================================================
 
 
-
 import argparse
 
 import phlcon_differential

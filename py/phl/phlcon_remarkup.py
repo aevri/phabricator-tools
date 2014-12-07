@@ -19,8 +19,6 @@
 # =============================================================================
 
 
-
-
 def code_block(message, lang=None, name=None, lines=None, isBad=False):
     """Return a string code block.
 

@@ -17,8 +17,6 @@
 # =============================================================================
 
 
-
-
 def _cat_file_pretty(repo, objectHash):
     return repo('cat-file', '-p', objectHash)
 
