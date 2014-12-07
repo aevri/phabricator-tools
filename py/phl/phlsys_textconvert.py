@@ -57,11 +57,11 @@ def lossy_unicode_to_ascii(unicode_str):
 
         Horizontal ellipses character expands to 3 periods
         >>> lossy_unicode_to_ascii('\u2026')
-        '...'
+        b'...'
 
         Hyphenation point is replaced by question mark
         >>> lossy_unicode_to_ascii('\u2027')
-        '?'
+        b'?'
 
     :unicode_str: the unicode string to re-encode as ascii
     :returns: the best effort ascii representation of 'unicode_str'

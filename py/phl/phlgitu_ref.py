@@ -193,7 +193,7 @@ def fq_remote_to_short_local(ref):
 
         >>> fq_remote_to_short_local("refs/heads/mywork")
         Traceback (most recent call last):
-        Error: ref can't be converted to short local: mywork
+        phlgitu_ref.Error: ref can't be converted to short local: mywork
 
     """
     # convert to e.g. 'origin/mywork'

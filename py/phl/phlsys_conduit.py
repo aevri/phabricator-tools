@@ -65,19 +65,19 @@ def act_as_user_context(conduit, user):
         >>> conduit = make_phab_test_conduit()
         >>> with act_as_user_context(conduit, 'alice'):
         ...     conduit("user.whoami")["userName"]
-        u'alice'
+        'alice'
 
         impersonate bob
         >>> conduit = make_phab_test_conduit()
         >>> with act_as_user_context(conduit, 'bob'):
         ...     conduit("user.whoami")["userName"]
-        u'bob'
+        'bob'
 
         impersonate bob, revert to phab when context expires
         >>> conduit = make_phab_test_conduit()
         >>> with act_as_user_context(conduit, 'bob'): pass
         >>> conduit("user.whoami")["userName"]
-        u'phab'
+        'phab'
 
     """
     prevUser = conduit.get_act_as_user()
