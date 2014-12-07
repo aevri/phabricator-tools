@@ -86,10 +86,12 @@ def main():
     if args.different_since:
         diff_param = args.different_since + '...'
         file_list = subprocess.check_output(
-            ['git', 'diff', diff_param, '--name-only']).splitlines()
+            ['git', 'diff', diff_param, '--name-only'],
+            universal_newlines=True).splitlines()
     else:
         file_list = subprocess.check_output(
-            ['git', 'ls-tree', '-r', '--name-only', 'HEAD']).splitlines()
+            ['git', 'ls-tree', '-r', '--name-only', 'HEAD'],
+            universal_newlines=True).splitlines()
 
     file_list = list(filter(should_process_file, file_list))
     file_list = list(filter(os.path.isfile, file_list))
