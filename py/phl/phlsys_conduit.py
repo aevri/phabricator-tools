@@ -63,14 +63,14 @@ def act_as_user_context(conduit, user):
     Usage Example:
         impersonate alice
         >>> conduit = make_phab_test_conduit()
-        >>> with act_as_user_context(conduit, 'alice'):\
-                conduit("user.whoami")["userName"]
+        >>> with act_as_user_context(conduit, 'alice'):
+        ...     conduit("user.whoami")["userName"]
         u'alice'
 
         impersonate bob
         >>> conduit = make_phab_test_conduit()
-        >>> with act_as_user_context(conduit, 'bob'):\
-                conduit("user.whoami")["userName"]
+        >>> with act_as_user_context(conduit, 'bob'):
+        ...     conduit("user.whoami")["userName"]
         u'bob'
 
         impersonate bob, revert to phab when context expires

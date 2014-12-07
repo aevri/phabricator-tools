@@ -53,7 +53,7 @@ def read_file_lock_context(filename):
         ...     with open('testfile', 'w') as f:
         ...         f.write('hello')
         ...     with read_file_lock_context('testfile') as f:
-        ...         print f.read()
+        ...         print(f.read())
         hello
 
     """
@@ -79,7 +79,7 @@ def write_file_lock_context(filename):
         ...     with write_file_lock_context('testfile') as f:
         ...         f.write('hello')
         ...     with read_file_lock_context('testfile') as f:
-        ...         print f.read()
+        ...         print(f.read())
         hello
 
     """

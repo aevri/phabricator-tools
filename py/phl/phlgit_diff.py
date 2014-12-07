@@ -94,7 +94,7 @@ def create_add_file(path, content):
     Usage examples:
 
         create a diff for new file 'README' with content 'hello'
-        >>> print create_add_file('README', 'hello')
+        >>> print(create_add_file('README', 'hello'))
         diff --git a/README b/README
         new file mode 100644
         index 0000000..b6fc4c6
