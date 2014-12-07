@@ -16,7 +16,7 @@ cd "$(dirname "$0")"
 # update 'contents block' documentation at the top of each component
 ###############################################################################
 
-python meta/docgen/updatemodcontents.py \
+python3 meta/docgen/updatemodcontents.py \
     --force-insert \
     `find py/ meta/docgen meta/autofix -iname '*.py' | grep -v __t`
 printf "."
@@ -30,7 +30,7 @@ for dir in $(find py/ -mindepth 1 -maxdepth 1 -type d); do
     group=$(basename "${dir}")
     mdfile="${dir}/README.md"
     echo "# ${group}" > ${mdfile}
-    python meta/docgen/genmoddoc.py \
+    python3 meta/docgen/genmoddoc.py \
         --docfile - \
         `find ${dir} -iname '*.py' | grep -v __t` \
         >> ${mdfile}
