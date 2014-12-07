@@ -2,10 +2,7 @@
 ## static analysis tests ######################################################
 #                                                                             #
 # The following tests are performed:                                          #
-# :o pychecker (linter)                                                       #
-# :o flake8 (linter)                                                          #
-# :o check dependencies between packages, using snakefood                     #
-# :o check for components which are unused by end products, using snakefood   #
+# :o pep8 (linter)                                                            #
 #                                                                             #
 ###############################################################################
 
@@ -19,48 +16,9 @@ libscripts=$(find py/ -iname '*.py' |  tr '\n' ' ')
 allscripts="$(ls bin/* proto/* meta/docgen/*.py meta/autofix/*.py) $libscripts"
 
 ###############################################################################
-# pylint
+# pep8
 ###############################################################################
-PYTHONPATH=py/phl pylint \
-    --rcfile=.pylint.rc \
-    --errors-only \
-    ${libscripts}
-printf "."
-
-###############################################################################
-# pychecker
-###############################################################################
-
-## please install pychecker with sudo apt-get install pychecker
-# TODO: find workaround for borked import detection
-# TODO: fix phlcon_differential.createDiff() to not have 16 params
-PYTHONPATH=py/phl:py/abd pychecker \
-    --quiet --only --no-import --exec --constant1 --initattr --changetypes \
-    --no-deprecated \
-    --maxlines 150 --maxbranches 15 --maxreturns 5 --maxargs 16 --maxlocals 20\
-    ${libscripts}
-printf "."
-
-###############################################################################
-# flake8
-###############################################################################
-flake8 $allscripts
-printf "."
-
-###############################################################################
-# check dependencies between packages
-###############################################################################
-
-# please install snakefood with ./meta/package_deps/install_snakefood.sh
-sfood ${libscripts} --internal > meta/package_deps/deps
-./meta/package_deps/process.py meta/package_deps/deps meta/package_deps/file-deps meta/package_deps/package-deps
-diff ./meta/package_deps/expected-package-deps ./meta/package_deps/package-deps
-printf "."
-
-###############################################################################
-# check for unused components
-###############################################################################
-(cd meta/package_deps; ./check_no_dead_files.sh)
+pep8 $allscripts
 printf "."
 
 # -----------------------------------------------------------------------------
