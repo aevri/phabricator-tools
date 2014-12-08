@@ -337,7 +337,7 @@ class Repo(object):
         :returns: a list of (sha1, name)
 
         """
-        return self._repo.hash_ref_pairs
+        return phlgit_showref.hash_ref_pairs(self)
 
     def __call__(self, *args, **kwargs):
         if args and args[0] == 'push':
