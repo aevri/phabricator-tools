@@ -101,7 +101,7 @@ def _setup_logger(fs):
     info_handler.setLevel(logging.INFO)
     debug_handler = logging.FileHandler(fs.layout.log_debug)
     debug_handler.setLevel(logging.DEBUG)
-    logfmt = '%(asctime)s UTC: %(levelname)s: (%(threadName)-10s) %(message)s'
+    logfmt = '%(asctime)s UTC: %(levelname)s: (%(processName)-11s) %(message)s'
     formatter = logging.Formatter(logfmt)
     logging.Formatter.converter = time.gmtime
     info_handler.setFormatter(formatter)
