@@ -15,6 +15,7 @@ from __future__ import absolute_import
 
 import json
 import logging
+import multiprocessing
 import os
 import threading
 import time
@@ -128,7 +129,9 @@ def do(
         # - limit max connections to git hosts
         #
         for r in repos:
-            r()
+            worker = multiprocessing.Process(target=r)
+            worker.start()
+            worker.join()
 
         # important to do this before stopping arcyd and as soon as possible
         # after doing fetches
