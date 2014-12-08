@@ -87,7 +87,7 @@ class _Worker(object):
         return phlgit_push.push(self._repo, branch_name, 'origin')
 
     def fetch(self):
-        self._repo('fetch')
+        self._repo('fetch', '--prune')
 
     def list_reviews(self):
         return json.loads(self.barc('list', '--format-json'))
@@ -261,7 +261,7 @@ def _do_tests():
     phab_uri = phldef_conduit.TEST_URI
 
     # pychecker makes us declare this before 'with'
-    repo_count = 10
+    repo_count = 4
     arcyd_count = 1
     with phlsys_timer.print_duration_context("Fixture setup"):
         fixture = _Fixture(
@@ -304,6 +304,8 @@ def _do_tests():
         with phlsys_timer.print_duration_context("Creating reviews"):
             arcyd.run_once()
 
+        print arcyd.debug_log()
+
         with phlsys_timer.print_duration_context("Accepting reviews"):
             for i in xrange(repo_count):
                 bob = fixture.repos[i].bob
@@ -311,15 +313,22 @@ def _do_tests():
                 reviews = bob.list_reviews()
                 assert len(reviews) == 1
                 r = reviews[0]
+                print r["review_id"]
                 bob.accept_review(r["review_id"])
 
         with phlsys_timer.print_duration_context("Landing reviews"):
             arcyd.run_once()
 
+        with phlsys_timer.print_duration_context("Check reviews are landed"):
+            for i in xrange(repo_count):
+                bob = fixture.repos[i].bob
+                bob.fetch()
+                reviews = bob.list_reviews()
+                assert len(reviews) == 0
+
         with phlsys_timer.print_duration_context("Update nothing"):
             arcyd.run_once()
 
-        print arcyd.debug_log()
         # launch a debug shell for the user to poke around in
         # fixture.launch_debug_shell()
 
