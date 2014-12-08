@@ -298,7 +298,7 @@ class Branch(object):
         message = ""
         for r in revisions:
             message += r.abbrev_hash + " " + r.subject + "\n"
-        return phlsys_textconvert.ensure_ascii(message)
+        return message
 
     def make_message_digest(self):
         """Return a string digest of the commit messages on the branch.

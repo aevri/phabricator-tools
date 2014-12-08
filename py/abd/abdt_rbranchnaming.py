@@ -142,7 +142,7 @@ class Naming(object):
             >>> make_branch('invalid/master/mywork')
             Traceback (most recent call last):
                 ...
-            Error
+            abdt_naming.Error
 
         :branch_name: string name of the review branch
         :returns: ReviewBranch or None if invalid

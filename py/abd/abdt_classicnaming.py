@@ -54,12 +54,12 @@ class Naming(object):
             >>> make_branch('dev/arcyd/trackers/x/ok/r/master/do/99')
             Traceback (most recent call last):
                 ...
-            Error
+            abdt_naming.Error
 
             >>> make_branch('invalid/mywork/master')
             Traceback (most recent call last):
                 ...
-            Error
+            Eabdt_naming.Error
 
         :branch_name: string name of the working branch
         :returns: WorkingBranch or None if invalid
@@ -141,7 +141,7 @@ class Naming(object):
             >>> make_branch('invalid/mywork/master')
             Traceback (most recent call last):
                 ...
-            Error
+            abdt_naming.Error
 
         :branch_name: string name of the review branch
         :returns: ReviewBranch or None if invalid
