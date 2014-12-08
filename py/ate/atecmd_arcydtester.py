@@ -143,7 +143,7 @@ class _Worker(object):
         return phlgit_push.push(self._repo, branch_name, 'origin')
 
     def fetch(self):
-        self._repo('fetch')
+        self._repo('fetch', '--prune')
 
     def list_reviews(self):
         return json.loads(self.barc('list', '--format-json'))
