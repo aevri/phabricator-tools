@@ -128,9 +128,13 @@ def do(
         # - conduits, support limited number of connections at the same time
         # - limit max connections to git hosts
         #
+        worker_list = []
         for r in repos:
             worker = multiprocessing.Process(target=r)
             worker.start()
+            worker_list.append(worker)
+
+        for worker in worker_list:
             worker.join()
 
         # important to do this before stopping arcyd and as soon as possible
