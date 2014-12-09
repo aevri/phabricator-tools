@@ -1,0 +1,33 @@
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1] [2014-12-09 09:32:30] EXCEPTION: (AphrontQueryDeadlockException) #1213: Deadlock found when trying to get lock; try restarting transaction at [/phabricator/instances/dev/libphutil/src/aphront/storage/connection/mysql/AphrontMySQLDatabaseConnectionBase.php:290]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #0 AphrontMySQLDatabaseConnectionBase::throwQueryCodeException(1213, Deadlock found when trying to get lock; try restarting transaction) called at [/phabricator/instances/dev/libphutil/src/aphront/storage/connection/mysql/AphrontMySQLDatabaseConnectionBase.php:275]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #1 AphrontMySQLDatabaseConnectionBase::throwQueryException(Object mysqli) called at [/phabricator/instances/dev/libphutil/src/aphront/storage/connection/mysql/AphrontMySQLDatabaseConnectionBase.php:184]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #2 AphrontMySQLDatabaseConnectionBase::executeRawQuery(INSERT INTO `differential_relationship`
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]             (revisionID, relation, objectPHID, sequence, reasonPHID)
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]           VALUES (9540, 'subd', 'PHID-USER-n334wwtakshsxeau3qij', 0, 'PHID-USER-n334wwtakshsxeau3qij')) called at [/phabricator/instances/dev/libphutil/src/xsprintf/queryfx.php:9]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #3 queryfx(Object AphrontMySQLiDatabaseConnection, INSERT INTO %T
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]             (revisionID, relation, objectPHID, sequence, reasonPHID)
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]           VALUES %Q, differential_relationship, (9540, 'subd', 'PHID-USER-n334wwtakshsxeau3qij', 0, 'PHID-USER-n334wwtakshsxeau3qij')) called at [/phabricator/instances/dev/phabricator/src/applications/differential/editor/DifferentialRevisionEditor.php:676]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #4 DifferentialRevisionEditor::alterRelationships(Object DifferentialRevision, Array , Array , Array { 0 => PHID-USER-n334wwtakshsxeau3qij }, PHID-USER-n334wwtakshsxeau3qij, subd) called at [/phabricator/instances/dev/phabricator/src/applications/differential/editor/DifferentialRevisionEditor.php:568]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #5 DifferentialRevisionEditor::alterCCs(Object DifferentialRevision, Array , Array , Array { 0 => PHID-USER-n334wwtakshsxeau3qij }, PHID-USER-n334wwtakshsxeau3qij) called at [/phabricator/instances/dev/phabricator/src/applications/differential/editor/DifferentialRevisionEditor.php:537]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #6 DifferentialRevisionEditor::addCC(Object DifferentialRevision, PHID-USER-n334wwtakshsxeau3qij, PHID-USER-n334wwtakshsxeau3qij) called at [/phabricator/instances/dev/phabricator/src/applications/differential/editor/DifferentialCommentEditor.php:492]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #7 DifferentialCommentEditor::save() called at [/phabricator/instances/dev/phabricator/src/applications/differential/conduit/ConduitAPI_differential_createcomment_Method.php:57]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #8 ConduitAPI_differential_createcomment_Method::execute(Object ConduitAPIRequest) called at [/phabricator/instances/dev/phabricator/src/applications/conduit/method/ConduitAPIMethod.php:58]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #9 ConduitAPIMethod::executeMethod(Object ConduitAPIRequest) called at [/phabricator/instances/dev/phabricator/src/applications/conduit/call/ConduitCall.php:67]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #10 ConduitCall::execute() called at [/phabricator/instances/dev/phabricator/src/applications/conduit/controller/PhabricatorConduitAPIController.php:90]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #11 PhabricatorConduitAPIController::processRequest() called at [/phabricator/instances/dev/phabricator/webroot/index.php:91]
+[Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1] PHP Fatal error:  Uncaught exception 'Exception' with message 'Process exited with an open transaction! The transaction will be implicitly rolled back. Calls to openTransaction() must always be paired with a call to saveTransaction() or killTransaction().' in /phabricator/instances/dev/libphutil/src/aphront/storage/connection/AphrontDatabaseTransactionState.php:71\nStack trace:\n#0 [internal function]: AphrontDatabaseTransactionState->__destruct()\n#1 {main}\n  thrown in /phabricator/instances/dev/libphutil/src/aphront/storage/connection/AphrontDatabaseTransactionState.php on line 71
+# -----------------------------------------------------------------------------
+# Copyright (C) 2014 Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------ END-OF-FILE ----------------------------------
