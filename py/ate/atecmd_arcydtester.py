@@ -261,7 +261,7 @@ def _do_tests():
     phab_uri = phldef_conduit.TEST_URI
 
     # pychecker makes us declare this before 'with'
-    repo_count = 10
+    repo_count = 20
     arcyd_count = 1
     with phlsys_timer.print_duration_context("Fixture setup"):
         fixture = _Fixture(

@@ -48,6 +48,7 @@ import phldef_conduit
 import phlsys_threading
 
 _URLLIB_TIMEOUT = 600
+_LOGGER = logging.getLogger(__name__)
 
 # TODO: handle re-authentication when the token expires
 # TODO: allow connections without specifying user details where possible
@@ -279,6 +280,7 @@ class Conduit(object):
             "output": "json",
         })
 
+        _LOGGER.debug('conduit: {}'.format(body))
         if self._https_proxy or self._http_proxy:
             proxy = {}
             if self._https_proxy:
