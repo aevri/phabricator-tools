@@ -319,6 +319,8 @@ def _do_tests():
         with phlsys_timer.print_duration_context("Landing reviews"):
             arcyd.run_once()
 
+        print arcyd.debug_log()
+
         with phlsys_timer.print_duration_context("Check reviews are landed"):
             for i in xrange(repo_count):
                 bob = fixture.repos[i].bob
