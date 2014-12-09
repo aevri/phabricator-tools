@@ -48,13 +48,13 @@ class _WorkerManager(object):
 
     def __init__(self, max_workers):
         self._workers = []
-        self._semaphore = threading.Semaphore(max_workers)
+        self._semaphore = multiprocessing.Semaphore(max_workers)
 
     def add(self, repos):
         self._semaphore.acquire()
         self._remove_joinable()
 
-        worker = threading.Thread(
+        worker = multiprocessing.Process(
             target=self._worker_wrapper, args=(repos,))
         self._workers.append(worker)
         worker.start()
@@ -128,14 +128,10 @@ def do(
         # - conduits, support limited number of connections at the same time
         # - limit max connections to git hosts
         #
-        worker_list = []
+        worker_manager = _WorkerManager(max_workers=5)
         for r in repos:
-            worker = multiprocessing.Process(target=r)
-            worker.start()
-            worker_list.append(worker)
-
-        for worker in worker_list:
-            worker.join()
+            worker_manager.add([r])
+        worker_manager.join_all()
 
         # important to do this before stopping arcyd and as soon as possible
         # after doing fetches
