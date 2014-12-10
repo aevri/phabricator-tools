@@ -43,8 +43,8 @@ def main():
         '--phab-uri',
         type=str,
         default=phldef_conduit.TEST_URI,
-        help='uri of Phabricator instance to connect to, defaults to expect a'
-             'phabricator-tools provisioned local install')
+        help='URI of Phabricator instance to connect to, defaults to expect a '
+             'phabricator-tools provisioned local install.')
 
     default_arcyd_creds = (
         phldef_conduit.PHAB.user,
