@@ -2,6 +2,16 @@
 # =============================================================================
 # CONTENTS
 # -----------------------------------------------------------------------------
+# phlsys_multiprocessing
+#
+# Public Classes:
+#   QueueLoggingHandler
+#    .emit
+#
+# Public Functions:
+#   logging_context
+#   logging_process
+#
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
 # =============================================================================
@@ -9,8 +19,8 @@
 from __future__ import absolute_import
 
 import contextlib
-import multiprocessing
 import logging
+import multiprocessing
 
 
 @contextlib.contextmanager
