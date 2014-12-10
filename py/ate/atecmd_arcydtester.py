@@ -268,7 +268,7 @@ def _do_tests(args):
     phab_uri = args.phab_uri
 
     # pychecker makes us declare this before 'with'
-    repo_count = 20
+    repo_count = 1
     arcyd_count = 1
     with phlsys_timer.print_duration_context("Fixture setup"):
         fixture = _Fixture(
@@ -311,8 +311,6 @@ def _do_tests(args):
         with phlsys_timer.print_duration_context("Creating reviews"):
             arcyd.run_once()
 
-        print arcyd.debug_log()
-
         with phlsys_timer.print_duration_context("Accepting reviews"):
             for i in xrange(repo_count):
                 bob = fixture.repos[i].bob
@@ -326,8 +324,6 @@ def _do_tests(args):
         with phlsys_timer.print_duration_context("Landing reviews"):
             arcyd.run_once()
 
-        print arcyd.debug_log()
-
         with phlsys_timer.print_duration_context("Check reviews are landed"):
             for i in xrange(repo_count):
                 bob = fixture.repos[i].bob
@@ -337,6 +333,8 @@ def _do_tests(args):
 
         with phlsys_timer.print_duration_context("Update nothing"):
             arcyd.run_once()
+
+        print arcyd.debug_log()
 
         # launch a debug shell for the user to poke around in
         # fixture.launch_debug_shell()
