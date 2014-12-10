@@ -16,3 +16,18 @@
 [Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #10 ConduitCall::execute() called at [/phabricator/instances/dev/phabricator/src/applications/conduit/controller/PhabricatorConduitAPIController.php:90]
 [Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1]   #11 PhabricatorConduitAPIController::processRequest() called at [/phabricator/instances/dev/phabricator/webroot/index.php:91]
 [Tue Dec 09 09:32:30 2014] [error] [client 127.0.0.1] PHP Fatal error:  Uncaught exception 'Exception' with message 'Process exited with an open transaction! The transaction will be implicitly rolled back. Calls to openTransaction() must always be paired with a call to saveTransaction() or killTransaction().' in /phabricator/instances/dev/libphutil/src/aphront/storage/connection/AphrontDatabaseTransactionState.php:71\nStack trace:\n#0 [internal function]: AphrontDatabaseTransactionState->__destruct()\n#1 {main}\n  thrown in /phabricator/instances/dev/libphutil/src/aphront/storage/connection/AphrontDatabaseTransactionState.php on line 71
+# -----------------------------------------------------------------------------
+# Copyright (C) 2014 Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------ END-OF-FILE ----------------------------------
