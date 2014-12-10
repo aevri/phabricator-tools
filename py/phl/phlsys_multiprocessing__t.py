@@ -40,17 +40,27 @@ class Test(unittest.TestCase):
         with multi_resource.resource_context() as resource:
             self.assertEqual("resource", resource)
 
-        # make sure that worker processes can get a resource
+    def test_multiresource_changes_propagate(self):
+
         def worker(resource):
-            print resource
+            with resource.resource_context() as r:
+                r.append("worker process")
+
+        def factory():
+            return ["main process"]
+
+        multi_resource = phlsys_multiprocessing.MultiResource(1, factory)
+
         worker_list = []
         num_workers = 5
         for _ in xrange(num_workers):
             worker_list.append(
-                multiprocessing.Process(target=worker, args=(resource,)))
+                multiprocessing.Process(target=worker, args=(multi_resource,)))
             worker_list[-1].start()
         for w in worker_list:
             w.join()
+        with multi_resource.resource_context() as r:
+            self.assertEqual(len(r), num_workers + 1)
 
 
 # -----------------------------------------------------------------------------
