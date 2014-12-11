@@ -70,18 +70,6 @@ class Conduit(object):
             description = 'conduit is None'
         return description
 
-    def refresh_cache_on_cycle(self):
-        """Refresh the stored state of revisions and users.
-
-        Note that this should be called once per 'cycle' of git
-        repositories to avoid degredation of performance.  This is
-        necessary because revisions that were not accessed since the
-        last refresh are evicted and will not benefit from the batching
-        of revision queries.
-
-        """
-        self._reviewstate_cache.refresh_active_reviews()
-
     def create_comment(self, revision, message, silent=False):
         """Make a comment on the specified 'revision'.
 
