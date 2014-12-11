@@ -188,7 +188,6 @@ class _ArcydManagedRepository(object):
             repo_args.repo_desc)
         self._name = repo_name
         self._args = repo_args
-        self._conduit_manager = conduit_manager
         self._arcyd_conduit = conduit_manager.get_conduit_for_args(repo_args)
         self._url_watcher_wrapper = url_watcher_wrapper
         self._mail_sender = mail_sender
