@@ -13,7 +13,6 @@
 # =============================================================================
 from __future__ import absolute_import
 
-import itertools
 import json
 import logging
 import multiprocessing
@@ -43,6 +42,43 @@ import abdi_repoargs
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class _WorkerManager(object):
+
+    def __init__(self, max_workers):
+        self._workers = []
+        self._semaphore = multiprocessing.Semaphore(max_workers)
+
+    def add(self, repo):
+        self._semaphore.acquire()
+        self._remove_joinable()
+
+        worker = multiprocessing.Process(
+            target=self._worker_wrapper, args=(repo,))
+        self._workers.append(worker)
+        worker.start()
+
+    def _worker_wrapper(self, repo):
+        try:
+            results = repo()
+            repo.merge_from_worker(results)
+        finally:
+            self._semaphore.release()
+
+    def _remove_joinable(self):
+        joinable = []
+        for w in self._workers:
+            if not w.is_alive():
+                joinable.append(w)
+        for w in joinable:
+            w.join()
+            self._workers.remove(w)
+
+    def join_all(self):
+        for w in self._workers:
+            w.join()
+        self._workers = []
 
 
 def do(
@@ -85,15 +121,18 @@ def do(
 
         conduit_manager.refresh_conduits()
 
-        logging.debug('starting pool')
-        pool = multiprocessing.Pool()
-        logging.debug('doing map')
-        worker_results = pool.map(_process_repo, repos)
-        logging.debug('finished map')
-        for result, r in itertools.izip(worker_results, repos):
-            r.merge_from_worker(result)
-        pool.close()
-        pool.join()
+        # TODO: Although this basically works for one worker thread, when we
+        # add more we'll encounter problems with sharing resources. We'll need
+        # to consider at least the following:
+        #
+        # - conduits, need to make them thread-safe
+        # - conduits, support limited number of connections at the same time
+        # - limit max connections to git hosts
+        #
+        worker_manager = _WorkerManager(max_workers=5)
+        for r in repos:
+            worker_manager.add(r)
+        worker_manager.join_all()
 
         # important to do this before stopping arcyd and as soon as possible
         # after doing fetches
@@ -123,13 +162,6 @@ def do(
 
         # sleep
         time.sleep(sleep_secs)
-
-
-def _process_repo(repo):
-    # XXX: it appears that we need this to be a function declared at module
-    # scope or Pool.map() will just hang. Lambdas and local functions don't
-    # work.
-    return repo()
 
 
 class _ArcydManagedRepository(object):
