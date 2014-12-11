@@ -359,11 +359,14 @@ class MultiConduit(object):
             max_sessions_per_user, factory)
 
     def call_as_user(self, user, *args, **kwargs):
+        logging.debug('conduit calling {} as user {}'.format(
+            args, kwargs, user))
         with self._conduits.resource_context() as conduit:
             with act_as_user_context(conduit, user):
                 return conduit(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
+        logging.debug('conduit calling {}'.format(args, kwargs))
         with self._conduits.resource_context() as conduit:
             return conduit(*args, **kwargs)
 
