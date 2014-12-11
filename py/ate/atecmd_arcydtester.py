@@ -367,53 +367,54 @@ def _do_tests(args):
             arcyd_count,
             args.alice_user_email_cert,
             args.bob_user_email_cert)
+        fixture.setup_arcyds(arcyd_user, arcyd_email, arcyd_cert, phab_uri)
 
     with contextlib.closing(fixture):
-        arcyd = fixture.arcyds[0]
-        with phlsys_timer.print_duration_context("Arcyd setup"):
-            fixture.setup_arcyds(arcyd_user, arcyd_email, arcyd_cert, phab_uri)
+        try:
+            _happy_path(fixture, args)
+        except:
+            print fixture.arcyds[0].debug_log()
+            fixture.launch_debug_shell()
+            raise
 
-        with phlsys_timer.print_duration_context("Add repos to arcyd"):
-            for i in xrange(args.repo_count):
-                arcyd('add-repo', 'localphab', 'localdir', 'repo-{}'.format(i))
 
-        with phlsys_timer.print_duration_context("Pushing reviews"):
-            for i in xrange(args.repo_count):
-                worker = fixture.repos[i].alice
-                worker.push_new_review_branch('review1')
+def _happy_path(fixture, args):
+    arcyd = fixture.arcyds[0]
 
-        with phlsys_timer.print_duration_context("Creating reviews"):
-            arcyd.run_once()
+    with phlsys_timer.print_duration_context("Add repos to arcyd"):
+        for i in xrange(args.repo_count):
+            arcyd('add-repo', 'localphab', 'localdir', 'repo-{}'.format(i))
 
-        print arcyd.debug_log()
+    with phlsys_timer.print_duration_context("Pushing reviews"):
+        for i in xrange(args.repo_count):
+            worker = fixture.repos[i].alice
+            worker.push_new_review_branch('review1')
 
-        with phlsys_timer.print_duration_context("Accepting reviews"):
-            for i in xrange(args.repo_count):
-                bob = fixture.repos[i].bob
-                bob.fetch()
-                reviews = bob.list_reviews()
-                assert len(reviews) == 1
-                r = reviews[0]
-                print r["review_id"]
-                bob.accept_review(r["review_id"])
+    with phlsys_timer.print_duration_context("Creating reviews"):
+        arcyd.run_once()
 
-        with phlsys_timer.print_duration_context("Landing reviews"):
-            arcyd.run_once()
+    with phlsys_timer.print_duration_context("Accepting reviews"):
+        for i in xrange(args.repo_count):
+            bob = fixture.repos[i].bob
+            bob.fetch()
+            reviews = bob.list_reviews()
+            assert len(reviews) == 1
+            r = reviews[0]
+            print r["review_id"]
+            bob.accept_review(r["review_id"])
 
-        print arcyd.debug_log()
+    with phlsys_timer.print_duration_context("Landing reviews"):
+        arcyd.run_once()
 
-        with phlsys_timer.print_duration_context("Check reviews are landed"):
-            for i in xrange(args.repo_count):
-                bob = fixture.repos[i].bob
-                bob.fetch()
-                reviews = bob.list_reviews()
-                assert len(reviews) == 0
+    with phlsys_timer.print_duration_context("Check reviews are landed"):
+        for i in xrange(args.repo_count):
+            bob = fixture.repos[i].bob
+            bob.fetch()
+            reviews = bob.list_reviews()
+            assert len(reviews) == 0
 
-        with phlsys_timer.print_duration_context("Update nothing"):
-            arcyd.run_once()
-
-        # launch a debug shell for the user to poke around in
-        # fixture.launch_debug_shell()
+    with phlsys_timer.print_duration_context("Update nothing"):
+        arcyd.run_once()
 
 
 # -----------------------------------------------------------------------------
