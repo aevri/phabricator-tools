@@ -46,7 +46,7 @@ import abdt_logging
 # TODO: re-order methods as (accessor, mutator)
 class Conduit(object):
 
-    def __init__(self, multi_conduit):
+    def __init__(self, multi_conduit, reviewstate_cache):
         """Initialise a new Conduit.
 
         :multi_conduit: a phlsys_conduit to delegate to
@@ -55,8 +55,7 @@ class Conduit(object):
         """
         super(Conduit, self).__init__()
         self._multi_conduit = multi_conduit
-        self._reviewstate_cache = phlcon_reviewstatecache.ReviewStateCache(
-            multi_conduit)
+        self._reviewstate_cache = reviewstate_cache
 
     def describe(self):
         """Return a string description of this conduit for a human to read.
