@@ -61,7 +61,8 @@ class _WorkerManager(object):
 
     def _worker_wrapper(self, repo):
         try:
-            repo()
+            results = repo()
+            repo.merge_from_worker(results)
         finally:
             self._semaphore.release()
 
@@ -205,9 +206,16 @@ class _ArcydManagedRepository(object):
                 self._arcyd_conduit,
                 self._url_watcher_wrapper.watcher,
                 self._mail_sender)
+
+            return self._review_cache.active_reviews
+
         except Exception:
             self._on_exception(None)
             self._is_disabled = True
+
+    def merge_from_worker(self, results):
+        active_reviews = results
+        self._review_cache.merge_additional_active_reviews(active_reviews)
 
 
 class _ConduitManager(object):
