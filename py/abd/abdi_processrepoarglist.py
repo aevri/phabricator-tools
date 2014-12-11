@@ -217,15 +217,16 @@ class _ArcydManagedRepository(object):
                 self._url_watcher_wrapper.watcher,
                 self._mail_sender)
 
-            return self._review_cache.active_reviews
+            return self._review_cache.active_reviews, self._is_disabled
 
         except Exception:
             self._on_exception(None)
             self._is_disabled = True
 
     def merge_from_worker(self, results):
-        active_reviews = results
+        active_reviews, is_disabled = results
         self._review_cache.merge_additional_active_reviews(active_reviews)
+        self._is_disabled = is_disabled
 
 
 class _ConduitManager(object):
