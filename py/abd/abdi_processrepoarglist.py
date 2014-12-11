@@ -50,18 +50,18 @@ class _WorkerManager(object):
         self._workers = []
         self._semaphore = multiprocessing.Semaphore(max_workers)
 
-    def add(self, repos):
+    def add(self, repo):
         self._semaphore.acquire()
         self._remove_joinable()
 
         worker = multiprocessing.Process(
-            target=self._worker_wrapper, args=(repos,))
+            target=self._worker_wrapper, args=(repo,))
         self._workers.append(worker)
         worker.start()
 
-    def _worker_wrapper(self, repos):
+    def _worker_wrapper(self, repo):
         try:
-            _worker(repos)
+            repo()
         finally:
             self._semaphore.release()
 
@@ -130,7 +130,7 @@ def do(
         #
         worker_manager = _WorkerManager(max_workers=5)
         for r in repos:
-            worker_manager.add([r])
+            worker_manager.add(r)
         worker_manager.join_all()
 
         # important to do this before stopping arcyd and as soon as possible
@@ -161,13 +161,6 @@ def do(
 
         # sleep
         time.sleep(sleep_secs)
-
-
-def _worker(repo_list):
-
-    # process repos
-    for repo in repo_list:
-        repo()
 
 
 class _ArcydManagedRepository(object):
