@@ -69,6 +69,13 @@ class ReviewStateCache(object):
             }
             self._active_reviews = set()
 
+    @property
+    def active_reviews(self):
+        return self._active_reviews
+
+    def merge_additional_active_reviews(self, active_review_set):
+        self._active_reviews.update(active_review_set)
+
 
 # -----------------------------------------------------------------------------
 # Copyright (C) 2013-2014 Bloomberg Finance L.P.
