@@ -47,38 +47,48 @@ _LOGGER = logging.getLogger(__name__)
 class _WorkerManager(object):
 
     def __init__(self, max_workers):
-        self._workers = []
+        self._jobs = []
         self._semaphore = multiprocessing.Semaphore(max_workers)
 
     def add(self, repo):
         self._semaphore.acquire()
         self._remove_joinable()
 
+        receiver_pipe, sender_pipe = multiprocessing.Pipe()
         worker = multiprocessing.Process(
-            target=self._worker_wrapper, args=(repo,))
-        self._workers.append(worker)
+            target=self._worker_wrapper, args=(repo, sender_pipe))
+        self._jobs.append((worker, repo, receiver_pipe))
         worker.start()
 
-    def _worker_wrapper(self, repo):
+    def _worker_wrapper(self, repo, sender_pipe):
         try:
             results = repo()
-            repo.merge_from_worker(results)
+            sender_pipe.send(results)
+            sender_pipe.close()
         finally:
             self._semaphore.release()
 
+    def _finish_job(self, job):
+        worker, repo, receiver_pipe = job
+        worker.join()
+        results = receiver_pipe.recv()
+        receiver_pipe.close()
+        repo.merge_from_worker(results)
+
     def _remove_joinable(self):
         joinable = []
-        for w in self._workers:
-            if not w.is_alive():
-                joinable.append(w)
-        for w in joinable:
-            w.join()
-            self._workers.remove(w)
+        for job in self._jobs:
+            worker = job[0]
+            if not worker.is_alive():
+                joinable.append(job)
+        for job in joinable:
+            self._finish_job(job)
+            self._jobs.remove(job)
 
     def join_all(self):
-        for w in self._workers:
-            w.join()
-        self._workers = []
+        for job in self._jobs:
+            self._finish_job(job)
+        self._jobs = []
 
 
 def do(
