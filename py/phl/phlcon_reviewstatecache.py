@@ -8,6 +8,8 @@
 #   ReviewStateCache
 #    .get_state
 #    .refresh_active_reviews
+#    .active_reviews
+#    .merge_additional_active_reviews
 #
 # Public Functions:
 #   make_from_conduit

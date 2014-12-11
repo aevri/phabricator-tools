@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         cache = phlcon_reviewstatecache.make_from_conduit(conduit)
 
         # shouldn't have active reviews to start with
-        self.assertEqual({}, cache.active_reviews)
+        self.assertEqual(set(), cache.active_reviews)
 
         # assert it's in 'needs review'
         self.assertEqual(
