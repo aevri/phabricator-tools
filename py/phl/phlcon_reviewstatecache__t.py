@@ -88,7 +88,7 @@ class Test(unittest.TestCase):
             raise Exception("shouldn't get here")
 
         # [ C] _ReviewStateCache does not raise if 'refreshed' before any 'get'
-        cache_impl = phlcon_reviewstatecache._ReviewStateCache(fake_callable)
+        cache_impl = phlcon_reviewstatecache.ReviewStateCache(fake_callable)
         cache_impl.refresh_active_reviews()
 
     def test_D_InvalidationRules(self):
@@ -127,7 +127,7 @@ class Test(unittest.TestCase):
                 for r in actual_revision_list
             ]
 
-        cache_impl = phlcon_reviewstatecache._ReviewStateCache(fake_callable)
+        cache_impl = phlcon_reviewstatecache.ReviewStateCache(fake_callable)
 
         # exercise getting the state
         for revision in revision_list:
