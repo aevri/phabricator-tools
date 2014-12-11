@@ -355,11 +355,7 @@ class Conduit(object):
             self._multi_conduit, username)
 
     def _get_review_state(self, revisionid):
-        response = phlcon_differential.query(
-            self._multi_conduit, [revisionid])[0]
-        return phlcon_reviewstatecache.ReviewState(
-            response.status,
-            response.dateModified)
+        return self._reviewstate_cache.get_state(revisionid)
 
 
 # -----------------------------------------------------------------------------
