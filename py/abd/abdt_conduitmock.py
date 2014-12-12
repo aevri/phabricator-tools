@@ -19,7 +19,6 @@
 #   ConduitMock
 #    .describe
 #    .create_comment
-#    .refresh_cache_on_cycle
 #    .create_empty_revision_as_user
 #    .get_commit_message
 #    .create_revision_as_user
