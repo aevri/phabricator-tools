@@ -124,7 +124,11 @@ class MultiResource(object):
                 'max_resources should be at least 1, got {}'.format(
                     max_resources))
         self._factory = factory
-        self._free_resources = multiprocessing.queues.SimpleQueue()
+
+        # pychecker makes us do this, it won't recognise that
+        # multiprocessing.queues is a thing.
+        mp = multiprocessing
+        self._free_resources = mp.queues.SimpleQueue()
         for _ in xrange(max_resources):
             self._free_resources.put(_NotAResource)
 
