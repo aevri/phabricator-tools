@@ -205,23 +205,20 @@ class _ArcydManagedRepository(object):
             sys_admin_emails, repo_name)
 
     def __call__(self):
-        if self._is_disabled:
-            return
+        if not self._is_disabled:
+            try:
+                _process_repo(
+                    self._abd_repo,
+                    self._name,
+                    self._args,
+                    self._arcyd_conduit,
+                    self._url_watcher_wrapper.watcher,
+                    self._mail_sender)
+            except Exception:
+                self._on_exception(None)
+                self._is_disabled = True
 
-        try:
-            _process_repo(
-                self._abd_repo,
-                self._name,
-                self._args,
-                self._arcyd_conduit,
-                self._url_watcher_wrapper.watcher,
-                self._mail_sender)
-
-            return self._review_cache.active_reviews, self._is_disabled
-
-        except Exception:
-            self._on_exception(None)
-            self._is_disabled = True
+        return self._review_cache.active_reviews, self._is_disabled
 
     def merge_from_worker(self, results):
         active_reviews, is_disabled = results
