@@ -174,6 +174,24 @@ def do(
         time.sleep(sleep_secs)
 
 
+class _RecordingWatcherWrapper(object):
+
+    def __init__(self, watcher):
+        self._watcher = watcher
+        self._tested_urls = set()
+
+    def peek_has_url_recently_changed(self, url):
+        return self._watcher.peek_has_url_recently_changed(url)
+
+    def has_url_recently_changed(self, url):
+        self._tested_urls.add(url)
+        return self._watcher.peek_has_url_recently_changed(url)
+
+    @property
+    def tested_urls(self):
+        return self._tested_urls
+
+
 class _ArcydManagedRepository(object):
 
     def __init__(
@@ -205,6 +223,8 @@ class _ArcydManagedRepository(object):
             sys_admin_emails, repo_name)
 
     def __call__(self):
+        watcher = _RecordingWatcherWrapper(
+            self._url_watcher_wrapper.watcher)
         if not self._is_disabled:
             try:
                 _process_repo(
@@ -212,18 +232,27 @@ class _ArcydManagedRepository(object):
                     self._name,
                     self._args,
                     self._arcyd_conduit,
-                    self._url_watcher_wrapper.watcher,
+                    watcher,
                     self._mail_sender)
             except Exception:
                 self._on_exception(None)
                 self._is_disabled = True
 
-        return self._review_cache.active_reviews, self._is_disabled
+        return (
+            self._review_cache.active_reviews,
+            self._is_disabled,
+            watcher.tested_urls
+        )
 
     def merge_from_worker(self, results):
-        active_reviews, is_disabled = results
+
+        active_reviews, is_disabled, tested_urls = results
         self._review_cache.merge_additional_active_reviews(active_reviews)
         self._is_disabled = is_disabled
+
+        # merge in the consumed urls from the worker
+        for url in tested_urls:
+            self._url_watcher_wrapper.watcher.has_url_recently_changed(url)
 
 
 class _ConduitManager(object):
