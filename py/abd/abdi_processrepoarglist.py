@@ -107,9 +107,15 @@ def do(
                 sys_admin_emails,
                 mail_sender))
 
-    timer = phlsys_timer.Timer()
-    timer.start()
+    cycle_timer = phlsys_timer.Timer()
+    cycle_timer.start()
     while not finished:
+
+        # This timer needs to be separate from the cycle timer. The cycle timer
+        # must be reset every time it is reported. The sleep timer makes sure
+        # that each run of the loop takes a minimum amount of time.
+        sleep_timer = phlsys_timer.Timer()
+        sleep_timer.start()
 
         # refresh git snoops
         abdt_tryloop.critical_tryloop(
@@ -137,7 +143,7 @@ def do(
         # report cycle stats
         if external_report_command:
             report = {
-                "cycle_time_secs": timer.restart(),
+                "cycle_time_secs": cycle_timer.restart(),
             }
             report_json = json.dumps(report)
             full_path = os.path.abspath(external_report_command)
@@ -156,8 +162,10 @@ def do(
             finished = True
             break
 
-        # sleep
-        time.sleep(sleep_secs)
+        # sleep to pad out the cycle
+        secs_to_sleep = float(sleep_secs) - float(sleep_timer.duration)
+        if secs_to_sleep > 0:
+            time.sleep(secs_to_sleep)
 
 
 def _worker(repo_list):
