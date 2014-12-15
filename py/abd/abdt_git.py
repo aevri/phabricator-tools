@@ -49,7 +49,6 @@ import phlgit_merge
 import phlgit_push
 import phlgit_showref
 import phlgitu_ref
-import phlgitx_refcache
 
 import abdt_branch
 import abdt_lander
