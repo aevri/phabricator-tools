@@ -337,7 +337,7 @@ class Repo(object):
         :returns: a list of (sha1, name)
 
         """
-        return self._repo.hash_ref_pairs
+        return phlgit_showref.hash_ref_pairs(self)
 
     def _log_read_call(self, args, kwargs):
         with abdt_logging.remote_io_read_event_context(
