@@ -7,6 +7,8 @@
 # Public Classes:
 #   Repo
 #    .hash_ref_pairs
+#    .peek_hash_ref_pairs
+#    .set_hash_ref_pairs
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
