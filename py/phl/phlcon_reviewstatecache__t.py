@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
             phlcon_differential.ReviewStates.needs_review)
 
         # should now have cached the review
-        self.assertEqual({revision_id}, cache.active_reviews)
+        self.assertEqual(set((revision_id,)), cache.active_reviews)
 
         # change real state to 'abandoned'
         phlcon_differential.create_comment(
@@ -90,8 +90,8 @@ class Test(unittest.TestCase):
     def test_B_MergeAdditionalActiveReviews(self):
         # [ B] ReviewStateCache merges additional active reviews
         cache = phlcon_reviewstatecache.ReviewStateCache(None)
-        reviews = {1, 2, 3}
-        additional_reviews = {4, 5, 6}
+        reviews = set((1, 2, 3))
+        additional_reviews = set((4, 5, 6))
         cache.merge_additional_active_reviews(reviews)
         self.assertEqual(reviews, cache.active_reviews)
         cache.merge_additional_active_reviews(additional_reviews)
