@@ -237,6 +237,7 @@ class _ArcydManagedRepository(object):
     def __call__(self):
         watcher = _RecordingWatcherWrapper(
             self._url_watcher_wrapper.watcher)
+
         if not self._is_disabled:
             try:
                 _process_repo(
@@ -253,14 +254,16 @@ class _ArcydManagedRepository(object):
         return (
             self._review_cache.active_reviews,
             self._is_disabled,
-            watcher.tested_urls
+            watcher.tested_urls,
+            self._refcache_repo.peek_hash_ref_pairs()
         )
 
     def merge_from_worker(self, results):
 
-        active_reviews, is_disabled, tested_urls = results
+        active_reviews, is_disabled, tested_urls, hash_ref_pairs = results
         self._review_cache.merge_additional_active_reviews(active_reviews)
         self._is_disabled = is_disabled
+        self._refcache_repo.set_hash_ref_pairs(hash_ref_pairs)
 
         # merge in the consumed urls from the worker
         for url in tested_urls:
