@@ -196,7 +196,7 @@ class Conduit(object):
         :returns: True if accepted
 
         """
-        state = self._reviewstate_cache.get_state(revisionid)
+        state = self._get_review_state(revisionid)
         return int(state.status) == phlcon_differential.ReviewStates.accepted
 
     def is_review_abandoned(self, revisionid):
@@ -206,11 +206,11 @@ class Conduit(object):
         :returns: True if abandoned
 
         """
-        state = self._reviewstate_cache.get_state(revisionid)
+        state = self._get_review_state(revisionid)
         return int(state.status) == phlcon_differential.ReviewStates.abandoned
 
     def _get_update_age(self, revisionid):
-        state = self._reviewstate_cache.get_state(revisionid)
+        state = self._get_review_state(revisionid)
         date_modified = state.date_modified
         update_time = datetime.datetime.fromtimestamp(float(date_modified))
         return datetime.datetime.now() - update_time
@@ -241,7 +241,7 @@ class Conduit(object):
         """
         # do some sanity checks before committing to the expensive operation
         # of storing a diff in Differential
-        state = self._reviewstate_cache.get_state(revisionid)
+        state = self._get_review_state(revisionid)
         if state.status == phlcon_differential.ReviewStates.closed:
             raise abdt_exception.AbdUserException(
                 "can't update a closed revision")
@@ -353,6 +353,9 @@ class Conduit(object):
     def _make_as_user_conduit(self, username):
         return phlsys_conduit.CallMultiConduitAsUser(
             self._multi_conduit, username)
+
+    def _get_review_state(self, revisionid):
+        return self._reviewstate_cache.get_state(revisionid)
 
 
 # -----------------------------------------------------------------------------
