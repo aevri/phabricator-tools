@@ -18,6 +18,8 @@ import os
 
 import phlsys_subprocess
 
+import abdt_logging
+
 
 class Repo(object):
 
@@ -26,12 +28,15 @@ class Repo(object):
 
     # def __call__(*args, stdin=None): <-- supported in Python 3
     def __call__(self, *args, **kwargs):
-        stdin = kwargs.pop("stdin", None)
-        assert(not kwargs)
-        result = phlsys_subprocess.run(
-            'git', *args,
-            stdin=stdin, workingDir=self._workingDir)
-        return result.stdout
+        with abdt_logging.remote_io_read_event_context(
+                'git ({})'.format(self._workingDir),
+                '{}'.format(args)):
+            stdin = kwargs.pop("stdin", None)
+            assert(not kwargs)
+            result = phlsys_subprocess.run(
+                'git', *args,
+                stdin=stdin, workingDir=self._workingDir)
+            return result.stdout
 
     @property
     def working_dir(self):
