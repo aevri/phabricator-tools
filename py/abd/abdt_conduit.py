@@ -7,7 +7,6 @@
 # Public Classes:
 #   Conduit
 #    .describe
-#    .refresh_cache_on_cycle
 #    .create_comment
 #    .create_empty_revision_as_user
 #    .get_commit_message
@@ -34,7 +33,6 @@ from __future__ import absolute_import
 import datetime
 
 import phlcon_differential
-import phlcon_reviewstatecache
 import phlcon_user
 import phlsys_conduit
 import phlsys_textconvert
