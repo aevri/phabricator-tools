@@ -83,17 +83,17 @@ def process(args):
             fs.repo_config_path_list())
 
         abdi_processrepos.setupParser(parser)
-        args = parser.parse_args(params)
+        processrepos_args = parser.parse_args(params)
 
     def logger_config():
         _setup_logger(fs)
 
     abdt_logging.set_remote_io_read_log_path(fs.layout.log_remote_io_reads)
     with phlsys_multiprocessing.logging_context(logger_config):
-        _LOGGER.debug("start with args: {}".format(args))
+        _LOGGER.debug("start with args: {}".format(processrepos_args))
         _LOGGER.info("arcyd started")
         try:
-            abdi_processrepos.process(args, repo_configs)
+            abdi_processrepos.process(processrepos_args, repo_configs)
         finally:
             _LOGGER.info("arcyd stopped")
 
