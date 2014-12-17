@@ -48,6 +48,10 @@ def setupParser(parser):
         '--no-loop',
         action='store_true',
         help="supply this argument to only process each repo once then exit")
+    parser.add_argument(
+        '--disable-log-debug',
+        action='store_true',
+        help="disable logging of debug messages")
 
 
 def process(args):
@@ -86,7 +90,7 @@ def process(args):
         processrepos_args = parser.parse_args(params)
 
     def logger_config():
-        _setup_logger(fs)
+        _setup_logger(fs, args.disable_log_debug)
 
     abdt_logging.set_remote_io_read_log_path(fs.layout.log_remote_io_reads)
     with phlsys_multiprocessing.logging_context(logger_config):
@@ -98,7 +102,7 @@ def process(args):
             _LOGGER.info("arcyd stopped")
 
 
-def _setup_logger(fs):
+def _setup_logger(fs, disable_log_debug):
     # log DEBUG+ and INFO+ to separate files
     info_handler = logging.FileHandler(fs.layout.log_info)
     info_handler.setLevel(logging.INFO)
@@ -119,7 +123,14 @@ def _setup_logger(fs):
     debug_handler.setFormatter(formatter)
     logging.getLogger().addHandler(info_handler)
     logging.getLogger().addHandler(debug_handler)
-    logging.getLogger().setLevel(logging.DEBUG)
+
+    if disable_log_debug:
+        logging.getLogger().setLevel(logging.INFO)
+        logging.info('logging disabled')
+    else:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    logging.info('disable log debug: {}'.format(disable_log_debug))
 
 
 # -----------------------------------------------------------------------------
