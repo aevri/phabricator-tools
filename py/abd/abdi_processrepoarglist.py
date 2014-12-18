@@ -124,7 +124,7 @@ def do(
         if external_report_command:
             report = {
                 "cycle_time_secs": cycle_timer.restart(),
-                "overrun_jobs": pool.overrun_jobs,
+                "overrun_jobs": pool.num_active_jobs,
             }
             report_json = json.dumps(report)
             full_path = os.path.abspath(external_report_command)

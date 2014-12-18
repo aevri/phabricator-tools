@@ -4,8 +4,12 @@
 # -----------------------------------------------------------------------------
 # phlmp_pool
 #
-# Public Functions:
-#   generate_results
+# Public Classes:
+#   CyclingPool
+#    .cycle_results
+#    .num_active_jobs
+#    .overrun_cycle_results
+#    .finish_results
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
@@ -40,6 +44,10 @@ class CyclingPool(object):
 
         for index, result in self._cycle_results(overrun_condition):
             yield index, result
+
+    @property
+    def num_active_jobs(self):
+        return len(self._active_job_index_set)
 
     def _cycle_results(self, overrun_condition):
 
