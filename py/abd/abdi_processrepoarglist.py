@@ -109,12 +109,9 @@ def do(
         conduit_manager.refresh_conduits()
 
         if max_workers:
-            for i, res in pool.new_cycle_results(overrun_secs=60):
+            for i, res in pool.cycle_results(overrun_secs=60):
                 repo = repo_list[i]
                 repo.merge_from_worker(res)
-            for i, res in pool.overrun_cycle_results():
-                repo = repo_list[i]
-                repo.merge_from_overrun_worker(res)
         else:
             for r in repo_list:
                 r()
@@ -140,10 +137,14 @@ def do(
         if os.path.isfile(kill_file):
 
             # finish any jobs that overran
-            pool.finish_overrun()
+            pool.finish()
             for i, res in pool.overrun_cycle_results():
                 repo = repo_list[i]
-                repo.merge_from_overrun_worker(res)
+                repo.merge_from_worker(res)
+
+            # important to do this before stopping arcyd and as soon as
+            # possible after doing fetches
+            url_watcher_wrapper.save()
 
             os.remove(kill_file)
             finished = True
