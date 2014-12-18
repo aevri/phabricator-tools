@@ -16,8 +16,10 @@ from __future__ import absolute_import
 import multiprocessing
 import multiprocessing.queues
 
+import phlsys_timer
 
-def CyclingPool(object):
+
+class CyclingPool(object):
 
     def __init__(self, job_list, max_workers):
         super(CyclingPool, self).__init__()
@@ -28,8 +30,16 @@ def CyclingPool(object):
         self._active_job_index_set = set()
 
     def cycle_results(self, overrun_secs):
+
         # make a timer out of the overrun_secs and pass to _cycle_results
-        pass
+        timer = phlsys_timer.Timer()
+        timer.start()
+
+        def overrun_condition():
+            return timer.duration >= overrun_secs
+
+        for index, result in self._cycle_results(overrun_condition):
+            yield index, result
 
     def _cycle_results(self, overrun_condition):
 
@@ -37,42 +47,66 @@ def CyclingPool(object):
         for i, res in self.overrun_cycle_results():
             yield i, res
 
-        num_overrun_workers = ???
+        self._start_new_cycle()
 
-        # create a new pool and start yielding from that
-        max_new_workers = self._max_workers - num_overrun_workers
-        pool = _Pool(
-            self._job_list,
-            max_new_workers)
+        # wait for results, overrun if half our workers are available
+        should_wait = True
+        while should_wait and self._active_job_index_set:
+
+            active_workers = self._count_overrun_workers()
+            workers_too_busy = active_workers > self._overunnable_workers
+            should_wait = workers_too_busy or not overrun_condition()
+
+            for index, result in self.overrun_cycle_results():
+                yield index, result
+
+    def _count_overrun_workers(self):
+        overrun_workers = 0
+        for pool in self._pool_list:
+            overrun_workers += pool.count_active_workers()
+        return overrun_workers
+
+    def _start_new_cycle(self):
+
+        max_new_workers = self._max_workers - self._count_overrun_workers()
+
+        pool = _Pool(self._job_list, max_new_workers)
 
         # schedule currently inactive jobs in the new pool
         all_job_index_set = set(xrange(len(self._job_list)))
         inactive_job_index_set = all_job_index_set - self._active_job_index_set
         for i in inactive_job_index_set:
             pool.add_job_index(i)
+            self._active_job_index_set.add(i)
+        pool.finish()
 
-        active_worker_count =
-        should_wait = True
-
-        # wait for results, overrun if half our workers are available
-        while should_wait and pool.is_running()):
-
-            ??? active_worker_count
-
-            workers_too_busy = active_worker_count > self._overunnable_workers
-            should_wait =  has_workers and overrun_condition
-
-            pool.join_finished_workers()
-            for i, res in pool.yield_available_results():
-                yield i, res
-            for i, res in self.overrun_cycle_results():
-                yield i, res
+        self._pool_list.append(pool)
 
     def overrun_cycle_results(self):
-        pass
+
+        # yield results
+        for pool in self._pool_list:
+            pool.join_finished_workers()
+            for index, result in pool.yield_available_results():
+                self._active_job_index_set.remove(index)
+                yield index, result
+
+        # clean up dead pools
+        finished_pools = []
+        for pool in self._pool_list:
+            if pool.is_finished():
+                finished_pools.append(pool)
+        for pool in finished_pools:
+            self._pool_list.remove(pool)
+
+    def finish_results(self):
+        while self._pool_list:
+            for index, result in self.overrun_cycle_results():
+                yield index, result
 
 
-def _Pool(object):
+class _Pool(object):
+
     def __init__(self, job_list, max_workers):
         super(_Pool, self).__init__()
 
@@ -95,6 +129,11 @@ def _Pool(object):
     def add_job_index(self, job_index):
         self._job_index_queue.put(job_index)
 
+    def finish(self):
+        # the worker processes will stop when they process 'None'
+        for _ in xrange(len(self._worker_list)):
+            self._job_index_queue.put(None)
+
     def join_finished_workers(self):
 
         # join all finished workers and remove from list
@@ -110,60 +149,11 @@ def _Pool(object):
         while not self._results_queue.empty():
             yield self._results_queue.get()
 
+    def count_active_workers(self):
+        return len(self._worker_list)
 
-def generate_results(job_list, max_workers):
-    """Yield (job_index, result) by calling each in job_list concurrently.
-
-    Example usage:
-
-        >>> job_list = [(lambda: 1)]
-        >>> for job_index, result in generate_results(job_list, 1):
-        ...     print result
-        1
-
-    :job_list: a list of callables
-    :returns: None
-
-    """
-
-    # pychecker makes us do this, it won't recognise that
-    # multiprocessing.queues is a thing.
-    mp = multiprocessing
-    job_index_queue = mp.queues.SimpleQueue()
-    results_queue = mp.queues.SimpleQueue()
-
-    # create the workers
-    worker_list = []
-    num_workers = min(max_workers, len(job_list))
-    for _ in xrange(num_workers):
-        worker = multiprocessing.Process(
-            target=_worker_process,
-            args=(job_list, job_index_queue, results_queue))
-        worker.start()
-        worker_list.append(worker)
-
-    # populate the job queue
-    for job_index in xrange(len(job_list)):
-        job_index_queue.put(job_index)
-
-    # append a token to stop the workers
-    for _ in xrange(len(worker_list)):
-        job_index_queue.put(None)
-
-    while worker_list:
-
-        # join all finished workers and remove from list
-        finished_workers = []
-        for worker in worker_list:
-            if not worker.is_alive():
-                worker.join()
-                finished_workers.append(worker)
-        for worker in finished_workers:
-            worker_list.remove(worker)
-
-        # .. yield results ..
-        while not results_queue.empty():
-            yield results_queue.get()
+    def is_finished(self):
+        return not self._worker_list
 
 
 def _worker_process(job_list, work_queue, results_queue):

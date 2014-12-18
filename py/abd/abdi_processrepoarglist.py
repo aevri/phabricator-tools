@@ -137,8 +137,7 @@ def do(
         if os.path.isfile(kill_file):
 
             # finish any jobs that overran
-            pool.finish()
-            for i, res in pool.overrun_cycle_results():
+            for i, res in pool.finish_results():
                 repo = repo_list[i]
                 repo.merge_from_worker(res)
 
