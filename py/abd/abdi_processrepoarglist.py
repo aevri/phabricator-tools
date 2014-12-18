@@ -91,6 +91,7 @@ def do(
 
     cycle_timer = phlsys_timer.Timer()
     cycle_timer.start()
+    pool = phlmp_pool.CyclingPool(repo_list, max_workers)
     while not finished:
 
         # This timer needs to be separate from the cycle timer. The cycle timer
@@ -108,9 +109,12 @@ def do(
         conduit_manager.refresh_conduits()
 
         if max_workers:
-            for i, res in phlmp_pool.generate_results(repo_list, max_workers):
+            for i, res in pool.new_cycle_results(overrun_secs=60):
                 repo = repo_list[i]
                 repo.merge_from_worker(res)
+            for i, res in pool.overrun_cycle_results():
+                repo = repo_list[i]
+                repo.merge_from_overrun_worker(res)
         else:
             for r in repo_list:
                 r()
@@ -123,6 +127,7 @@ def do(
         if external_report_command:
             report = {
                 "cycle_time_secs": cycle_timer.restart(),
+                "overrun_jobs": pool.overrun_jobs,
             }
             report_json = json.dumps(report)
             full_path = os.path.abspath(external_report_command)
@@ -133,6 +138,13 @@ def do(
 
         # look for killfile
         if os.path.isfile(kill_file):
+
+            # finish any jobs that overran
+            pool.finish_overrun()
+            for i, res in pool.overrun_cycle_results():
+                repo = repo_list[i]
+                repo.merge_from_overrun_worker(res)
+
             os.remove(kill_file)
             finished = True
             break
