@@ -40,6 +40,14 @@ class _WaitForLockJob(object):
             return self._value
 
 
+def _false_condition():
+    return False
+
+
+def _true_condition():
+    return True
+
+
 class Test(unittest.TestCase):
 
     def setUp(self):
@@ -56,10 +64,7 @@ class Test(unittest.TestCase):
         max_workers = multiprocessing.cpu_count()
         pool = phlmp_pool.CyclingPool(job_list, max_workers)
 
-        def condition():
-            return False
-
-        for index, result in pool._cycle_results(condition):
+        for index, result in pool._cycle_results(_false_condition):
             self.assertEqual(index, result)
             result_list.append(result)
 
@@ -68,9 +73,6 @@ class Test(unittest.TestCase):
             set(input_list))
 
     def test_can_overrun(self):
-
-        def true_condition():
-            return True
 
         lock = multiprocessing.Lock()
 
@@ -91,7 +93,7 @@ class Test(unittest.TestCase):
         # Acquire lock before starting cycle, to ensure that 'block_job_list'
         # jobs won't complete. This will force the pool to overrun those jobs.
         with lock:
-            for index, result in pool._cycle_results(true_condition):
+            for index, result in pool._cycle_results(_true_condition):
                 self.assertEqual(index, result)
                 result_list.append(result)
 
@@ -107,6 +109,48 @@ class Test(unittest.TestCase):
             result_list.append(result)
 
         # assert that all jobs have been processed
+        self.assertSetEqual(
+            set(result_list),
+            set(input_list))
+
+    def test_can_loop(self):
+
+        input_list = list(xrange(100))
+        job_list = [_TestJob(i) for i in input_list]
+        max_workers = multiprocessing.cpu_count()
+        print "max workers:", max_workers
+
+        pool = phlmp_pool.CyclingPool(job_list, max_workers)
+        for _ in xrange(2):
+            result_list = []
+
+            for index, result in pool._cycle_results(_false_condition):
+                self.assertEqual(index, result)
+                result_list.append(result)
+
+            self.assertSetEqual(
+                set(result_list),
+                set(input_list))
+
+    def test_pool(self):
+
+        input_list = list(xrange(100))
+        job_list = [_TestJob(i) for i in input_list]
+        max_workers = multiprocessing.cpu_count()
+
+        pool = phlmp_pool._Pool(job_list, max_workers)
+        for i in input_list:
+            pool.add_job_index(i)
+        pool.finish()
+
+        result_list = []
+
+        while len(result_list) < len(input_list):
+            pool.join_finished_workers()
+            for index, result in pool.yield_available_results():
+                self.assertEqual(index, result)
+                result_list.append(result)
+
         self.assertSetEqual(
             set(result_list),
             set(input_list))

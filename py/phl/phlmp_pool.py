@@ -27,6 +27,11 @@ class CyclingPool(object):
 
     def __init__(self, job_list, max_workers):
         super(CyclingPool, self).__init__()
+
+        if max_workers < 1:
+            raise ValueError(
+                'invalid value for max_workers: {}'.format(max_workers))
+
         self._job_list = job_list
         self._max_workers = max_workers
         self._overunnable_workers = max_workers // 2
@@ -59,11 +64,14 @@ class CyclingPool(object):
 
         # wait for results, overrun if half our workers are available
         should_wait = True
-        while should_wait and self._active_job_index_set:
+        is_active = True
+        while should_wait and is_active:
 
             active_workers = self._count_overrun_workers()
             workers_too_busy = active_workers > self._overunnable_workers
             should_wait = workers_too_busy or not overrun_condition()
+
+            is_active = active_workers or self._active_job_index_set
 
             for index, result in self.overrun_cycle_results():
                 yield index, result
@@ -113,10 +121,49 @@ class CyclingPool(object):
                 yield index, result
 
 
+class _PoolList(object):
+
+    def __init__(self):
+        self._pool_list = []
+
+    def add_pool(self, pool):
+        self._pool_list.append(pool)
+
+    def count_active_workers(self):
+        active_workers = 0
+        for pool in self._pool_list:
+            active_workers += pool.count_active_workers()
+        return active_workers
+
+    def yield_available_results(self):
+
+        # yield results
+        for pool in self._pool_list:
+            pool.join_finished_workers()
+            for index, result in pool.yield_available_results():
+                self._active_job_index_set.remove(index)
+                yield index, result
+
+        # clean up dead pools
+        finished_pools = []
+        for pool in self._pool_list:
+            if pool.is_finished():
+                finished_pools.append(pool)
+        for pool in finished_pools:
+            self._pool_list.remove(pool)
+
+    def is_finished():
+        return not self._pool_list
+
+
 class _Pool(object):
 
     def __init__(self, job_list, max_workers):
         super(_Pool, self).__init__()
+
+        if max_workers < 1:
+            raise ValueError(
+                'invalid value for max_workers: {}'.format(max_workers))
 
         # pychecker makes us do this, it won't recognise that
         # multiprocessing.queues is a thing.
