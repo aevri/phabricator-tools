@@ -8,7 +8,6 @@
 #   CyclingPool
 #    .cycle_results
 #    .num_active_jobs
-#    .overrun_cycle_results
 #    .finish_results
 #
 # -----------------------------------------------------------------------------
@@ -75,11 +74,11 @@ class CyclingPool(object):
         left to run in the background.
 
         The results from these 'overrun' jobs will be yielded in subsequent
-        calls to 'cycle_results' or 'overrun_cycle_results' or
-        'finish_results'.
+        calls to 'cycle_results' or 'finish_results'.
 
         :overrun_secs: seconds to wait before considering leaving jobs behind
         :yields: an (index, result) tuple
+
         """
 
         # make a timer out of the overrun_secs and pass to _cycle_results
@@ -92,25 +91,25 @@ class CyclingPool(object):
         for index, result in self._cycle_results(overrun_condition):
             yield index, result
 
+    def finish_results(self):
+        """Yield the results from any outstanding jobs, block until done."""
+        while not self._pool_list.is_yield_finished():
+            for index, result in self._overrun_cycle_results():
+                yield index, result
+
     @property
     def num_active_jobs(self):
         """Return the number of jobs not yet yielded."""
         return len(self._active_job_index_set)
 
-    def overrun_cycle_results(self):
+    def _overrun_cycle_results(self):
         for index, result in self._pool_list.yield_available_results():
             self._active_job_index_set.remove(index)
             yield index, result
-
-    def finish_results(self):
-        while not self._pool_list.is_yield_finished():
-            for index, result in self.overrun_cycle_results():
-                yield index, result
-
     def _cycle_results(self, overrun_condition):
 
         # clear up any dead pools and yield results
-        for i, res in self.overrun_cycle_results():
+        for i, res in self._overrun_cycle_results():
             yield i, res
 
         self._start_new_cycle()
@@ -125,7 +124,7 @@ class CyclingPool(object):
                 condition=overrun_condition,
                 is_finished=self._pool_list.is_yield_finished())
 
-            for index, result in self.overrun_cycle_results():
+            for index, result in self._overrun_cycle_results():
                 yield index, result
 
     def _start_new_cycle(self):
