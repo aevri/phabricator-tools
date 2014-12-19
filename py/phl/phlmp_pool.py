@@ -123,8 +123,8 @@ def _calc_overrunable_workers(max_workers, max_overrunable, num_jobs):
 
 def _calc_should_overrun(num_active, num_overrunable, condition, is_finished):
     too_busy = num_active > num_overrunable
-    should_wait = too_busy or not condition()
-    return should_wait and not is_finished
+    can_overrun = not too_busy and condition()
+    return is_finished or can_overrun
 
 
 class _PoolList(object):

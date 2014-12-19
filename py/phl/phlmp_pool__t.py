@@ -113,15 +113,63 @@ class Test(unittest.TestCase):
             set(result_list),
             set(input_list))
 
+    def test_calc_should_overrun(self):
+
+        fcond = _false_condition
+        tcond = _true_condition
+
+        expectations = (
+            ({'active': 0, 'over': 1, 'cond': tcond, 'is_fin': False}, True),
+            ({'active': 0, 'over': 1, 'cond': fcond, 'is_fin': False}, False),
+            ({'active': 0, 'over': 1, 'cond': tcond, 'is_fin': True}, True),
+            ({'active': 0, 'over': 1, 'cond': fcond, 'is_fin': True}, True),
+            ({'active': 1, 'over': 1, 'cond': fcond, 'is_fin': False}, False),
+            ({'active': 1, 'over': 1, 'cond': tcond, 'is_fin': False}, True),
+            ({'active': 2, 'over': 1, 'cond': fcond, 'is_fin': False}, False),
+            ({'active': 2, 'over': 1, 'cond': tcond, 'is_fin': False}, False),
+
+            # these shouldn't happen, but test anyway
+            ({'active': 1, 'over': 1, 'cond': fcond, 'is_fin': True}, True),
+            ({'active': 1, 'over': 1, 'cond': tcond, 'is_fin': True}, True),
+            ({'active': 2, 'over': 1, 'cond': fcond, 'is_fin': True}, True),
+            ({'active': 2, 'over': 1, 'cond': tcond, 'is_fin': True}, True),
+        )
+
+        for e in expectations:
+            args = e[0]
+            print args
+            self.assertEqual(
+                phlmp_pool._calc_should_overrun(
+                    num_active=args['active'],
+                    num_overrunable=args['over'],
+                    condition=args['cond'],
+                    is_finished=args['is_fin']),
+                e[1])
+
     def test_calc_overrunable_workers(self):
 
         expectations = (
             ({'max_workers': 1, 'max_overrunable': 1, 'num_jobs': 1}, 0),
+            ({'max_workers': 1, 'max_overrunable': 1, 'num_jobs': 2}, 0),
             ({'max_workers': 1, 'max_overrunable': 2, 'num_jobs': 1}, 0),
+            ({'max_workers': 1, 'max_overrunable': 2, 'num_jobs': 2}, 0),
+
+            ({'max_workers': 2, 'max_overrunable': 1, 'num_jobs': 1}, 0),
+            ({'max_workers': 2, 'max_overrunable': 1, 'num_jobs': 2}, 1),
             ({'max_workers': 2, 'max_overrunable': 2, 'num_jobs': 1}, 0),
+            ({'max_workers': 2, 'max_overrunable': 2, 'num_jobs': 2}, 1),
+            ({'max_workers': 2, 'max_overrunable': 2, 'num_jobs': 3}, 1),
+            ({'max_workers': 2, 'max_overrunable': 3, 'num_jobs': 2}, 1),
+            ({'max_workers': 2, 'max_overrunable': 3, 'num_jobs': 3}, 1),
+
+            ({'max_workers': 3, 'max_overrunable': 2, 'num_jobs': 2}, 1),
+            ({'max_workers': 3, 'max_overrunable': 2, 'num_jobs': 3}, 2),
+            ({'max_workers': 3, 'max_overrunable': 3, 'num_jobs': 2}, 1),
+            ({'max_workers': 3, 'max_overrunable': 3, 'num_jobs': 3}, 2),
         )
 
         for e in expectations:
+            print e[0]
             self.assertEqual(
                 phlmp_pool._calc_overrunable_workers(**e[0]),
                 e[1])
