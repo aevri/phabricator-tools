@@ -141,37 +141,37 @@ class Test(unittest.TestCase):
             self.assertEqual(
                 phlmp_pool._calc_should_overrun(
                     num_active=args['active'],
-                    num_overrunable=args['over'],
+                    num_overrunnable=args['over'],
                     condition=args['cond'],
                     is_finished=args['is_fin']),
                 e[1])
 
-    def test_calc_overrunable_workers(self):
+    def test_calc_overrunnable_workers(self):
 
         expectations = (
-            ({'max_workers': 1, 'max_overrunable': 1, 'num_jobs': 1}, 0),
-            ({'max_workers': 1, 'max_overrunable': 1, 'num_jobs': 2}, 0),
-            ({'max_workers': 1, 'max_overrunable': 2, 'num_jobs': 1}, 0),
-            ({'max_workers': 1, 'max_overrunable': 2, 'num_jobs': 2}, 0),
+            ({'max_workers': 1, 'max_overrunnable': 1, 'num_jobs': 1}, 0),
+            ({'max_workers': 1, 'max_overrunnable': 1, 'num_jobs': 2}, 0),
+            ({'max_workers': 1, 'max_overrunnable': 2, 'num_jobs': 1}, 0),
+            ({'max_workers': 1, 'max_overrunnable': 2, 'num_jobs': 2}, 0),
 
-            ({'max_workers': 2, 'max_overrunable': 1, 'num_jobs': 1}, 0),
-            ({'max_workers': 2, 'max_overrunable': 1, 'num_jobs': 2}, 1),
-            ({'max_workers': 2, 'max_overrunable': 2, 'num_jobs': 1}, 0),
-            ({'max_workers': 2, 'max_overrunable': 2, 'num_jobs': 2}, 1),
-            ({'max_workers': 2, 'max_overrunable': 2, 'num_jobs': 3}, 1),
-            ({'max_workers': 2, 'max_overrunable': 3, 'num_jobs': 2}, 1),
-            ({'max_workers': 2, 'max_overrunable': 3, 'num_jobs': 3}, 1),
+            ({'max_workers': 2, 'max_overrunnable': 1, 'num_jobs': 1}, 0),
+            ({'max_workers': 2, 'max_overrunnable': 1, 'num_jobs': 2}, 1),
+            ({'max_workers': 2, 'max_overrunnable': 2, 'num_jobs': 1}, 0),
+            ({'max_workers': 2, 'max_overrunnable': 2, 'num_jobs': 2}, 1),
+            ({'max_workers': 2, 'max_overrunnable': 2, 'num_jobs': 3}, 1),
+            ({'max_workers': 2, 'max_overrunnable': 3, 'num_jobs': 2}, 1),
+            ({'max_workers': 2, 'max_overrunnable': 3, 'num_jobs': 3}, 1),
 
-            ({'max_workers': 3, 'max_overrunable': 2, 'num_jobs': 2}, 1),
-            ({'max_workers': 3, 'max_overrunable': 2, 'num_jobs': 3}, 2),
-            ({'max_workers': 3, 'max_overrunable': 3, 'num_jobs': 2}, 1),
-            ({'max_workers': 3, 'max_overrunable': 3, 'num_jobs': 3}, 2),
+            ({'max_workers': 3, 'max_overrunnable': 2, 'num_jobs': 2}, 1),
+            ({'max_workers': 3, 'max_overrunnable': 2, 'num_jobs': 3}, 2),
+            ({'max_workers': 3, 'max_overrunnable': 3, 'num_jobs': 2}, 1),
+            ({'max_workers': 3, 'max_overrunnable': 3, 'num_jobs': 3}, 2),
         )
 
         for e in expectations:
             print e[0]
             self.assertEqual(
-                phlmp_pool._calc_overrunable_workers(**e[0]),
+                phlmp_pool._calc_overrunnable_workers(**e[0]),
                 e[1])
 
     def test_cyclingpool_breathing(self):
@@ -180,8 +180,8 @@ class Test(unittest.TestCase):
         job_list = [_TestJob(i) for i in input_list]
         result_list = []
         max_workers = multiprocessing.cpu_count()
-        max_overrunable = max_workers // 2
-        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunable)
+        max_overrunnable = max_workers // 2
+        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunnable)
 
         for index, result in pool._cycle_results(_false_condition):
             self.assertEqual(index, result)
@@ -196,7 +196,7 @@ class Test(unittest.TestCase):
         lock = multiprocessing.Lock()
 
         max_workers = 10
-        max_overrunable = max_workers // 2
+        max_overrunnable = max_workers // 2
         half_max_workers = max_workers // 2
         input_list = list(xrange(max_workers))
         block_input_list = input_list[:half_max_workers]
@@ -208,7 +208,7 @@ class Test(unittest.TestCase):
         job_list = block_job_list + normal_job_list
 
         result_list = []
-        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunable)
+        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunnable)
 
         # Acquire lock before starting cycle, to ensure that 'block_job_list'
         # jobs won't complete. This will force the pool to overrun those jobs.
@@ -240,11 +240,11 @@ class Test(unittest.TestCase):
         input_list = list(xrange(num_jobs))
         job_list = [_TestJob(i) for i in input_list]
         max_workers = multiprocessing.cpu_count()
-        max_overrunable = max_workers // 2
+        max_overrunnable = max_workers // 2
         print "max workers:", max_workers
 
         result_list = []
-        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunable)
+        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunnable)
         for i in xrange(num_loops):
 
             loop_offset = i * num_jobs
@@ -265,7 +265,7 @@ class Test(unittest.TestCase):
     def test_can_overrun_loop(self):
 
         max_workers = 10
-        max_overrunable = max_workers // 2
+        max_overrunnable = max_workers // 2
         half_max_workers = max_workers // 2
         num_loops = half_max_workers
         num_jobs = max_workers
@@ -287,7 +287,7 @@ class Test(unittest.TestCase):
         job_list = block_job_list + normal_job_list
 
         result_list = []
-        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunable)
+        pool = phlmp_pool.CyclingPool(job_list, max_workers, max_overrunnable)
 
         print "max workers:", max_workers
 

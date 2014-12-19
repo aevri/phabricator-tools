@@ -44,8 +44,10 @@ class CyclingPool(object):
 
         self._job_list = job_list
         self._max_workers = max_workers
-        self._overunnable_workers = _calc_overrunable_workers(
-            max_workers, len(job_list), max_overrunnable)
+        self._overunnable_workers = _calc_overrunnable_workers(
+            max_workers=max_workers,
+            max_overrunnable=max_overrunnable,
+            num_jobs=len(job_list))
         self._pool_list = _PoolList()
         self._active_job_index_set = set()
 
@@ -89,7 +91,7 @@ class CyclingPool(object):
 
             should_break = _calc_should_overrun(
                 num_active=self._pool_list.count_active_workers(),
-                num_overrunable=self._overunnable_workers,
+                num_overrunnable=self._overunnable_workers,
                 condition=overrun_condition,
                 is_finished=self._pool_list.is_yield_finished())
 
@@ -114,15 +116,15 @@ class CyclingPool(object):
         self._pool_list.add_pool(pool)
 
 
-def _calc_overrunable_workers(max_workers, max_overrunable, num_jobs):
+def _calc_overrunnable_workers(max_workers, max_overrunnable, num_jobs):
     return min(
         max_workers - 1,
         num_jobs - 1,
-        max_overrunable)
+        max_overrunnable)
 
 
-def _calc_should_overrun(num_active, num_overrunable, condition, is_finished):
-    too_busy = num_active > num_overrunable
+def _calc_should_overrun(num_active, num_overrunnable, condition, is_finished):
+    too_busy = num_active > num_overrunnable
     can_overrun = not too_busy and condition()
     return is_finished or can_overrun
 
