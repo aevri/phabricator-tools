@@ -54,6 +54,16 @@ class CyclingPool(object):
     def num_active_jobs(self):
         return len(self._active_job_index_set)
 
+    def overrun_cycle_results(self):
+        for index, result in self._pool_list.yield_available_results():
+            self._active_job_index_set.remove(index)
+            yield index, result
+
+    def finish_results(self):
+        while not self._pool_list.is_yield_finished():
+            for index, result in self.overrun_cycle_results():
+                yield index, result
+
     def _cycle_results(self, overrun_condition):
 
         # clear up any dead pools and yield results
@@ -90,16 +100,6 @@ class CyclingPool(object):
 
         self._pool_list.add_pool(pool)
 
-    def overrun_cycle_results(self):
-        for index, result in self._pool_list.yield_available_results():
-            self._active_job_index_set.remove(index)
-            yield index, result
-
-    def finish_results(self):
-        while not self._pool_list.is_yield_finished():
-            for index, result in self.overrun_cycle_results():
-                yield index, result
-
 
 class _PoolList(object):
 
@@ -121,7 +121,6 @@ class _PoolList(object):
         for pool in self._pool_list:
             pool.join_finished_workers()
             for index, result in pool.yield_available_results():
-                self._active_job_index_set.remove(index)
                 yield index, result
 
         # clean up dead pools
@@ -132,7 +131,7 @@ class _PoolList(object):
         for pool in finished_pools:
             self._pool_list.remove(pool)
 
-    def is_yield_finished():
+    def is_yield_finished(self):
         return not self._pool_list
 
 
