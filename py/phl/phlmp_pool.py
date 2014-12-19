@@ -23,24 +23,41 @@ import multiprocessing.queues
 import phlsys_timer
 
 
-# XXX: test less jobs than workers overrun calculation
-
 class CyclingPool(object):
 
     """Pooling for jobs that are repeated in a loop, supports overruning jobs.
 
-    This is useful if you have a lot of polling jobs which usually don't need
-    to do much work. When they occasionally do need to do a lot of work, you
-    don't want to stop cycling the other jobs while they're processed.
+    This is useful if you have a lot of polling jobs which usually don't
+    need to do much work. When they occasionally do need to do a lot of
+    work, you don't want to stop cycling the other jobs while they're
+    processed.
 
     """
 
     def __init__(self, job_list, max_workers, max_overrunnable):
+        """Create a CyclingPool to cycle over 'job_list'.
+
+        :job_list: a list of callables to execute in worker processes
+        :max_workers: the maximum number of worker processes to make
+        :max_overrunnable: the maximum number of workers to leave behind
+
+        """
         super(CyclingPool, self).__init__()
 
         if max_workers < 1:
             raise ValueError(
                 'invalid value for max_workers: {}'.format(max_workers))
+
+        if max_overrunnable < 0:
+            raise ValueError(
+                'invalid value for max_overrunnable: {}'.format(
+                    max_overrunnable))
+
+        if max_overrunnable >= max_workers:
+            raise ValueError(
+                'invalid value for max_overrunnable: {}, should be less '
+                'than max_workers: {}'.format(
+                    max_overrunnable, max_workers))
 
         self._job_list = job_list
         self._max_workers = max_workers
@@ -52,6 +69,18 @@ class CyclingPool(object):
         self._active_job_index_set = set()
 
     def cycle_results(self, overrun_secs):
+        """Yield the results from a run of all the jobs.
+
+        If overrun_secs elapse and max_overrunnable is nonzero then jobs may be
+        left to run in the background.
+
+        The results from these 'overrun' jobs will be yielded in subsequent
+        calls to 'cycle_results' or 'overrun_cycle_results' or
+        'finish_results'.
+
+        :overrun_secs: seconds to wait before considering leaving jobs behind
+        :yields: an (index, result) tuple
+        """
 
         # make a timer out of the overrun_secs and pass to _cycle_results
         timer = phlsys_timer.Timer()
@@ -65,6 +94,7 @@ class CyclingPool(object):
 
     @property
     def num_active_jobs(self):
+        """Return the number of jobs not yet yielded."""
         return len(self._active_job_index_set)
 
     def overrun_cycle_results(self):
