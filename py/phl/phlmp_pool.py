@@ -35,7 +35,7 @@ class CyclingPool(object):
         self._job_list = job_list
         self._max_workers = max_workers
         self._overunnable_workers = max_workers // 2
-        self._pool_list = []
+        self._pool_list = _PoolList()
         self._active_job_index_set = set()
 
     def cycle_results(self, overrun_secs):
@@ -64,27 +64,19 @@ class CyclingPool(object):
 
         # wait for results, overrun if half our workers are available
         should_wait = True
-        is_active = True
-        while should_wait and is_active:
+        while should_wait and not self._pool_list.is_yield_finished():
 
-            active_workers = self._count_overrun_workers()
+            active_workers = self._pool_list.count_active_workers()
             workers_too_busy = active_workers > self._overunnable_workers
             should_wait = workers_too_busy or not overrun_condition()
-
-            is_active = active_workers or self._active_job_index_set
 
             for index, result in self.overrun_cycle_results():
                 yield index, result
 
-    def _count_overrun_workers(self):
-        overrun_workers = 0
-        for pool in self._pool_list:
-            overrun_workers += pool.count_active_workers()
-        return overrun_workers
-
     def _start_new_cycle(self):
 
-        max_new_workers = self._max_workers - self._count_overrun_workers()
+        active_workers = self._pool_list.count_active_workers()
+        max_new_workers = self._max_workers - active_workers
 
         pool = _Pool(self._job_list, max_new_workers)
 
@@ -96,27 +88,15 @@ class CyclingPool(object):
             self._active_job_index_set.add(i)
         pool.finish()
 
-        self._pool_list.append(pool)
+        self._pool_list.add_pool(pool)
 
     def overrun_cycle_results(self):
-
-        # yield results
-        for pool in self._pool_list:
-            pool.join_finished_workers()
-            for index, result in pool.yield_available_results():
-                self._active_job_index_set.remove(index)
-                yield index, result
-
-        # clean up dead pools
-        finished_pools = []
-        for pool in self._pool_list:
-            if pool.is_finished():
-                finished_pools.append(pool)
-        for pool in finished_pools:
-            self._pool_list.remove(pool)
+        for index, result in self._pool_list.yield_available_results():
+            self._active_job_index_set.remove(index)
+            yield index, result
 
     def finish_results(self):
-        while self._pool_list:
+        while not self._pool_list.is_yield_finished():
             for index, result in self.overrun_cycle_results():
                 yield index, result
 
@@ -152,7 +132,7 @@ class _PoolList(object):
         for pool in finished_pools:
             self._pool_list.remove(pool)
 
-    def is_finished():
+    def is_yield_finished():
         return not self._pool_list
 
 
