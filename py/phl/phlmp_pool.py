@@ -23,9 +23,19 @@ import multiprocessing.queues
 import phlsys_timer
 
 
+# XXX: test less jobs than workers overrun calculation
+
 class CyclingPool(object):
 
-    def __init__(self, job_list, max_workers):
+    """Pooling for jobs that are repeated in a loop, supports overruning jobs.
+
+    This is useful if you have a lot of polling jobs which usually don't need
+    to do much work. When they occasionally do need to do a lot of work, you
+    don't want to stop cycling the other jobs while they're processed.
+
+    """
+
+    def __init__(self, job_list, max_workers, max_overrunnable):
         super(CyclingPool, self).__init__()
 
         if max_workers < 1:
@@ -34,7 +44,8 @@ class CyclingPool(object):
 
         self._job_list = job_list
         self._max_workers = max_workers
-        self._overunnable_workers = max_workers // 2
+        self._overunnable_workers = _calc_overrunable_workers(
+            max_workers, len(job_list), max_overrunnable)
         self._pool_list = _PoolList()
         self._active_job_index_set = set()
 
@@ -73,12 +84,14 @@ class CyclingPool(object):
         self._start_new_cycle()
 
         # wait for results, overrun if half our workers are available
-        should_wait = True
-        while should_wait and not self._pool_list.is_yield_finished():
+        should_break = False
+        while not should_break:
 
-            active_workers = self._pool_list.count_active_workers()
-            workers_too_busy = active_workers > self._overunnable_workers
-            should_wait = workers_too_busy or not overrun_condition()
+            should_break = _calc_should_overrun(
+                num_active=self._pool_list.count_active_workers(),
+                num_overrunable=self._overunnable_workers,
+                condition=overrun_condition,
+                is_finished=self._pool_list.is_yield_finished())
 
             for index, result in self.overrun_cycle_results():
                 yield index, result
@@ -99,6 +112,19 @@ class CyclingPool(object):
         pool.finish()
 
         self._pool_list.add_pool(pool)
+
+
+def _calc_overrunable_workers(max_workers, max_overrunable, num_jobs):
+    return min(
+        max_workers - 1,
+        num_jobs - 1,
+        max_overrunable)
+
+
+def _calc_should_overrun(num_active, num_overrunable, condition, is_finished):
+    too_busy = num_active > num_overrunable
+    should_wait = too_busy or not condition()
+    return should_wait and not is_finished
 
 
 class _PoolList(object):
