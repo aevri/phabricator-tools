@@ -14,6 +14,7 @@
 
 from __future__ import absolute_import
 
+import collections
 import multiprocessing
 import unittest
 
@@ -23,21 +24,21 @@ import phlmp_pool
 class _TestJob(object):
 
     def __init__(self, value):
-        self._value = value
+        self.value = value
 
     def __call__(self):
-        return self._value
+        return self.value
 
 
-class _WaitForLockJob(object):
+class _LockedJob(object):
 
     def __init__(self, value, lock):
-        self._value = value
-        self._lock = lock
+        self.value = value
+        self.lock = lock
 
     def __call__(self):
-        with self._lock:
-            return self._value
+        with self.lock:
+            return self.value
 
 
 def _false_condition():
@@ -83,7 +84,7 @@ class Test(unittest.TestCase):
         normal_input_list = input_list[half_max_workers:]
         self.assertTrue(len(normal_input_list) >= len(block_input_list))
 
-        block_job_list = [_WaitForLockJob(i, lock) for i in block_input_list]
+        block_job_list = [_LockedJob(i, lock) for i in block_input_list]
         normal_job_list = [_TestJob(i) for i in normal_input_list]
         job_list = block_job_list + normal_job_list
 
@@ -115,24 +116,109 @@ class Test(unittest.TestCase):
 
     def test_can_loop(self):
 
-        input_list = list(xrange(100))
+        num_loops = 2
+        num_jobs = 100
+        input_list = list(xrange(num_jobs))
         job_list = [_TestJob(i) for i in input_list]
         max_workers = multiprocessing.cpu_count()
         print "max workers:", max_workers
 
+        result_list = []
         pool = phlmp_pool.CyclingPool(job_list, max_workers)
-        for _ in xrange(2):
-            result_list = []
+        for i in xrange(num_loops):
+
+            loop_offset = i * num_jobs
 
             for index, result in pool._cycle_results(_false_condition):
-                self.assertEqual(index, result)
+                self.assertEqual(index + loop_offset, result)
                 result_list.append(result)
 
             self.assertSetEqual(
                 set(result_list),
-                set(input_list))
+                set(xrange(num_jobs + loop_offset)))
 
-    def test_pool(self):
+            # ensure the next batch of jobs continue the numbering at the next
+            # loop offset
+            for job in job_list:
+                job.value += num_jobs
+
+    def test_can_overrun_loop(self):
+
+        max_workers = 10
+        half_max_workers = max_workers // 2
+        num_loops = half_max_workers
+        num_jobs = max_workers
+
+        locks = [multiprocessing.Lock() for _ in xrange(half_max_workers)]
+
+        input_list = list(xrange(num_jobs))
+
+        block_input_list = input_list[:half_max_workers]
+        normal_input_list = input_list[half_max_workers:]
+
+        self.assertTrue(len(normal_input_list) >= len(block_input_list))
+
+        block_job_list = [
+            _LockedJob((0, i), locks[i])
+            for i in block_input_list
+        ]
+        normal_job_list = [_TestJob((0, i)) for i in normal_input_list]
+        job_list = block_job_list + normal_job_list
+
+        result_list = []
+        pool = phlmp_pool.CyclingPool(job_list, max_workers)
+
+        for i in xrange(num_loops):
+
+            # Acquire lock before starting cycle, to ensure that some of the
+            # 'block_job_list' jobs won't complete. This will force the pool to
+            # overrun those jobs.
+            locks[i].acquire()
+
+            loop_offset = i * num_jobs
+
+            for index, result in pool._cycle_results(_true_condition):
+                iteration, job_index = result
+                self.assertEqual(index, job_index)
+                result_list.append(result)
+
+            # make sure that some of the jobs weren't processed yet
+            self.assertTrue(
+                len(set(result_list)) < loop_offset + num_jobs)
+
+            # make sure that some jobs are still running
+            self.assertTrue(pool.num_active_jobs)
+
+            # mark subsequent jobs as coming from the next iteration
+            for job in job_list:
+                iteration, job_index = job.value
+                job.value = (iteration + 1, job_index)
+
+        # finish all remaining jobs
+        for l in locks:
+            l.release()
+        for index, result in pool.finish_results():
+            result_list.append(result)
+
+        # assert no jobs left
+        self.assertFalse(pool.num_active_jobs)
+
+        # count iterations of each job
+        job_counter = collections.Counter()
+        for result in result_list:
+            iteration, job_index = result
+            job_counter[job_index] += 1
+
+        # assert that all jobs were processed at least once
+        for i in input_list:
+            self.assertTrue(job_counter[i] >= 1)
+
+        # assert that blocked jobs were processed at most the number of cycles
+        # until they were blocked
+        for i in block_input_list:
+            self.assertTrue(job_counter[i] <= i + 1)
+
+    def test_pool_breathing(self):
 
         input_list = list(xrange(100))
         job_list = [_TestJob(i) for i in input_list]
