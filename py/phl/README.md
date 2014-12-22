@@ -59,7 +59,7 @@ Format valid mime-text suitable for piping into sendmail.
 A mail sender that just stores mail to make testing easier.
 * `phlmail_sender.py` -
 A mail sender that sends mail via a configured sendmail.
-* `phlmp_pool.py` -
+* `phlmp_cyclingpool.py` -
 Distribute jobs across multiple processes.
 * `phlsys_arcconfig.py` -
 Wrapper to integrate with Arcanist's .arcconfig file.

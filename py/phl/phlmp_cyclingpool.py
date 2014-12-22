@@ -2,13 +2,13 @@
 # =============================================================================
 # CONTENTS
 # -----------------------------------------------------------------------------
-# phlmp_pool
+# phlmp_cyclingpool
 #
 # Public Classes:
 #   CyclingPool
 #    .cycle_results
-#    .num_active_jobs
 #    .finish_results
+#    .num_active_jobs
 #
 # -----------------------------------------------------------------------------
 # (this contents block is generated, edits will be lost)
@@ -116,6 +116,7 @@ class CyclingPool(object):
         for index, result in self._pool_list.yield_available_results():
             self._active_job_index_set.remove(index)
             yield index, result
+
     def _cycle_results(self, overrun_condition):
 
         # clear up any dead pools and yield results

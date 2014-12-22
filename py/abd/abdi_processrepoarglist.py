@@ -21,7 +21,7 @@ import time
 
 import phlcon_reviewstatecache
 import phlgitx_refcache
-import phlmp_pool
+import phlmp_cyclingpool
 import phlsys_conduit
 import phlsys_git
 import phlsys_subprocess
@@ -91,7 +91,7 @@ def do(
 
     cycle_timer = phlsys_timer.Timer()
     cycle_timer.start()
-    pool = phlmp_pool.CyclingPool(repo_list, max_workers)
+    pool = phlmp_cyclingpool.CyclingPool(repo_list, max_workers)
     while not finished:
 
         # This timer needs to be separate from the cycle timer. The cycle timer
