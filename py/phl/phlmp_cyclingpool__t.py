@@ -298,6 +298,29 @@ class Test(unittest.TestCase):
         normal_job_list = [_TestJob((0, i)) for i in normal_input_list]
         job_list = block_job_list + normal_job_list
 
+        result_list = self._loop_jobs(
+            max_workers, num_loops, locks, max_overrunnable, job_list)
+
+        # count iterations of each job
+        job_counter = collections.Counter()
+        for result in result_list:
+            iteration, job_index = result
+            job_counter[job_index] += 1
+
+        # assert that all jobs were processed at least once
+        for i in input_list:
+            self.assertTrue(job_counter[i] >= 1)
+
+        # assert that blocked jobs were processed at most the number of cycles
+        # until they were blocked
+        for i in block_input_list:
+            self.assertTrue(job_counter[i] <= i + 1)
+
+    def _loop_jobs(
+            self, max_workers, num_loops, locks, max_overrunnable, job_list):
+
+        num_jobs = len(job_list)
+
         result_list = []
         pool = phlmp_cyclingpool.CyclingPool(
             job_list, max_workers, max_overrunnable)
@@ -340,20 +363,7 @@ class Test(unittest.TestCase):
         # assert no jobs left
         self.assertFalse(pool.num_active_jobs)
 
-        # count iterations of each job
-        job_counter = collections.Counter()
-        for result in result_list:
-            iteration, job_index = result
-            job_counter[job_index] += 1
-
-        # assert that all jobs were processed at least once
-        for i in input_list:
-            self.assertTrue(job_counter[i] >= 1)
-
-        # assert that blocked jobs were processed at most the number of cycles
-        # until they were blocked
-        for i in block_input_list:
-            self.assertTrue(job_counter[i] <= i + 1)
+        return result_list
 
 
 # -----------------------------------------------------------------------------

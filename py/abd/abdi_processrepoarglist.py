@@ -90,9 +90,16 @@ def do(
                 sys_admin_emails,
                 mail_sender))
 
+    # if we always overrun half our workers then the loop is sustainable, if we
+    # overrun more than that then we'll be lagging too far behind. In the event
+    # that we only have one worker then we can't overrun any.
+    max_overrun_workers = max_workers // 2
+
+    pool = phlmp_cyclingpool.CyclingPool(
+        repo_list, max_workers, max_overrun_workers)
+
     cycle_timer = phlsys_timer.Timer()
     cycle_timer.start()
-    pool = phlmp_cyclingpool.CyclingPool(repo_list, max_workers, overrun_secs)
     while not finished:
 
         # This timer needs to be separate from the cycle timer. The cycle timer
@@ -110,7 +117,7 @@ def do(
         conduit_manager.refresh_conduits()
 
         if max_workers:
-            for i, res in pool.cycle_results(overrun_secs=60):
+            for i, res in pool.cycle_results(overrun_secs=overrun_secs):
                 repo = repo_list[i]
                 repo.merge_from_worker(res)
         else:
