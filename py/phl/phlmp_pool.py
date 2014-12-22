@@ -31,6 +31,13 @@ class CyclingPool(object):
     work, you don't want to stop cycling the other jobs while they're
     processed.
 
+    Jobs are processed in separate worker processes, this means that changes to
+    the jobs or any global state will not be reflected in the calling process.
+
+    Jobs started during each 'cycle_results' are guaranteed to be handled in
+    new forks of the current process. This means that the current version of
+    the jobs in the supplied job list will be used.
+
     """
 
     def __init__(self, job_list, max_workers, max_overrunnable):
@@ -75,6 +82,9 @@ class CyclingPool(object):
 
         The results from these 'overrun' jobs will be yielded in subsequent
         calls to 'cycle_results' or 'finish_results'.
+
+        Jobs which are currently overrunning will not be started again until
+        the overrun job has finished.
 
         :overrun_secs: seconds to wait before considering leaving jobs behind
         :yields: an (index, result) tuple
