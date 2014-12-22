@@ -170,8 +170,13 @@ class Test(unittest.TestCase):
 
         for e in expectations:
             print e[0]
+
+            # PyChecker makes us do this because it doesn't see the **e[0] as
+            # passing all the required parameters
+            calc_overrun = phlmp_cyclingpool._calc_overrunnable_workers
+
             self.assertEqual(
-                phlmp_cyclingpool._calc_overrunnable_workers(**e[0]),
+                calc_overrun(**e[0]),
                 e[1])
 
     def test_cyclingpool_breathing(self):
@@ -266,6 +271,10 @@ class Test(unittest.TestCase):
                 job.value += num_jobs
 
     def test_can_overrun_loop(self):
+        # suppress pychecker error on collections.Counter:
+        # Methods (fromkeys) in collections.Counter need to be overridden in a
+        # subclass
+        __pychecker__ = 'no-abstract'  # NOQA
 
         max_workers = 10
         max_overrunnable = max_workers // 2
