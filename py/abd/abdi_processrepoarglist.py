@@ -54,7 +54,8 @@ def do(
         is_no_loop,
         external_report_command,
         mail_sender,
-        max_workers):
+        max_workers,
+        overrun_secs):
 
     conduit_manager = _ConduitManager()
 
@@ -91,7 +92,7 @@ def do(
 
     cycle_timer = phlsys_timer.Timer()
     cycle_timer.start()
-    pool = phlmp_cyclingpool.CyclingPool(repo_list, max_workers)
+    pool = phlmp_cyclingpool.CyclingPool(repo_list, max_workers, overrun_secs)
     while not finished:
 
         # This timer needs to be separate from the cycle timer. The cycle timer
