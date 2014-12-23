@@ -121,6 +121,7 @@ class Repo(object):
         self._remote = remote
         self._description = description
         self._is_landing_archive_enabled = None
+        self._
 
     def is_identical(self, branch1, branch2):
         """Return True if the branches point to the same commit.
@@ -357,7 +358,8 @@ class Repo(object):
         """
         # checkout the 'to' branch, otherwise we won't take into account any
         # changes to .gitattributes files
-        phlgit_checkout.branch(self._repo, to_branch)
+        from_ref, to_ref = self._refs_to_hashes((from_branch, to_branch))
+        phlgit_checkout.branch(self._repo, to_ref)
         return abdt_differ.make_raw_diff(
             self,
             from_branch,
@@ -389,6 +391,51 @@ class Repo(object):
 
     def get_remote(self):
         return self._remote
+
+
+class DifferResultCache(object):
+
+    def __init__(self, refcache_repo):
+        super(DifferResultCache, self).__init__()
+        self._diff_results = {}
+        self._repo = refcache_repo
+
+    def get_cache(self):
+        return self._diff_results
+
+    def set_cache(self, cache):
+        self._diff_results = cache
+
+    def checkout_make_raw_diff(
+            self, from_branch, to_branch, max_diff_size_utf8_bytes):
+        """Return an abdt_differ.DiffResult of the changes on the branch.
+
+        If the diff would exceed the pre-specified max diff size then take
+        measures to reduce the diff.
+
+        Potentially checkout onto the 'to_branch' so that changes to
+        .gitattributes files will be considered.
+
+        :from_branch: string name of the merge-base of 'branch'
+        :to_branch: string name of the branch to diff
+        :max_diff_size_utf8_bytes: the maximum allowed size of the diff as utf8
+        :returns: the string diff of the changes on the branch
+
+        """
+        # checkout the 'to' branch, otherwise we won't take into account any
+        # changes to .gitattributes files
+        from_ref, to_ref = self._refs_to_hashes((from_branch, to_branch))
+        phlgit_checkout.branch(self._repo, to_ref)
+        return abdt_differ.make_raw_diff(
+            self,
+            from_branch,
+            to_branch,
+            max_diff_size_utf8_bytes)
+
+    def _refs_to_hashes(self, ref_list):
+        hash_ref_pairs = self.hash_ref_pairs
+        ref_to_hash = dict(((r, h) for h, r in hash_ref_pairs))
+        return (ref_to_hash[ref] for ref in ref_list)
 
 
 def _get_branch_to_hash(repo):
