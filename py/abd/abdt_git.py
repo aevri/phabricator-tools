@@ -24,6 +24,10 @@
 #    .hash_ref_pairs
 #    .checkout_make_raw_diff
 #    .get_remote
+#   DifferResultCache
+#    .get_cache
+#    .set_cache
+#    .checkout_make_raw_diff
 #
 # Public Functions:
 #   get_managed_branches
@@ -420,13 +424,13 @@ class DifferResultCache(object):
         from_ref, to_ref = self._refs_to_hashes((from_branch, to_branch))
         phlgit_checkout.branch(self._repo, to_ref)
         return abdt_differ.make_raw_diff(
-            self,
+            self._repo,
             from_branch,
             to_branch,
             max_diff_size_utf8_bytes)
 
     def _refs_to_hashes(self, ref_list):
-        hash_ref_pairs = self.hash_ref_pairs
+        hash_ref_pairs = self._repo.hash_ref_pairs
         ref_to_hash = dict(((r, h) for h, r in hash_ref_pairs))
         return (ref_to_hash[ref] for ref in ref_list)
 
