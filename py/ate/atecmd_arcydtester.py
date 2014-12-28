@@ -384,20 +384,24 @@ def _do_tests(args):
 
     with contextlib.closing(fixture):
         try:
-            run_interaction(
-                _user_story_request_changes,
-                _arcyd_run_once_scenario,
-                fixture,
-                args)
+            run_all_interactions(fixture, args)
         except:
             print fixture.arcyds[0].debug_log()
             fixture.launch_debug_shell()
             raise
 
 
-def run_interaction(user_scenario, arcyd_scenario, fixture, args):
+def run_all_interactions(fixture, args):
     arcyd = fixture.arcyds[0]
-    arcyd_generator = arcyd_scenario(arcyd, fixture.repos)
+    arcyd_generator = _arcyd_run_once_scenario(arcyd, fixture.repos)
+    run_interaction(
+        _user_story_request_changes,
+        arcyd_generator,
+        fixture,
+        args)
+
+
+def run_interaction(user_scenario, arcyd_generator, fixture, args):
     user_scenario_list = [user_scenario(repo) for repo in fixture.repos]
     for interactions in itertools.izip(*user_scenario_list):
         print(interactions)
