@@ -207,19 +207,26 @@ class HttpTest(unittest.TestCase):
         self.httpd_process.terminate()
 
     def test_get(self):
-        self.assertEqual(phlurl_request.get('http://%s:%s/index' %
-                         (self.httpd_host, self.httpd_port)), (200, 'OK'))
+        self.assertEqual(
+            phlurl_request.get(self._url('http://{host}:{port}/index')),
+            (200, 'OK'))
 
     def test_get_many(self):
+
+        expected = {
+            self._url('http://{host}:{port}/a'): (200, 'OK'),
+            self._url('http://{host}:{port}/b'): (200, 'OK'),
+            self._url('http://{host}:{port}/c'): (200, 'OK'),
+        }
+
         self.assertEqual(
-            phlurl_request.get_many(
-                ['http://%s:%s/a' % (self.httpd_host, self.httpd_port),
-                 'http://%s:%s/b' % (
-                     self.httpd_host, self.httpd_port),
-                 'http://%s:%s/c' % (self.httpd_host, self.httpd_port)]),
-            {'http://%s:%s/a' % (self.httpd_host, self.httpd_port): (200, 'OK'),
-             'http://%s:%s/b' % (self.httpd_host, self.httpd_port): (200, 'OK'),
-             'http://%s:%s/c' % (self.httpd_host, self.httpd_port): (200, 'OK')})
+            phlurl_request.get_many(expected.keys),
+            expected)
+
+    def _url(self, format_string):
+        return format_string.format(
+            host=self.httpd_host,
+            port=self.httpd_port)
 
 
 class HttpTest_Auth(unittest.TestCase):
@@ -255,9 +262,9 @@ class HttpTest_Auth(unittest.TestCase):
         url_c = self._url('http://baz:buz@{host}:{port}/index')
 
         expected = {
-            url_a: (401, 'Authentication required')
-            url_b: (200, 'Basic Zm9vOmJhcg==')
-            url_c: (200, 'Basic YmF6OmJ1eg==')
+            url_a: (401, 'Authentication required'),
+            url_b: (200, 'Basic Zm9vOmJhcg=='),
+            url_c: (200, 'Basic YmF6OmJ1eg=='),
         }
 
         self.assertEqual(
@@ -273,28 +280,47 @@ class HttpTest_Auth(unittest.TestCase):
 class HttpTest_Redirect(unittest.TestCase):
 
     def __init__(self, data):
+
         super(HttpTest_Redirect, self).__init__(data)
+
         self.dst_httpd_process = None
         self.dst_httpd_host = None
         self.dst_httpd_port = None
+
         self.src_httpd_process = None
         self.src_httpd_host = None
         self.src_httpd_port = None
 
     def setUp(self):
-        self.dst_httpd_process, self.dst_httpd_host, self.dst_httpd_port = start_httpd(
-            BasicAuthHttpReqHandler)
-        self.src_httpd_process, self.src_httpd_host, self.src_httpd_port = start_httpd(
-            create_redirect_handler(self.dst_httpd_host,
-                                    self.dst_httpd_port))
+
+        (
+            self.dst_httpd_process,
+            self.dst_httpd_host,
+            self.dst_httpd_port
+        ) = start_httpd(BasicAuthHttpReqHandler)
+
+        (
+            self.src_httpd_process,
+            self.src_httpd_host,
+            self.src_httpd_port
+        ) = start_httpd(
+            create_redirect_handler(
+                self.dst_httpd_host,
+                self.dst_httpd_port))
 
     def tearDown(self):
         self.src_httpd_process.terminate()
         self.dst_httpd_process.terminate()
 
     def test_get(self):
-        self.assertEqual(phlurl_request.get('http://%s:%s/index' %
-                         (self.src_httpd_host, self.src_httpd_port)), (200, 'OK'))
+
+        url = 'http://{host}:{port}/index'.format(
+            host=self.src_httpd_host,
+            port=self.src_httpd_port)
+
+        self.assertEqual(
+            phlurl_request.get(url),
+            (200, 'OK'))
 
 
 # -----------------------------------------------------------------------------
