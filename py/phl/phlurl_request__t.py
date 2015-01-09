@@ -102,8 +102,10 @@ def httpd_serve_forever(parent_pipe, req_handler):
 def start_httpd(request_handler):
     parent_conn, child_conn = multiprocessing.Pipe(False)
 
-    httpd_process = multiprocessing.Process(target=httpd_serve_forever,
-                                            args=(child_conn, request_handler,))
+    httpd_process = multiprocessing.Process(
+        target=httpd_serve_forever,
+        args=(child_conn, request_handler,))
+
     httpd_process.start()
     child_conn.close()
 
@@ -120,14 +122,18 @@ class Test(unittest.TestCase):
         pass
 
     def test_join_url(self):
-        self.assertEqual(phlurl_request.join_url(
-            'http://example.com/', 'mypage/'), 'http://example.com/mypage/')
-        self.assertEqual(phlurl_request.join_url(
-            'http://example.com', 'mypage/'), 'http://example.com/mypage/')
-        self.assertEqual(phlurl_request.join_url(
-            'https://example.com:443/', 'mypage/'), 'https://example.com:443/mypage/')
-        self.assertEqual(phlurl_request.join_url(
-            'https://example.com:443', 'mypage/'), 'https://example.com:443/mypage/')
+        self.assertEqual(
+            phlurl_request.join_url('http://example.com/', 'mypage/'),
+            'http://example.com/mypage/')
+        self.assertEqual(
+            phlurl_request.join_url('http://example.com', 'mypage/'),
+            'http://example.com/mypage/')
+        self.assertEqual(
+            phlurl_request.join_url('https://example.com:443/', 'mypage/'),
+            'https://example.com:443/mypage/')
+        self.assertEqual(
+            phlurl_request.join_url('https://example.com:443', 'mypage/'),
+            'https://example.com:443/mypage/')
 
     def test_split_url(self):
         self.assertEqual(
@@ -150,20 +156,39 @@ class Test(unittest.TestCase):
                 'https://www.bloomberg.com/index?a=index&b=c'),
             phlurl_request.SplitUrlResult(
                 'https://www.bloomberg.com/index?a=index&b=c',
-                'https', 'www.bloomberg.com', None, '/index?a=index&b=c', None, None))
+                'https',
+                'www.bloomberg.com',
+                None,
+                '/index?a=index&b=c',
+                None,
+                None))
 
     def test_group_urls(self):
+        urls = ['http://a.io/a', 'http://a.io/b', 'https://b.io/c']
+
+        expected_split_a = phlurl_request.SplitUrlResult(
+            'http://a.io/a',
+            'http', 'a.io', None, '/a', None, None)
+
+        expected_split_b = phlurl_request.SplitUrlResult(
+            'http://a.io/a',
+            'http', 'a.io', None, '/b', None, None)
+
+        expected_split_c = phlurl_request.SplitUrlResult(
+            'http://a.io/a',
+            'https', 'b.io', None, '/c', None, None)
+
+        expected_http = {
+            ('a.io', None): [expected_split_a, expected_split_b],
+        }
+
+        expected_https = {
+            ('b.io', None): [expected_split_c]
+        }
+
         self.assertEqual(
-            phlurl_request.group_urls(
-                ['http://a.io/a', 'http://a.io/b', 'https://b.io/c']),
-            phlurl_request.GroupUrlResult(
-                {('a.io', None): [phlurl_request.SplitUrlResult('http://a.io/a',
-                                                                'http', 'a.io', None, '/a', None, None),
-                                  phlurl_request.SplitUrlResult(
-                                      'http://a.io/b',
-                                      'http', 'a.io', None, '/b', None, None)]},
-                {('b.io', None): [phlurl_request.SplitUrlResult('https://b.io/c',
-                                                                'https', 'b.io', None, '/c', None, None)]}))
+            phlurl_request.group_urls(urls),
+            phlurl_request.GroupUrlResult(expected_http, expected_https))
 
 
 class HttpTest(unittest.TestCase):
@@ -259,7 +284,6 @@ class HttpTest_Redirect(unittest.TestCase):
     def test_get(self):
         self.assertEqual(phlurl_request.get('http://%s:%s/index' %
                          (self.src_httpd_host, self.src_httpd_port)), (200, 'OK'))
-
 
 
 # -----------------------------------------------------------------------------
