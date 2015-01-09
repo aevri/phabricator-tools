@@ -57,7 +57,7 @@ class BasicAuthHttpReqHandler(HttpReqHandler):
 
     def do_GET(self):
         auth = self.headers.getheader('Authorization')
-        if auth == None:
+        if auth is None:
             self.send_response(401)
             self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
             self.send_header('Content-type', 'text/html')
