@@ -238,25 +238,36 @@ class HttpTest_Auth(unittest.TestCase):
         self.httpd_process.terminate()
 
     def test_get(self):
+
         self.assertEqual(
-            phlurl_request.get('http://%s:%s/index' %
-                               (self.httpd_host, self.httpd_port)),
+            phlurl_request.get(self._url('http://{host}:{port}/index')),
             (401, 'Authentication required'))
+
         self.assertEqual(
-            phlurl_request.get('http://foo:bar@%s:%s/index' %
-                               (self.httpd_host, self.httpd_port)),
+            phlurl_request.get(
+                self._url('http://foo:bar@{host}:{port}/index')),
             (200, 'Basic Zm9vOmJhcg=='))
 
     def test_get_many(self):
+
+        url_a = self._url('http://{host}:{port}/index')
+        url_b = self._url('http://foo:bar@{host}:{port}/index')
+        url_c = self._url('http://baz:buz@{host}:{port}/index')
+
+        expected = {
+            url_a: (401, 'Authentication required')
+            url_b: (200, 'Basic Zm9vOmJhcg==')
+            url_c: (200, 'Basic YmF6OmJ1eg==')
+        }
+
         self.assertEqual(
-            phlurl_request.get_many(
-                ['http://%s:%s/index' % (self.httpd_host, self.httpd_port),
-                 'http://foo:bar@%s:%s/index' % (
-                     self.httpd_host, self.httpd_port),
-                 'http://baz:buz@%s:%s/index' % (self.httpd_host, self.httpd_port)]),
-            {'http://%s:%s/index' % (self.httpd_host, self.httpd_port): (401, 'Authentication required'),
-             'http://foo:bar@%s:%s/index' % (self.httpd_host, self.httpd_port): (200, 'Basic Zm9vOmJhcg=='),
-             'http://baz:buz@%s:%s/index' % (self.httpd_host, self.httpd_port): (200, 'Basic YmF6OmJ1eg==')})
+            phlurl_request.get_many(expected.keys),
+            expected)
+
+    def _url(self, format_string):
+        return format_string.format(
+            host=self.httpd_host,
+            port=self.httpd_port)
 
 
 class HttpTest_Redirect(unittest.TestCase):
