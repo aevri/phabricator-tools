@@ -25,11 +25,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import base64
 import collections
 import httplib
 import traceback
 import urlparse
-import base64
 
 _HTTPLIB_TIMEOUT = 600
 
@@ -152,10 +152,11 @@ def group_urls(url_list):
 
 def _request(connection, verb, request):
     try:
-        headers={}
+        headers = {}
         if request.username:
-            auth = base64.b64encode('%s:%s' % (request.username, request.password))
-            headers['Authorization']='Basic %s' % auth
+            auth = base64.b64encode(
+                '%s:%s' % (request.username, request.password))
+            headers['Authorization'] = 'Basic %s' % auth
         connection.request(method=verb,
                            url=request.path,
                            headers=headers)
@@ -218,7 +219,7 @@ def get(url):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
