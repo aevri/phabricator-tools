@@ -119,7 +119,7 @@ def split_url(url):
     # pylint: enable=E1103
 
 
-def group_urls(url_list):
+def _group_urls(url_list):
     """Return a GroupUrlResult(http_requests, https_requests) from 'url_list'.
 
     Each of the dicts is layed out like:
@@ -127,15 +127,6 @@ def group_urls(url_list):
 
     This is so that is then trivial to re-use http connections for requests
     to the same host.
-
-    e.g.  { ('www.bloomberg.com', 80): '/index?a=index&b=c' }
-
-    Usage examples:
-        >>> result = group_urls(['http://a.io/a', 'http://a.io/b'])
-        >>> dict(result.http)
-        {('a.io', None): [('/a', 'http://a.io/a'), ('/b', 'http://a.io/b')]}
-        >>> dict(result.https)
-        {}
 
     :url_list: a list of string fully qualified urls
     :returns: a tuple of dicts which map connection params to paths
@@ -199,7 +190,7 @@ def get_many(url_list):
     :returns: a list of string contents
 
     """
-    urls = group_urls(url_list)
+    urls = _group_urls(url_list)
     results = {}
 
     for host_port, request_list in urls.http.iteritems():

@@ -187,7 +187,7 @@ class Test(unittest.TestCase):
         }
 
         self.assertEqual(
-            phlurl_request.group_urls(urls),
+            phlurl_request._group_urls(urls),
             phlurl_request.GroupUrlResult(expected_http, expected_https))
 
 
