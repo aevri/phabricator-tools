@@ -109,7 +109,13 @@ def split_url(url):
         path = url.path
 
     return SplitUrlResult(
-        original_url, url.scheme, url.hostname, url.port, path, url.username, url.password)
+        original_url,
+        url.scheme,
+        url.hostname,
+        url.port,
+        path,
+        url.username,
+        url.password)
     # pylint: enable=E1103
 
 
@@ -171,7 +177,13 @@ This exception was triggered from this original exception:
 
 Here is the original traceback:
 {traceback}
-        """.format(verb=verb, request=request, exception=repr(e), traceback=tb).strip()
+        """.format(
+            verb=verb,
+            request=request,
+            exception=repr(e),
+            traceback=tb
+        ).strip()
+
         raise Error(message)
 
 
