@@ -37,6 +37,10 @@ import phlurl_request
 
 class HttpReqHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
+    def __init__(self, *args, **kwargs):
+        BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
+        self.wfile = None  # for pychecker
+
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
@@ -45,6 +49,11 @@ class HttpReqHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 class BasicAuthHttpReqHandler(HttpReqHandler):
+
+    def __init__(self, *args, **kwargs):
+        HttpReqHandler.__init__(self, *args, **kwargs)
+        self.headers = None  # for pychecker
+        self.wfile = None  # for pychecker
 
     def do_GET(self):
         auth = self.headers.getheader('Authorization')
@@ -64,6 +73,11 @@ class BasicAuthHttpReqHandler(HttpReqHandler):
 def create_redirect_handler(host, port):
 
     class RedirectHttpReqHandler(HttpReqHandler):
+
+        def __init__(self, *args, **kwargs):
+            HttpReqHandler.__init__(self, *args, **kwargs)
+            self.path = None  # for pychecker
+            self.wfile = None  # for pychecker
 
         def do_GET(self):
             self.send_response(301)
