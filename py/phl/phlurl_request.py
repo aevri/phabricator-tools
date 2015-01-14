@@ -10,7 +10,6 @@
 # Public Functions:
 #   join_url
 #   split_url
-#   group_urls
 #   get_many
 #   get
 #
