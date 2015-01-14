@@ -220,7 +220,7 @@ class HttpTest(unittest.TestCase):
         }
 
         self.assertEqual(
-            phlurl_request.get_many(expected.keys),
+            phlurl_request.get_many(expected.iterkeys()),
             expected)
 
     def _url(self, format_string):
@@ -268,7 +268,7 @@ class HttpTest_Auth(unittest.TestCase):
         }
 
         self.assertEqual(
-            phlurl_request.get_many(expected.keys),
+            phlurl_request.get_many(expected.iterkeys()),
             expected)
 
     def _url(self, format_string):
@@ -319,8 +319,8 @@ class HttpTest_Redirect(unittest.TestCase):
             port=self.src_httpd_port)
 
         self.assertEqual(
-            phlurl_request.get(url),
-            (200, 'OK'))
+            (200, 'OK'),
+            phlurl_request.get(url))
 
 
 # -----------------------------------------------------------------------------
