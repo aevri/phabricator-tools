@@ -53,6 +53,10 @@ class MultiprocessingWorkerFinishError(Exception):
     pass
 
 
+class JobRaisedDuringProcessing(Exception):
+    pass
+
+
 class CyclingPool(object):
 
     """Pooling for jobs that are repeated in a loop, supports overruning jobs.
@@ -317,7 +321,12 @@ def _worker_process(job_list, work_queue, results_queue):
         if job_index is None:
             break
         job = job_list[job_index]
-        results = job()
+
+        try:
+            results = job()
+        except Exception as e:
+            results = JobRaisedDuringProcessing(str(e))
+
         results_queue.put((job_index, results))
 
 

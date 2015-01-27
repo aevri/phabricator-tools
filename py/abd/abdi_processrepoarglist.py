@@ -316,6 +316,10 @@ class _ArcydManagedRepository(object):
 
     def merge_from_worker(self, results):
 
+        if isinstance(results, phlmp_cyclingpool.JobRaisedDuringProcessing):
+            _LOGGER.debug("failed {}: {}".format(self._name, results))
+            return
+
         (
             active_reviews,
             active_state,
