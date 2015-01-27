@@ -254,7 +254,6 @@ class _ArcydManagedRepository(object):
             mail_sender):
 
         self._active_state = _RepoActiveRetryState(
-            retry_timestr_list=["10 seconds", "10 minutes", "1 hours"])
         sys_repo = phlsys_git.Repo(repo_args.repo_path)
         self._refcache_repo = phlgitx_refcache.Repo(sys_repo)
         self._differ_cache = abdt_differresultcache.Cache(self._refcache_repo)
@@ -288,7 +287,6 @@ class _ArcydManagedRepository(object):
             if not was_active:
                 _LOGGER.info(
                     'repo-event: {} re-enabled'.format(self._name))
-
             try:
                 _process_repo(
                     self._abd_repo,
