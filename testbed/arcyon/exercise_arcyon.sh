@@ -55,7 +55,13 @@ if [ "$taskid" != "$taskid2" ]; then
     false
 fi
 
-$arcyon task-create 'exercise task-create again'
+# This will fail in the phabricator-tools installed version of Phabricator,
+# this bug is fixed in a later revision but that introduces more issues. The
+# current broken behavior appears to be a good local maximum to settle at until
+# we can sync more with upstream.
+#
+# $arcyon task-create 'exercise task-create again'
+
 $arcyon task-update $taskid -m 'just a comment'
 $arcyon task-update $taskid -t 'exercise task-update' -d 'new description' -p low -o bob --ccs phab alice -m 'updated loads'
 
