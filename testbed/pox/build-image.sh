@@ -5,8 +5,8 @@ BUILD_DIR=$(mktemp -d)
 
 pushd ${BUILD_DIR}
 cp -R "${THIS_DIR}/../.." ${BUILD_DIR}
-mv testbed/pox/pox-dockerfile Dockerfile
-docker build -t pox .
+mv testbed/pox/${1}-dockerfile Dockerfile
+docker build -t ${1} .
 popd
 
 rm -rf ${BUILD_DIR}
