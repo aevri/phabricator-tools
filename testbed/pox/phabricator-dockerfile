@@ -15,6 +15,6 @@ RUN apt-get update && apt-get install -y \
     php-apc \
     php5-cli \
     apache2
-COPY . /opt/phabricator-tools/
+COPY vagrant /opt/phabricator-tools/vagrant
 RUN cd /opt/phabricator-tools/vagrant && ./puppet-apply.sh
 EXPOSE 80
