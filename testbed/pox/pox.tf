@@ -4,16 +4,15 @@ provider "docker" {
 }
 
 resource "docker_container" "web" {
-    image = "${docker_image.python.latest}"
+    image = "${docker_image.pox.latest}"
     count = 2
-    name = "hello${count.index}"
-    command = ["python", "-m", "SimpleHTTPServer", "80"]
+    name = "pox${count.index}"
     ports {
-        internal = 80
+        internal = 8000
         external = "808${count.index}"
     }
 }
 
-resource "docker_image" "python" {
-    name = "python:2-slim"
+resource "docker_image" "pox" {
+    name = "pox"
 }
