@@ -1,0 +1,7 @@
+FROM python:2-slim
+MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
+ADD ./py/ /opt/pox/py/
+ADD ./proto/conduit-proxy /opt/pox/proto/
+RUN ln -s /opt/pox/proto/conduit-proxy /usr/bin/pox
+EXPOSE 8000
+ENTRYPOINT ["pox"]
