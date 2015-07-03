@@ -5,3 +5,4 @@ COPY ./proto/conduit-proxy /opt/pox/proto/
 RUN ln -s /opt/pox/proto/conduit-proxy /usr/bin/pox
 EXPOSE 8000
 ENTRYPOINT ["pox"]
+CMD ["--help"]
