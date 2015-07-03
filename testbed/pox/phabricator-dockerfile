@@ -1,0 +1,20 @@
+FROM ubuntu:14.04
+MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
+RUN apt-get update && apt-get install -y \
+    puppet \
+    git-core \
+    mysql-server \
+    php5 \
+    dpkg-dev \
+    unzip \
+    wget \
+    php5-mysql \
+    php5-gd \
+    php5-dev \
+    php5-curl \
+    php-apc \
+    php5-cli \
+    apache2
+COPY . /opt/phabricator-tools/
+RUN cd /opt/phabricator-tools/vagrant && ./puppet-apply.sh
+EXPOSE 80
