@@ -3,17 +3,17 @@ provider "docker" {
     host = "unix:///var/run/docker.sock"
 }
 
-# Create a container
-resource "docker_container" "foo" {
-    image = "${docker_image.ubuntu.latest}"
-    name = "foo"
-    command = ["nc", "-l", "80"]
+resource "docker_container" "web" {
+    image = "${docker_image.python.latest}"
+    count = 2
+    name = "hello${count.index}"
+    command = ["python", "-m", "SimpleHTTPServer", "80"]
     ports {
         internal = 80
-        external = 8080
+        external = "808${count.index}"
     }
 }
 
-resource "docker_image" "ubuntu" {
-    name = "ubuntu:latest"
+resource "docker_image" "python" {
+    name = "python:2-slim"
 }
