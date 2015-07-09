@@ -3,6 +3,21 @@ provider "docker" {
     host = "unix:///var/run/docker.sock"
 }
 
+resource "docker_container" "simple-haproxy" {
+    image = "${docker_image.haproxy.latest}"
+    name = "simple-haproxy"
+    links = ["simpleweb0", "simpleweb1"]
+    ports {
+        internal = 80
+        external = 8092
+    }
+    volumes {
+        read_only = true
+        container_path = "/usr/local/etc/haproxy/haproxy.cfg"
+        host_path = "/home/angelos/phabricator-tools/testbed/pox/simplehaproxy.cfg"
+    }
+}
+
 resource "docker_container" "pox-haproxy" {
     image = "${docker_image.haproxy.latest}"
     name = "pox-haproxy"
@@ -10,6 +25,11 @@ resource "docker_container" "pox-haproxy" {
     ports {
         internal = 80
         external = 8091
+    }
+    volumes {
+        read_only = true
+        container_path = "/usr/local/etc/haproxy/haproxy.cfg"
+        host_path = "/home/angelos/phabricator-tools/testbed/pox/haproxy.cfg"
     }
 }
 
@@ -24,6 +44,18 @@ resource "docker_container" "pox" {
         external = "808${count.index}"
     }
 }
+
+resource "docker_container" "simpleweb" {
+    image = "${docker_image.python.latest}"
+    count = 2
+    name = "simpleweb${count.index}"
+    command = ["python", "-m", "SimpleHTTPServer", "80"]
+    ports {
+        internal = 80
+        external = "807${count.index}"
+    }
+}
+
 
 resource "docker_container" "phab-web" {
     image = "${docker_image.phabricator.latest}"
@@ -59,3 +91,8 @@ resource "docker_image" "mysql" {
 resource "docker_image" "haproxy" {
     name = "haproxy"
 }
+
+resource "docker_image" "python" {
+    name = "python:2-slim"
+}
+
