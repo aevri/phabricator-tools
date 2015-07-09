@@ -18,3 +18,4 @@ RUN apt-get update && apt-get install -y \
 COPY vagrant /opt/phabricator-tools/vagrant
 RUN cd /opt/phabricator-tools/vagrant && ./puppet-apply.sh
 EXPOSE 80
+CMD /usr/sbin/apache2ctl -D FOREGROUND

@@ -13,6 +13,20 @@ resource "docker_container" "web" {
     }
 }
 
+resource "docker_container" "mysql" {
+    image = "${docker_image.mysql.latest}"
+    name = "phab-mysql"
+    env = ["MYSQL_ALLOW_EMPTY_PASSWORD=yes"]
+}
+
+resource "docker_image" "phabricator" {
+    name = "phabricator"
+}
+
 resource "docker_image" "pox" {
     name = "pox"
+}
+
+resource "docker_image" "mysql" {
+    name = "mysql"
 }
