@@ -18,7 +18,7 @@ resource "docker_container" "phab-web" {
     name = "phab-web"
     links = ["phab-mysql"]
     provisioner "local-exec" {
-        command = "docker exec phab-web bash -c 'cd /phabricator/instances/dev/phabricator/bin/; ./config set mysql.host phab-mysql; mysql --host phab-mysql < /opt/phabricator-tools/vagrant/puppet/phabricator/files/initial.db; ./storage upgrade -f;'"
+        command = "docker exec phab-web bash -c 'until mysql --host phab-mysql; do sleep 1; done; cd /phabricator/instances/dev/phabricator/bin/; ./config set mysql.host phab-mysql; mysql --host phab-mysql < /opt/phabricator-tools/vagrant/puppet/phabricator/files/initial.db; ./storage upgrade -f;'"
     }
     ports {
         internal = 80
