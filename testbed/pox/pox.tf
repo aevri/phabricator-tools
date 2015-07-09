@@ -13,6 +13,19 @@ resource "docker_container" "web" {
     }
 }
 
+resource "docker_container" "phab-web" {
+    image = "${docker_image.phabricator.latest}"
+    name = "phab-web"
+    links = ["phab-mysql"]
+    provisioner "local-exec" {
+        command = "docker exec phab-web bash -c 'cd /phabricator/instances/dev/phabricator/bin/; ./config set mysql.host phab-mysql; mysql --host phab-mysql < /opt/phabricator-tools/vagrant/puppet/phabricator/files/initial.db; ./storage upgrade -f;'"
+    }
+    ports {
+        internal = 80
+        external = 8090
+    }
+}
+
 resource "docker_container" "mysql" {
     image = "${docker_image.mysql.latest}"
     name = "phab-mysql"
