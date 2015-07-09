@@ -3,7 +3,17 @@ provider "docker" {
     host = "unix:///var/run/docker.sock"
 }
 
-resource "docker_container" "web" {
+resource "docker_container" "pox-haproxy" {
+    image = "${docker_image.haproxy.latest}"
+    name = "pox-haproxy"
+    links = ["pox0", "pox1"]
+    ports {
+        internal = 80
+        external = 8091
+    }
+}
+
+resource "docker_container" "pox" {
     image = "${docker_image.pox.latest}"
     count = 2
     name = "pox${count.index}"
@@ -44,4 +54,8 @@ resource "docker_image" "pox" {
 
 resource "docker_image" "mysql" {
     name = "mysql"
+}
+
+resource "docker_image" "haproxy" {
+    name = "haproxy"
 }
