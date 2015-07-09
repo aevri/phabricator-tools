@@ -85,11 +85,11 @@ resource "docker_image" "pox" {
 }
 
 resource "docker_image" "mysql" {
-    name = "mysql"
+    name = "mysql:latest"
 }
 
 resource "docker_image" "haproxy" {
-    name = "haproxy"
+    name = "haproxy:latest"
 }
 
 resource "docker_image" "python" {
