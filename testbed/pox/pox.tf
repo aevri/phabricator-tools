@@ -7,8 +7,10 @@ resource "docker_container" "web" {
     image = "${docker_image.pox.latest}"
     count = 2
     name = "pox${count.index}"
+    links = ["phab-web"]
+    command = ["--secret", "squirrel", "--port" ,"80", "--uri", "http://phab-web/", "--user", "phab", "--cert", "xnh5tpatpfh4pff4tpnvdv74mh74zkmsualo4l6mx7bb262zqr55vcachxgz7ru3lrvafgzquzl3geyjxw426ujcyqdi2t4ktiv7gmrtlnc3hsy2eqsmhvgifn2vah2uidj6u6hhhxo2j3y2w6lcsehs2le4msd5xsn4f333udwvj6aowokq5l2llvfsl3efcucraawtvzw462q2sxmryg5y5rpicdk3lyr3uvot7fxrotwpi3ty2b2sa2kvlpf"]
     ports {
-        internal = 8000
+        internal = 80
         external = "808${count.index}"
     }
 }
