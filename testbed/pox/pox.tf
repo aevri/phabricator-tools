@@ -6,7 +6,7 @@ provider "docker" {
 resource "docker_container" "simple-haproxy" {
     image = "${docker_image.haproxy.latest}"
     name = "simple-haproxy"
-    links = ["docker_container.simpleweb.*.name"]
+    links = ["${docker_container.simpleweb.*.name}", "phab-mysql"]
     ports {
         internal = 80
         external = 8092
@@ -14,15 +14,14 @@ resource "docker_container" "simple-haproxy" {
     volumes {
         read_only = true
         container_path = "/usr/local/etc/haproxy/haproxy.cfg"
-        host_path = "/home/angelos/phabricator-tools/testbed/pox/simplehaproxy.cfg"
+        host_path = "${path.module}/simplehaproxy.cfg"
     }
-    depends_on ["docker_container.simpleweb.*.name"]
 }
 
 resource "docker_container" "pox-haproxy" {
     image = "${docker_image.haproxy.latest}"
     name = "pox-haproxy"
-    links = ["docker_container.pox.*.name"]
+    links = ["${docker_container.pox.*.name}"]
     ports {
         internal = 80
         external = 8091
@@ -30,9 +29,8 @@ resource "docker_container" "pox-haproxy" {
     volumes {
         read_only = true
         container_path = "/usr/local/etc/haproxy/haproxy.cfg"
-        host_path = "/home/angelos/phabricator-tools/testbed/pox/haproxy.cfg"
+        host_path = "${path.module}/haproxy.cfg"
     }
-    depends_on ["docker_container.pox.*.name"]
 }
 
 resource "docker_container" "pox" {
@@ -45,7 +43,6 @@ resource "docker_container" "pox" {
         internal = 80
         external = "808${count.index}"
     }
-    depends_on ["docker_container.phab-web.name"]
 }
 
 resource "docker_container" "simpleweb" {
