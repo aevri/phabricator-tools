@@ -1,0 +1,10 @@
+#! /bin/sh
+set -x
+mkdir -p /data/git
+cd /data/git
+for dir in $@; do
+    git init --bare $dir
+    touch $dir/git-daemon-export-ok
+done
+git daemon --reuseaddr --base-path /data/git /data/git
+while sleep 1; do true; done

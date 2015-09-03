@@ -1,0 +1,10 @@
+FROM alpine
+MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
+RUN apk update && apk add python git
+COPY py /opt/phabricator-tools/py
+COPY proto/arcyd /opt/phabricator-tools/bin/arcyd
+COPY testbed/pox/arcyd-entrypoint /bin/entrypoint
+ENV ARCYD_EMAIL arcyd@localhost.invalid
+ENV ARCYD_NAME Arcyd
+RUN ln -s /opt/phabricator-tools/bin/arcyd /usr/bin/arcyd
+ENTRYPOINT /bin/entrypoint
