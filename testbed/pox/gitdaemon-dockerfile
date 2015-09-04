@@ -4,4 +4,4 @@ EXPOSE 9418
 RUN apk update && apk add git-daemon
 RUN mkdir /var/data
 COPY testbed/pox/gitdaemon-entrypoint /bin/entrypoint
-ENTRYPOINT /bin/entrypoint
+ENTRYPOINT ["/bin/entrypoint"]
