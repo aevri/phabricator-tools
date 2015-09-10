@@ -7,4 +7,4 @@ COPY testbed/pox/arcyd-entrypoint /bin/entrypoint
 ENV ARCYD_EMAIL arcyd@localhost.invalid
 ENV ARCYD_NAME Arcyd
 RUN ln -s /opt/phabricator-tools/bin/arcyd /usr/bin/arcyd
-ENTRYPOINT /bin/entrypoint
+ENTRYPOINT ["/bin/entrypoint"]
