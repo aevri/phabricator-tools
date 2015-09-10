@@ -8,6 +8,7 @@
 #   parse_config_file_list
 #   validate_args
 #   get_repo_url
+#   get_repo_push_url
 #   get_repo_snoop_url
 #   setup_parser
 #   setup_phab_parser
@@ -65,6 +66,19 @@ def get_repo_url(args):
 
     """
     return args.repo_url_format.format(args.repo_url)
+
+
+def get_repo_push_url(args):
+    """Return the fully expanded push url for this repo or None.
+
+    :args: the namespace returned from the argparse parser
+    :returns: string url to push the repo, or None
+
+    """
+    url = None
+    if args.repo_push_url_format:
+        url = args.repo_push_url_format.format(args.repo_url)
+    return url
 
 
 def get_repo_snoop_url(args):
@@ -206,6 +220,14 @@ def setup_repohost_parser(parser):
              "default is '{}' so the '--repo-url' is used unchanged.")
 
     parser.add_argument(
+        '--repo-push-url-format',
+        metavar="STRING",
+        type=str,
+        help="a python format() string to apply the '--repo-url' "
+             "argument to produce a push url, e.g. "
+             "'http://github.com/{}.git'.")
+
+    parser.add_argument(
         '--repo-snoop-url-format',
         metavar="URL",
         type=str,
@@ -235,7 +257,7 @@ def setup_repohost_parser(parser):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2014 Bloomberg Finance L.P.
+# Copyright (C) 2014-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
