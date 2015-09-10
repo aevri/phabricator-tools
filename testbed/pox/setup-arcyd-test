@@ -1,0 +1,60 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+set -x
+
+docker run -d --name git --hostname git gitdaemon arcyd-config repo1 repo2
+docker run -d --name arcyd-bootstrap arcyd-bootstrap
+sleep 1
+
+GIT_IP=$(docker exec git getent hosts git | awk '{print $1}')
+
+cleanup() {
+    # docker kill git
+    # docker rm git
+    docker kill arcyd-bootstrap
+    docker rm arcyd-bootstrap
+}
+trap cleanup 0
+
+run () {
+    local COMMAND="cd /data/arcyd; "$@
+    docker exec arcyd-bootstrap /bin/sh -c "$COMMAND"
+}
+
+setuprepo() {
+    local REPO=$1
+    local PREV_DIR=$(pwd)
+    local TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+    git clone git://$GIT_IP/$REPO
+    cd $REPO
+    touch README
+    git add README
+    git commit -m 'Initial commit'
+    git push origin master
+    cd "$PREV_DIR"
+    rm -rf "$TEMP_DIR"
+}
+
+setuprepo repo1
+setuprepo repo2
+
+run git config --global user.name Arcyd
+run git config --global user.email arcyd@localhost.invalid
+run git clone git://git/arcyd-config
+run arcyd init --arcyd-email arcyd@host.test
+run arcyd add-repohost --name gitdaemon --repo-url-format 'git://git/{}'
+run arcyd add-phabricator \
+    --name phab-web \
+    --instance-uri http://phab-web/api/ \
+    --review-url-format 'http://phab-web/D{review}' \
+    --admin-emails 'local-phab-admin@localhost' \
+    --arcyd-user phab \
+    --arcyd-cert \
+xnh5tpatpfh4pff4tpnvdv74mh74zkmsualo4l6mx7bb262zqr55vcachxgz7ru3lrvafgzqu\
+zl3geyjxw426ujcyqdi2t4ktiv7gmrtlnc3hsy2eqsmhvgifn2vah2uidj6u6hhhxo2j3y2w6lcseh\
+s2le4msd5xsn4f333udwvj6aowokq5l2llvfsl3efcucraawtvzw462q2sxmryg5y5rpicdk3lyr3u\
+vot7fxrotwpi3ty2b2sa2kvlpf
+run arcyd add-repo phab-web gitdaemon repo1
+run arcyd add-repo phab-web gitdaemon repo2

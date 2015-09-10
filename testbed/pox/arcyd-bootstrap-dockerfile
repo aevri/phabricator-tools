@@ -1,0 +1,4 @@
+FROM arcyd
+MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
+RUN mkdir -p /data/arcyd
+ENTRYPOINT /bin/sh -c 'while sleep 1; do :; done'
