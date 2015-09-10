@@ -6,6 +6,8 @@ if [ ! -d /var/arcyd ]; then
     git clone $REPO_URL arcyd
     git config --global user.email ${ARCYD_EMAIL}
     git config --global user.name ${ARCYD_NAME}
+    cd arcyd
+    arcyd fsck --fix
 fi
 cd /var/arcyd
 arcyd start --foreground

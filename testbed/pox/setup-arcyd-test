@@ -42,8 +42,8 @@ setuprepo repo2
 
 run git config --global user.name Arcyd
 run git config --global user.email arcyd@localhost.invalid
-run git clone git://git/arcyd-config
-run arcyd init --arcyd-email arcyd@host.test
+run git clone git://git/arcyd-config .
+run arcyd init --arcyd-email arcyd@host.test --sleep-secs 3
 run arcyd add-repohost --name gitdaemon --repo-url-format 'git://git/{}'
 run arcyd add-phabricator \
     --name phab-web \
@@ -58,3 +58,4 @@ s2le4msd5xsn4f333udwvj6aowokq5l2llvfsl3efcucraawtvzw462q2sxmryg5y5rpicdk3lyr3u\
 vot7fxrotwpi3ty2b2sa2kvlpf
 run arcyd add-repo phab-web gitdaemon repo1
 run arcyd add-repo phab-web gitdaemon repo2
+run git push origin master
