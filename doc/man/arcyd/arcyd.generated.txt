@@ -56,7 +56,6 @@ vagrant/puppet installation. (see ./README)
     $ arcyd add-phabricator \
         --name local \
         --instance-uri http://127.0.0.1/api/ \
-        --review-url-format 'http://127.0.0.1/D{review}' \
         --admin-emails 'local-phab-admin@localhost' \
         --arcyd-user phab \
         --arcyd-cert \

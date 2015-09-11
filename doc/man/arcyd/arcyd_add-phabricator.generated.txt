@@ -1,6 +1,5 @@
 usage: arcyd add-phabricator [-h] --name STR --instance-uri ADDRESS
                              --arcyd-user USERNAME --arcyd-cert CERT
-                             [--review-url-format STRING]
                              [--https-proxy PROXY]
                              [--admin-emails [TO [TO ...]]]
 
@@ -19,11 +18,6 @@ optional arguments:
                         Phabricator at:
                         http://your.server.example/settings/panel/conduit/. It
                         can also be found in ~/.arcrc.
-  --review-url-format STRING
-                        a format string for generating URLs for viewing
-                        reviews, e.g. something like this:
-                        'http://my.phabricator/D{review}' , note that the
-                        {review} will be substituted for the id of the branch.
   --https-proxy PROXY   proxy to use, if necessary
   --admin-emails [TO [TO ...]]
                         list of email addresses to send important repo events

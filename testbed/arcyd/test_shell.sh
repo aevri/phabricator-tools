@@ -107,7 +107,6 @@ cd arcyd
     $arcyd add-phabricator \
         --name localhost \
         --instance-uri http://127.0.0.1/api/ \
-        --review-url-format 'http://127.0.0.1/D{review}' \
         --admin-emails 'local-phab-admin@localhost' \
         --arcyd-user phab \
         --arcyd-cert \
@@ -147,7 +146,6 @@ cd arcyd2
     $arcyd add-phabricator \
         --name localhost \
         --instance-uri http://127.0.0.1/api/ \
-        --review-url-format 'http://127.0.0.1/D{review}' \
         --admin-emails 'local-phab-admin@localhost' \
         --arcyd-user phab \
         --arcyd-cert \

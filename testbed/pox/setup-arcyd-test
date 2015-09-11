@@ -48,7 +48,6 @@ run arcyd add-repohost --name gitdaemon --repo-url-format 'git://git/{}'
 run arcyd add-phabricator \
     --name phab-web \
     --instance-uri http://phab-web/api/ \
-    --review-url-format 'http://phab-web/D{review}' \
     --admin-emails 'local-phab-admin@localhost' \
     --arcyd-user phab \
     --arcyd-cert \

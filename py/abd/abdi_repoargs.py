@@ -192,16 +192,6 @@ def setup_phab_parser(parser):
         "It can also be found in ~/.arcrc.")
 
     parser.add_argument(
-        '--review-url-format',
-        type=str,
-        metavar='STRING',
-        help="a format string for generating URLs for viewing reviews, e.g. "
-             "something like this: "
-             "'http://my.phabricator/D{review}' , "
-             "note that the {review} will be substituted for the id of the "
-             "branch.")
-
-    parser.add_argument(
         '--https-proxy',
         metavar="PROXY",
         type=str,

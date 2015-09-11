@@ -11,7 +11,6 @@
 #   Account
 #   BASE_TEST_URI
 #   TEST_URI
-#   REVIEW_URL_FORMAT
 #   ALICE
 #   BOB
 #   PHAB
@@ -37,7 +36,6 @@ Account = collections.namedtuple(
 # TODO: this should be configurable from the command-line or a config file
 BASE_TEST_URI = "http://127.0.0.1"
 TEST_URI = "{}/api/".format(BASE_TEST_URI)
-REVIEW_URL_FORMAT = "{}/D{{review}}".format(BASE_TEST_URI)
 
 ALICE = Account(
     user="alice",
@@ -83,7 +81,7 @@ NOTAUSER = Account(
     phid="PHID-NOTAUSER")
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

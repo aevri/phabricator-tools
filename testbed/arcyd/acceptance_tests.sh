@@ -67,7 +67,6 @@ function configure_current_dir_as_arcyd() {
     $arcyd add-phabricator \
         --name localhost \
         --instance-uri http://127.0.0.1/api/ \
-        --review-url-format 'http://my.phabricator/D{review}' \
         --arcyd-user phab \
         --arcyd-cert \
 xnh5tpatpfh4pff4tpnvdv74mh74zkmsualo4l6mx7bb262zqr55vcachxgz7ru3lrvafgzqu\
