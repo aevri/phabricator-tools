@@ -347,7 +347,6 @@ class _Fixture(object):
                 'add-phabricator',
                 '--name', 'localphab',
                 '--instance-uri', phab_uri,
-                '--review-url-format', phldef_conduit.REVIEW_URL_FORMAT,
                 '--admin-emails', 'local-phab-admin@localhost',
                 '--arcyd-user', arcyd_user,
                 '--arcyd-cert', arcyd_cert)

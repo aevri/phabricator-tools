@@ -31,8 +31,6 @@ _CONFIG = """
 {arcyd_user}
 --arcyd-cert
 {arcyd_cert}
---review-url-format
-{review_url_format}
 """.strip()
 
 _CONFIG_HTTPS_PROXY = """
@@ -83,8 +81,7 @@ def process(args):
     content = _CONFIG.format(
         instance_uri=uri,
         arcyd_user=user,
-        arcyd_cert=cert,
-        review_url_format=args.review_url_format)
+        arcyd_cert=cert)
 
     if args.https_proxy:
         content = '\n'.join([

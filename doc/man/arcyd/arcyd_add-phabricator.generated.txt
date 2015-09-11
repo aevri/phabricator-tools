@@ -1,6 +1,5 @@
 usage: arcyd add-phabricator [-h] --name STR --instance-uri ADDRESS
                              --arcyd-user USERNAME --arcyd-cert CERT
-                             [--review-url-format STRING]
                              [--https-proxy PROXY]
                              [--admin-emails [TO [TO ...]]]
 

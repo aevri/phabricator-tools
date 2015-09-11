@@ -64,7 +64,6 @@ function configure_arcyd() {
     $arcyd add-phabricator \
         --name localhost \
         --instance-uri http://127.0.0.1/api/ \
-        --review-url-format 'http://my.phabricator/D{review}' \
         --arcyd-user phab \
         --arcyd-cert \
 xnh5tpatpfh4pff4tpnvdv74mh74zkmsualo4l6mx7bb262zqr55vcachxgz7ru3lrvafgzqu\
@@ -200,7 +199,7 @@ cd ${olddir}
 rm -rf ${tempdir}
 trap - EXIT
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
