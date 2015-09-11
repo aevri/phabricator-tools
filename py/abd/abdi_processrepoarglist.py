@@ -71,17 +71,7 @@ def do(
 
     # decide max workers based on number of CPUs if no value is specified
     if max_workers is None:
-        try:
-            # use the same default as multiprocessing.Pool
-            max_workers = multiprocessing.cpu_count()
-            _LOGGER.debug(
-                "max_workers unspecified, defaulted to cpu_count: {}".format(
-                    max_workers))
-        except NotImplementedError:
-            _LOGGER.warning(
-                "multiprocessing.cpu_count() not supported, disabling "
-                "multiprocessing. Specify max workers explicitly to enable.")
-            max_workers = 0
+        max_workers = determine_max_workers_default()
 
     repo_list = []
     for name, config in repo_configs:
@@ -181,6 +171,22 @@ def do(
             with abdt_logging.misc_operation_event_context(
                     'sleep', secs_to_sleep):
                 time.sleep(secs_to_sleep)
+
+
+def determine_max_workers_default():
+    max_workers = 0
+    try:
+        # use the same default as multiprocessing.Pool
+        max_workers = multiprocessing.cpu_count()
+        _LOGGER.debug(
+            "max_workers unspecified, defaulted to cpu_count: {}".format(
+                max_workers))
+    except NotImplementedError:
+        _LOGGER.warning(
+            "multiprocessing.cpu_count() not supported, disabling "
+            "multiprocessing. Specify max workers explicitly to enable.")
+        max_workers = 0
+    return max_workers
 
 
 class _RecordingWatcherWrapper(object):
