@@ -28,6 +28,7 @@ import tempfile
 
 import phldef_conduit
 import phlgit_push
+import phlgit_showref
 import phlgitu_fixture
 import phlsys_fs
 import phlsys_git
@@ -417,9 +418,10 @@ def run_all_interactions(fixture):
     arcyd_generator = _arcyd_run_once_scenario(arcyd, fixture.repos)
 
     interaction_tuple = (
-        _user_story_happy_path,
-        _user_story_request_changes,
-        _user_story_reviewers_as_title,
+        # _user_story_happy_path,
+        # _user_story_request_changes,
+        # _user_story_reviewers_as_title,
+        _user_story_repush_deleted_tracker,
     )
 
     for interaction in interaction_tuple:
@@ -526,6 +528,40 @@ def _user_story_reviewers_as_title(repo):
     print("Check review landed")
     repo.bob.fetch()
     assert len(repo.bob.list_reviews()) == 0
+
+    yield "Finished"
+
+
+def _user_story_repush_deleted_tracker(repo):
+
+    tracker_prefix = 'refs/heads/dev/arcyd/trackers/rbranch/--/-/bad_prerev/'
+    ping_ref = tracker_prefix + 'r/ping/ping/none'
+
+    repo.alice.repo(
+        'push',
+        'origin',
+        'master:' + ping_ref)
+
+    refs = phlgit_showref.names(repo.central_repo)
+    assert ping_ref in refs
+
+    yield "Removing ping branch"
+
+    refs = phlgit_showref.names(repo.central_repo)
+    assert ping_ref not in refs
+
+    repo.alice.repo(
+        'push',
+        'origin',
+        'master:' + ping_ref)
+
+    refs = phlgit_showref.names(repo.central_repo)
+    assert ping_ref in refs
+
+    yield "Removing ping branch again"
+
+    refs = phlgit_showref.names(repo.central_repo)
+    assert ping_ref not in refs
 
     yield "Finished"
 
