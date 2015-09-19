@@ -348,12 +348,15 @@ def create_inline_comment(
         message,
         is_right_side=True,
         line_count=None):
+
+    right_side = 1 if is_right_side else 0
+
     d = {
         "revisionID": revisionId,
         "filePath": file_path,
         "content": message,
         "lineNumber": start_line,
-        "isNewFile": is_right_side,
+        "isNewFile": right_side,
         'lineLength': line_count,
     }
 
