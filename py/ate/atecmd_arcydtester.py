@@ -32,6 +32,7 @@ import phlgit_showref
 import phlgitu_fixture
 import phlsys_fs
 import phlsys_git
+import phlsys_pid
 import phlsys_subprocess
 
 _USAGE_EXAMPLES = """
@@ -200,6 +201,20 @@ class _Worker(object):
         return self._barc
 
 
+class SimpleWebServer(object):
+
+    def __init__(self, root_path, port):
+        self._root_path = root_path
+        self._process = subprocess.Popen(
+            ['python', '-m', 'SimpleHTTPServer', str(port)],
+            cwd=root_path)
+
+    def close(self):
+        pid = self._process.pid
+        phlsys_pid.request_terminate(pid)
+        self._process.wait()
+
+
 class _SharedRepo(object):
 
     def __init__(
@@ -212,10 +227,17 @@ class _SharedRepo(object):
             bob):
 
         self._root_dir = root_dir
-        central_path = os.path.join(self._root_dir, 'central')
-        os.makedirs(central_path)
-        self._central_repo = phlsys_git.Repo(central_path)
+        self.central_path = os.path.join(self._root_dir, 'central')
+        os.makedirs(self.central_path)
+        self._central_repo = phlsys_git.Repo(self.central_path)
         self._central_repo("init", "--bare")
+        self.web_port = 8080
+        shutil.move(
+            os.path.join(self.central_path, 'hooks/post-update.sample'),
+            os.path.join(self.central_path, 'hooks/post-update'))
+        self._web = SimpleWebServer(
+            self.central_path,
+            self.web_port)
 
         self._workers = []
         for account in (alice, bob):
@@ -242,6 +264,10 @@ class _SharedRepo(object):
                 self._workers[-1].repo('checkout', 'master')
 
     @property
+    def snoop_url(self):
+        return "http://127.0.0.1:8080/info/refs"
+
+    @property
     def central_repo(self):
         return self._central_repo
 
@@ -256,6 +282,9 @@ class _SharedRepo(object):
     @property
     def bob(self):
         return self._workers[1]
+
+    def close(self):
+        self._web.close()
 
 
 class _CommandWithWorkingDirectory(object):
@@ -285,14 +314,20 @@ class _ArcydInstance(object):
     def run_once(self):
         return self('start', '--foreground', '--no-loop')
 
-    def debug_log(self):
-        debug_path = '{}/var/log/debug'.format(self._root_dir)
+    def _read_log(self, name):
+        log_path = '{}/var/log/{}'.format(self._root_dir, name)
 
-        if os.path.isfile(debug_path):
+        if os.path.isfile(log_path):
             return phlsys_fs.read_text_file(
-                debug_path)
+                log_path)
         else:
             return ""
+
+    def info_log(self):
+        return self._read_log('info')
+
+    def debug_log(self):
+        return self._read_log('debug')
 
 
 class _Fixture(object):
@@ -353,13 +388,9 @@ class _Fixture(object):
                 '--arcyd-user', arcyd_user,
                 '--arcyd-cert', arcyd_cert)
 
-            repo_url_format = '{}/{{}}/central'.format(self.repo_root_dir)
-            arcyd(
-                'add-repohost',
-                '--name', 'localdir',
-                '--repo-url-format', repo_url_format)
-
     def close(self):
+        for r in self._repos:
+            r.close()
         shutil.rmtree(self._root_dir)
 
     def launch_debug_shell(self):
@@ -406,7 +437,7 @@ def _do_tests(args):
     with contextlib.closing(fixture):
         try:
             run_all_interactions(fixture)
-        except:
+        except Exception:
             print(fixture.arcyds[0].debug_log())
             if args.enable_debug_shell:
                 fixture.launch_debug_shell()
@@ -441,11 +472,22 @@ def run_interaction(user_scenario, arcyd_generator, fixture):
 def _arcyd_run_once_scenario(arcyd, repo_list):
 
     # Add repositories to the single Arcyd instance
-    for i in xrange(len(repo_list)):
-        arcyd('add-repo', 'localphab', 'localdir', 'repo-{}'.format(i))
+    for i, repo in enumerate(repo_list):
+        repo_url_format = repo.central_path
+        arcyd(
+            'add-repohost',
+            '--name', 'repohost-{}'.format(i),
+            '--repo-url-format', repo_url_format,
+            '--repo-snoop-url-format', repo.snoop_url)
+        arcyd(
+            'add-repo',
+            'localphab',
+            'repohost-{}'.format(i),
+            'repo-{}'.format(i))
 
     while True:
         arcyd.run_once()
+        # print(arcyd.debug_log())
         yield
 
 
@@ -537,6 +579,20 @@ def _user_story_repush_deleted_tracker(repo):
     tracker_prefix = 'refs/heads/dev/arcyd/trackers/rbranch/--/-/bad_prerev/'
     ping_ref = tracker_prefix + 'r/ping/ping/none'
 
+    def print_cache():
+        print(phlsys_fs.read_text_file(
+            os.path.join(
+                repo._root_dir,
+                '..',
+                '..',
+                'arcyds',
+                'arcyd-0',
+                '.arcyd.urlwatcher.cache')))
+
+    yield "Startup"
+    print_cache()
+
+    print('push ping branch')
     repo.alice.repo(
         'push',
         'origin',
@@ -546,10 +602,12 @@ def _user_story_repush_deleted_tracker(repo):
     assert ping_ref in refs
 
     yield "Removing ping branch"
+    print_cache()
 
     refs = phlgit_showref.names(repo.central_repo)
     assert ping_ref not in refs
 
+    print('push ping branch again')
     repo.alice.repo(
         'push',
         'origin',
@@ -559,6 +617,7 @@ def _user_story_repush_deleted_tracker(repo):
     assert ping_ref in refs
 
     yield "Removing ping branch again"
+    print_cache()
 
     refs = phlgit_showref.names(repo.central_repo)
     assert ping_ref not in refs
