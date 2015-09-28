@@ -436,12 +436,21 @@ def _do_tests(args):
 
     with contextlib.closing(fixture):
         try:
-            run_all_interactions(fixture)
+            _test_push_during_overrun(fixture)
         except Exception:
             print(fixture.arcyds[0].debug_log())
             if args.enable_debug_shell:
                 fixture.launch_debug_shell()
             raise
+
+    # with contextlib.closing(fixture):
+    #     try:
+    #         run_all_interactions(fixture)
+    #     except Exception:
+    #         print(fixture.arcyds[0].debug_log())
+    #         if args.enable_debug_shell:
+    #             fixture.launch_debug_shell()
+    #         raise
 
 
 def run_all_interactions(fixture):
@@ -452,7 +461,7 @@ def run_all_interactions(fixture):
         # _user_story_happy_path,
         # _user_story_request_changes,
         # _user_story_reviewers_as_title,
-        _user_story_repush_deleted_tracker,
+        # _user_story_repush_deleted_tracker,
     )
 
     for interaction in interaction_tuple:
@@ -460,6 +469,38 @@ def run_all_interactions(fixture):
             interaction,
             arcyd_generator,
             fixture)
+
+
+def _test_push_during_overrun(fixture):
+    arcyd = fixture.arcyds[0]
+    repo = fixture.repos[0]
+
+    repo_url_format = repo.central_path
+    arcyd(
+        'add-repohost',
+        '--name', 'repohost-0',
+        '--repo-url-format', repo_url_format,
+        '--repo-snoop-url-format', repo.snoop_url)
+    arcyd('add-repo', 'localphab', 'repohost-0', 'repo-0')
+
+    branch1_name = '_test_push_during_overrun'
+    branch2_name = '_test_push_during_overrun2'
+
+    repo.alice.push_new_review_branch(branch1_name)
+    arcyd.run_once()
+    arcyd.run_once()
+
+    # repo.hold_dev_arcyd_branches()
+    # repo.alice.push_new_review_branch(branch_name)
+    # arcyd.start_daemon()
+    # arcyd.wait_one_or_more_cycles()
+    # repo.alice.push_new_review_branch(branch_name2)
+    # repo.release_dev_arcyd_branches()
+    # arcyd.stop_daemon()
+
+    repo.alice.fetch()
+    reviews = repo.alice.list_reviews()
+    # assert len(reviews) == 2
 
 
 def run_interaction(user_scenario, arcyd_generator, fixture):
