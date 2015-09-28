@@ -23,6 +23,7 @@ import itertools
 import json
 import os
 import shutil
+import stat
 import subprocess
 import tempfile
 
@@ -36,6 +37,15 @@ import phlsys_pid
 import phlsys_subprocess
 
 _USAGE_EXAMPLES = """
+"""
+
+_PRE_RECEIVE_HOLD_DEV_ARCYD_REFS = """
+#! /bin/sh
+if grep 'refs/heads/dev/arcyd/' -; then
+    while [ -f command/hold_dev_arcyd_refs ]; do
+        sleep 1
+    done
+fi
 """
 
 
@@ -235,6 +245,17 @@ class _SharedRepo(object):
         shutil.move(
             os.path.join(self.central_path, 'hooks/post-update.sample'),
             os.path.join(self.central_path, 'hooks/post-update'))
+
+        self._command_hold_path = os.path.join(
+            self.central_path, 'command/hold_dev_arcyd_refs')
+
+        pre_receive_path = os.path.join(self.central_path, 'hooks/pre-receive')
+        phlsys_fs.write_text_file(
+            pre_receive_path,
+            _PRE_RECEIVE_HOLD_DEV_ARCYD_REFS)
+        mode = os.stat(pre_receive_path).st_mode
+        os.chmod(pre_receive_path, mode | stat.S_IEXEC)
+
         self._web = SimpleWebServer(
             self.central_path,
             self.web_port)
@@ -262,6 +283,14 @@ class _SharedRepo(object):
                 self._workers[0].push_initial_commit()
             else:
                 self._workers[-1].repo('checkout', 'master')
+
+    def hold_dev_arcyd_refs(self):
+        phlsys_fs.write_text_file(
+            self._command_hold_path,
+            _PRE_RECEIVE_HOLD_DEV_ARCYD_REFS)
+
+    def release_dev_arcyd_refs(self):
+        os.remove(self._command_hold_path)
 
     @property
     def snoop_url(self):
@@ -490,17 +519,18 @@ def _test_push_during_overrun(fixture):
     arcyd.run_once()
     arcyd.run_once()
 
-    # repo.hold_dev_arcyd_branches()
+    repo.hold_dev_arcyd_refs()
     # repo.alice.push_new_review_branch(branch_name)
     # arcyd.start_daemon()
     # arcyd.wait_one_or_more_cycles()
-    # repo.alice.push_new_review_branch(branch_name2)
-    # repo.release_dev_arcyd_branches()
+    repo.alice.push_new_review_branch(branch2_name)
+    repo.release_dev_arcyd_refs()
     # arcyd.stop_daemon()
+    arcyd.run_once()
 
     repo.alice.fetch()
     reviews = repo.alice.list_reviews()
-    # assert len(reviews) == 2
+    assert len(reviews) == 2
 
 
 def run_interaction(user_scenario, arcyd_generator, fixture):
