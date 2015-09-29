@@ -46,7 +46,19 @@ if grep 'refs/heads/dev/arcyd/' -; then
         sleep 1
     done
 fi
-"""
+""".lstrip()
+
+_EXTERNAL_REPORT_COUNTER = """
+#! /bin/sh
+if [ ! -f cycle_counter ]; then
+    echo 0 > cycle_counter
+    fi
+
+COUNT=$(cat cycle_counter)
+COUNT=$(expr $COUNT + 1)
+
+echo $COUNT > cycle_counter
+""".lstrip()
 
 
 def main():
@@ -337,11 +349,39 @@ class _ArcydInstance(object):
         self._root_dir = root_dir
         self._command = _CommandWithWorkingDirectory(arcyd_command, root_dir)
 
+        count_cycles_script_path = os.path.join(
+            self._root_dir, 'count_cycles.sh')
+        phlsys_fs.write_text_file(
+            count_cycles_script_path,
+            _EXTERNAL_REPORT_COUNTER)
+        mode = os.stat(count_cycles_script_path).st_mode
+        os.chmod(count_cycles_script_path, mode | stat.S_IEXEC)
+
     def __call__(self, *args, **kwargs):
         return self._command(*args, **kwargs)
 
+    def enable_count_cycles_script(self):
+        config_path = os.path.join(self._root_dir, 'Configfile')
+        config_text = phlsys_fs.read_text_file(config_path)
+        config_text += '\n--external-report-command\ncount_cycles.sh'
+        phlsys_fs.write_text_file(config_path, config_text)
+
     def run_once(self):
         return self('start', '--foreground', '--no-loop')
+
+    def start_daemon(self):
+        return self('start')
+
+    def stop_daemon(self):
+        return self('stop')
+
+    @contextlib.contextmanager
+    def daemon_context(self):
+        self.start_daemon()
+        try:
+            yield
+        finally:
+            self.stop_daemon()
 
     def _read_log(self, name):
         log_path = '{}/var/log/{}'.format(self._root_dir, name)
@@ -515,18 +555,12 @@ def _test_push_during_overrun(fixture):
     branch1_name = '_test_push_during_overrun'
     branch2_name = '_test_push_during_overrun2'
 
-    repo.alice.push_new_review_branch(branch1_name)
-    arcyd.run_once()
-    arcyd.run_once()
-
     repo.hold_dev_arcyd_refs()
-    # repo.alice.push_new_review_branch(branch_name)
-    # arcyd.start_daemon()
-    # arcyd.wait_one_or_more_cycles()
-    repo.alice.push_new_review_branch(branch2_name)
-    repo.release_dev_arcyd_refs()
-    # arcyd.stop_daemon()
-    arcyd.run_once()
+    repo.alice.push_new_review_branch(branch1_name)
+    with arcyd.daemon_context():
+        # arcyd.wait_one_or_more_cycles()
+        repo.alice.push_new_review_branch(branch2_name)
+        repo.release_dev_arcyd_refs()
 
     repo.alice.fetch()
     reviews = repo.alice.list_reviews()
