@@ -24,8 +24,10 @@ import json
 import os
 import shutil
 import stat
+import socket
 import subprocess
 import tempfile
+import time
 
 import phldef_conduit
 import phlgit_push
@@ -131,6 +133,14 @@ def main():
 
     with phlsys_fs.chtmpdir_context():
         _do_tests(args)
+
+
+def pick_free_port():
+    sock = socket.socket()
+    sock.bind(('', 0))
+    port = sock.getsockname()[1]
+    sock.close()
+    return port
 
 
 class _Worker(object):
@@ -253,7 +263,7 @@ class _SharedRepo(object):
         os.makedirs(self.central_path)
         self._central_repo = phlsys_git.Repo(self.central_path)
         self._central_repo("init", "--bare")
-        self.web_port = 8080
+        self.web_port = pick_free_port()
         shutil.move(
             os.path.join(self.central_path, 'hooks/post-update.sample'),
             os.path.join(self.central_path, 'hooks/post-update'))
@@ -306,7 +316,7 @@ class _SharedRepo(object):
 
     @property
     def snoop_url(self):
-        return "http://127.0.0.1:8080/info/refs"
+        return "http://127.0.0.1:{}/info/refs".format(self.web_port)
 
     @property
     def central_repo(self):
@@ -357,22 +367,51 @@ class _ArcydInstance(object):
         mode = os.stat(count_cycles_script_path).st_mode
         os.chmod(count_cycles_script_path, mode | stat.S_IEXEC)
 
+        self._has_enabled_count_cycles = False
+        self._has_started_daemon = False
+
     def __call__(self, *args, **kwargs):
         return self._command(*args, **kwargs)
 
     def enable_count_cycles_script(self):
-        config_path = os.path.join(self._root_dir, 'Configfile')
+        assert not self._has_enabled_count_cycles
+        config_path = os.path.join(self._root_dir, 'configfile')
         config_text = phlsys_fs.read_text_file(config_path)
         config_text += '\n--external-report-command\ncount_cycles.sh'
         phlsys_fs.write_text_file(config_path, config_text)
+        self._has_enabled_count_cycles = True
+
+    def count_cycles(self):
+        assert self._has_enabled_count_cycles
+        counter_path = os.path.join(self._root_dir, 'cycle_counter')
+        if not os.path.exists(counter_path):
+            return None
+        return int(phlsys_fs.read_text_file(counter_path).strip())
+
+    def wait_one_or_more_cycles(self):
+        assert self._has_enabled_count_cycles
+        assert self._has_started_daemon
+        print('wait non-none')
+        while self.count_cycles() is None:
+            print(self.debug_log())
+            print('wait non-none')
+            time.sleep(1)
+        start = self.count_cycles()
+        print('wait mroe')
+        while self.count_cycles() < start + 2:
+            print(self.debug_log())
+            print('wait >= ', start + 2)
+            time.sleep(1)
 
     def run_once(self):
         return self('start', '--foreground', '--no-loop')
 
     def start_daemon(self):
+        self._has_started_daemon = True
         return self('start')
 
     def stop_daemon(self):
+        self._has_started_daemon = False
         return self('stop')
 
     @contextlib.contextmanager
@@ -446,7 +485,7 @@ class _Fixture(object):
 
     def setup_arcyds(self, arcyd_user, arcyd_email, arcyd_cert, phab_uri):
         for arcyd in self.arcyds:
-            arcyd('init', '--arcyd-email', arcyd_email)
+            arcyd('init', '--arcyd-email', arcyd_email, '--max-workers', '2')
 
             arcyd(
                 'add-phabricator',
@@ -492,12 +531,13 @@ def _do_tests(args):
 
     # pychecker makes us declare this before 'with'
     arcyd_count = 1
+    repo_count = 4
     fixture = _Fixture(
         arcyd_cmd_path,
         barc_cmd_path,
         arcyon_cmd_path,
         phab_uri,
-        args.repo_count,
+        repo_count,
         arcyd_count,
         args.alice_user_email_cert,
         args.bob_user_email_cert)
@@ -512,6 +552,17 @@ def _do_tests(args):
                 fixture.launch_debug_shell()
             raise
 
+    # arcyd_count = 1
+    # fixture = _Fixture(
+    #     arcyd_cmd_path,
+    #     barc_cmd_path,
+    #     arcyon_cmd_path,
+    #     phab_uri,
+    #     args.repo_count,
+    #     arcyd_count,
+    #     args.alice_user_email_cert,
+    #     args.bob_user_email_cert)
+    # fixture.setup_arcyds(arcyd_user, arcyd_email, arcyd_cert, phab_uri)
     # with contextlib.closing(fixture):
     #     try:
     #         run_all_interactions(fixture)
@@ -545,21 +596,31 @@ def _test_push_during_overrun(fixture):
     repo = fixture.repos[0]
 
     repo_url_format = repo.central_path
-    arcyd(
-        'add-repohost',
-        '--name', 'repohost-0',
-        '--repo-url-format', repo_url_format,
-        '--repo-snoop-url-format', repo.snoop_url)
-    arcyd('add-repo', 'localphab', 'repohost-0', 'repo-0')
+
+    for i, r in enumerate(fixture.repos):
+        arcyd(
+            'add-repohost',
+            '--name', 'repohost-{}'.format(i),
+            '--repo-url-format', repo_url_format,
+            '--repo-snoop-url-format', repo.snoop_url)
+        arcyd(
+            'add-repo',
+            'localphab',
+            'repohost-{}'.format(i),
+            'repo-{}'.format(i))
 
     branch1_name = '_test_push_during_overrun'
     branch2_name = '_test_push_during_overrun2'
 
+    arcyd.enable_count_cycles_script()
     repo.hold_dev_arcyd_refs()
     repo.alice.push_new_review_branch(branch1_name)
     with arcyd.daemon_context():
-        # arcyd.wait_one_or_more_cycles()
+        print('wait')
+        arcyd.wait_one_or_more_cycles()
+        print('push')
         repo.alice.push_new_review_branch(branch2_name)
+        print('release')
         repo.release_dev_arcyd_refs()
 
     repo.alice.fetch()
