@@ -595,14 +595,14 @@ def _test_push_during_overrun(fixture):
     arcyd = fixture.arcyds[0]
     repo = fixture.repos[0]
 
-    repo_url_format = repo.central_path
 
     for i, r in enumerate(fixture.repos):
+        repo_url_format = r.central_path
         arcyd(
             'add-repohost',
             '--name', 'repohost-{}'.format(i),
             '--repo-url-format', repo_url_format,
-            '--repo-snoop-url-format', repo.snoop_url)
+            '--repo-snoop-url-format', r.snoop_url)
         arcyd(
             'add-repo',
             'localphab',
