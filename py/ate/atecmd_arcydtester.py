@@ -369,9 +369,18 @@ class _ArcydInstance(object):
 
         self._has_enabled_count_cycles = False
         self._has_started_daemon = False
+        self._has_set_overrun_secs = False
 
     def __call__(self, *args, **kwargs):
         return self._command(*args, **kwargs)
+
+    def set_overrun_secs(self, overrun_secs):
+        assert not self._has_set_overrun_secs
+        config_path = os.path.join(self._root_dir, 'configfile')
+        config_text = phlsys_fs.read_text_file(config_path)
+        config_text += '\n--overrun-secs\n{}'.format(overrun_secs)
+        phlsys_fs.write_text_file(config_path, config_text)
+        self._has_set_overrun_secs = True
 
     def enable_count_cycles_script(self):
         assert not self._has_enabled_count_cycles
@@ -391,16 +400,10 @@ class _ArcydInstance(object):
     def wait_one_or_more_cycles(self):
         assert self._has_enabled_count_cycles
         assert self._has_started_daemon
-        print('wait non-none')
         while self.count_cycles() is None:
-            print(self.debug_log())
-            print('wait non-none')
             time.sleep(1)
         start = self.count_cycles()
-        print('wait mroe')
         while self.count_cycles() < start + 2:
-            print(self.debug_log())
-            print('wait >= ', start + 2)
             time.sleep(1)
 
     def run_once(self):
@@ -485,7 +488,14 @@ class _Fixture(object):
 
     def setup_arcyds(self, arcyd_user, arcyd_email, arcyd_cert, phab_uri):
         for arcyd in self.arcyds:
-            arcyd('init', '--arcyd-email', arcyd_email, '--max-workers', '2')
+            arcyd(
+                'init',
+                '--arcyd-email',
+                arcyd_email,
+                '--max-workers',
+                '2',
+                '--sleep-secs',
+                '0')
 
             arcyd(
                 'add-phabricator',
@@ -595,7 +605,6 @@ def _test_push_during_overrun(fixture):
     arcyd = fixture.arcyds[0]
     repo = fixture.repos[0]
 
-
     for i, r in enumerate(fixture.repos):
         repo_url_format = r.central_path
         arcyd(
@@ -613,14 +622,13 @@ def _test_push_during_overrun(fixture):
     branch2_name = '_test_push_during_overrun2'
 
     arcyd.enable_count_cycles_script()
+    arcyd.set_overrun_secs(1)
     repo.hold_dev_arcyd_refs()
     repo.alice.push_new_review_branch(branch1_name)
     with arcyd.daemon_context():
-        print('wait')
         arcyd.wait_one_or_more_cycles()
-        print('push')
         repo.alice.push_new_review_branch(branch2_name)
-        print('release')
+        arcyd.wait_one_or_more_cycles()
         repo.release_dev_arcyd_refs()
 
     repo.alice.fetch()
