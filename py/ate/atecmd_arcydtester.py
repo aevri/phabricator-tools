@@ -403,7 +403,10 @@ class _ArcydInstance(object):
         while self.count_cycles() is None:
             time.sleep(1)
         start = self.count_cycles()
-        while self.count_cycles() < start + 2:
+        count = start
+        while count < start + 2:
+            count = self.count_cycles()
+            print(start, count)
             time.sleep(1)
 
     def run_once(self):
@@ -495,7 +498,7 @@ class _Fixture(object):
                 '--max-workers',
                 '2',
                 '--sleep-secs',
-                '0')
+                '1')
 
             arcyd(
                 'add-phabricator',
@@ -630,6 +633,7 @@ def _test_push_during_overrun(fixture):
         repo.alice.push_new_review_branch(branch2_name)
         arcyd.wait_one_or_more_cycles()
         repo.release_dev_arcyd_refs()
+        arcyd.wait_one_or_more_cycles()
 
     repo.alice.fetch()
     reviews = repo.alice.list_reviews()
