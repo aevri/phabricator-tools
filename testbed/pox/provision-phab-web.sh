@@ -1,4 +1,5 @@
 #! /bin/sh
+docker run -d -p 80:80 --name phab-web --hostname phab-web phabricator
 docker exec phab-web sh -c 'until mysql --host phab-mysql; do sleep 1; done'
 docker exec phab-web /phabricator/instances/dev/phabricator/bin/config set mysql.host phab-mysql
 docker exec phab-web sh -c 'mysql --host phab-mysql < /opt/phabricator-tools/vagrant/puppet/phabricator/files/initial.db'
