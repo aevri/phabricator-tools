@@ -76,7 +76,7 @@ def start_arcyd(daemonize=True, loop=True, restart=False):
         repo_configs = abdi_repoargs.parse_config_file_list(
             fs.repo_config_path_list())
 
-        abdi_processrepos.setupParser(parser)
+        abdi_processrepos.setup_parser(parser)
         args = parser.parse_args(params)
 
     def logger_config():

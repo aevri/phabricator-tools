@@ -19,7 +19,7 @@ usage examples:
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ def getFromfilePrefixChars():
     return ""
 
 
-def setupParser(parser):
+def setup_parser(parser):
     parser.add_argument(
         'id',
         type=int,
@@ -104,7 +104,7 @@ def process(args):
     print(result)
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2014 Bloomberg Finance L.P.
+# Copyright (C) 2014-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

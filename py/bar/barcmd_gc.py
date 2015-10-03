@@ -17,7 +17,7 @@ branches do:
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #   get_current_branch
 #   prune_force
@@ -44,7 +44,7 @@ def getFromfilePrefixChars():
     return None
 
 
-def setupParser(parser):
+def setup_parser(parser):
     force_or_interact_group = parser.add_argument_group(
         "choose either force or interactive")
 
@@ -249,7 +249,7 @@ def print_branch(verb_statement, local_name, original_name, sha1, landed_sha1):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

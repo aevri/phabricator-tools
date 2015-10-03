@@ -25,7 +25,7 @@ usage examples:
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ def getFromfilePrefixChars():
     return ""
 
 
-def setupParser(parser):
+def setup_parser(parser):
     diffsrc_group = parser.add_argument_group(
         'Diff arguments',
         'Mutually exclusive, one is required')
@@ -185,7 +185,7 @@ def process(args):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

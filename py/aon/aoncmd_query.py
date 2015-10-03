@@ -53,7 +53,7 @@ output formats:
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ def getFromfilePrefixChars():
     return ""
 
 
-def setupParser(parser):
+def setup_parser(parser):
     filters = parser.add_argument_group('filter parameters')
     self_filters = parser.add_argument_group('self filter parameters')
     user_filters = parser.add_argument_group('user filter parameters')

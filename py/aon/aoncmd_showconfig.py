@@ -6,7 +6,7 @@
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ def getFromfilePrefixChars():
     return ""
 
 
-def setupParser(parser):
+def setup_parser(parser):
     phlsys_makeconduit.add_argparse_arguments(parser)
 
 
@@ -40,7 +40,7 @@ def process(args):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

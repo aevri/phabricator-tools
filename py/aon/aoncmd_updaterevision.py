@@ -40,7 +40,7 @@ Usage examples:
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ def _get_set_or_none(list_or_none):
         return list_or_none
 
 
-def setupParser(parser):
+def setup_parser(parser):
     diffsrc_group = parser.add_argument_group(
         'Diff arguments',
         'Mutually exclusive, one is required')

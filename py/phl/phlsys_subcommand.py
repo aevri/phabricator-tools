@@ -29,12 +29,12 @@ def setup_parser(name, module, subparsers):
         description=docSubject,
         epilog=docEpilog,
         fromfile_prefix_chars=module.getFromfilePrefixChars())
-    module.setupParser(parser)
+    module.setup_parser(parser)
     parser.set_defaults(func=module.process)
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

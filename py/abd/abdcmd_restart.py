@@ -6,7 +6,7 @@
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ def getFromfilePrefixChars():
     return None
 
 
-def setupParser(parser):
+def setup_parser(parser):
     parser.add_argument(
         '--foreground',
         '-f',

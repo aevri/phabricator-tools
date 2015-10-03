@@ -11,10 +11,10 @@ index ef65363..f338fbb 100755
  
  
 @@ -68,6 +69,8 @@ def main():
-     phlsys_subcommand.setupParser("raw-diff", aoncmd_rawdiff, subparsers)
-     phlsys_subcommand.setupParser(
+     phlsys_subcommand.setup_parser("raw-diff", aoncmd_rawdiff, subparsers)
+     phlsys_subcommand.setup_parser(
          "create-revision", aoncmd_createrevision, subparsers)
-+    phlsys_subcommand.setupParser(
++    phlsys_subcommand.setup_parser(
 +        "update-revision", aoncmd_updaterevision, subparsers)
  
      args = parser.parse_args()

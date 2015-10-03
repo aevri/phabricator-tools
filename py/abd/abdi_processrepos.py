@@ -6,7 +6,7 @@
 #
 # Public Functions:
 #   addCommonParserArgs
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def addCommonParserArgs(parser):
              "multiprocessing completely.")
 
 
-def setupParser(parser):
+def setup_parser(parser):
     addCommonParserArgs(parser)
     parser.add_argument(
         '--sys-admin-emails',

@@ -46,7 +46,7 @@ Output format examples:
 #
 # Public Functions:
 #   getFromfilePrefixChars
-#   setupParser
+#   setup_parser
 #   process
 #
 # -----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ def getFromfilePrefixChars():
     return None
 
 
-def setupParser(parser):
+def setup_parser(parser):
     fmts = parser.add_argument_group(
         'Output format parameters',
         'Choose one only, default is "--format-summary"')
@@ -198,7 +198,7 @@ def _get_managed_review_branches(remote_branch_to_hash, branch_pairs):
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2014 Bloomberg Finance L.P.
+# Copyright (C) 2014-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
