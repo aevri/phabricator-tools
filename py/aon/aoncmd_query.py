@@ -95,8 +95,8 @@ def setup_parser(parser):
         'output format parameters', 'choose one only, default is "short"')
     formats = fmts.add_mutually_exclusive_group()
 
-    _setupParserTopLevel(parser)
-    _setupParserFilters(filters, self_filters, user_filters, time_filters)
+    _setup_parser_top_level(parser)
+    _setup_parser_filters(filters, self_filters, user_filters, time_filters)
 
     formats.add_argument(
         '--format-type',
@@ -112,7 +112,7 @@ def setup_parser(parser):
     phlsys_makeconduit.add_argparse_arguments(parser)
 
 
-def _setupParserTopLevel(parser):
+def _setup_parser_top_level(parser):
     parser.add_argument(
         '--ids',
         type=int,
@@ -155,7 +155,7 @@ def _setupParserTopLevel(parser):
              "In both cases it's 'most recent first'.")
 
 
-def _setupParserFilters(filters, self_filters, user_filters, time_filters):
+def _setup_parser_filters(filters, self_filters, user_filters, time_filters):
     filters.add_argument(
         '--status-type',
         type=str,
