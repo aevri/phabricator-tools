@@ -164,7 +164,9 @@ class ConduitException(Exception):
         self.actAsUser = actAsUser
 
 # we would expect this to arise normally from time to time
-SESSION_ERROR = "ERR-INVALID-SESSION"
+# SESSION_ERROR =
+SESSION_ERRORS = []
+# SESSION_ERRORS = ["ERR-CONDUIT-CORE", "ERR-INVALID-SESSION"]
 
 # if we try to conduit.connect to a conduitproxy then we'll get this error,
 # this means we should send the full cert every time.
@@ -312,7 +314,7 @@ class Conduit(object):
             if not error:
                 break
             else:
-                if error == SESSION_ERROR:
+                if error in SESSION_ERRORS:
                     logging.warning(
                         "phlsys_conduit: SESSION-ERROR (try {0})".format(x))
                     self._authenticate()

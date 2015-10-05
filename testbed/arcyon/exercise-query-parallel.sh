@@ -1,5 +1,21 @@
+phaburi="http://127.0.0.1"
+arcyduser='phab'
+arcydcert=xnh5tpatpfh4pff4tpnvdv74mh74zkmsualo4l6mx7bb262zqr55vcachxgz7ru3lrv\
+afgzquzl3geyjxw426ujcyqdi2t4ktiv7gmrtlnc3hsy2eqsmhvgifn2vah2uidj6u6hhhxo2j3y2w\
+6lcsehs2le4msd5xsn4f333udwvj6aowokq5l2llvfsl3efcucraawtvzw462q2sxmryg5y5rpicdk\
+3lyr3uvot7fxrotwpi3ty2b2sa2kvlpf
+arcyoncreds="--uri ${phaburi} --user ${arcyduser} --cert ${arcydcert}"
+
 for i in {1..10}; do
-    ../../bin/arcyon query > /dev/null &
+    # ../../bin/arcyon query $arcyoncreds | head &
+    ../../bin/arcyon query $arcyoncreds --act-as-user alice > /dev/null &
+done
+
+jobs
+
+for i in {1..10}; do
+    wait %$i
+    echo $?
 done
 
 wait
