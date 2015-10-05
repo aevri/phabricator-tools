@@ -67,8 +67,9 @@ printf "."
 
 arcyon='bin/arcyon'
 arcyon_commands='
-    show-config query comment raw-diff create-revision update-revision
-    get-diff paste task-create task-update task-query comment-inline'
+    show-config query comment comment-inline raw-diff create-revision
+    update-revision get-diff paste task-create task-update task-query
+    git-diff-helper'
 
 ${arcyon} -h > doc/man/arcyon/arcyon.generated.txt
 for command in ${arcyon_commands}; do
@@ -78,7 +79,7 @@ printf "."
 
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2013-2014 Bloomberg Finance L.P.
+# Copyright (C) 2013-2015 Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

@@ -1,0 +1,17 @@
+usage: arcyon git-diff-helper [-h] base head
+
+create a diff from a git repository, reducing the diff if it is too big.
+
+positional arguments:
+  base        the base commit of the diff
+  head        the head commit of the diff
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+Automatic size reduction is achieved by discarding context.
+`git-diff-helper` will call `git diff BASE...HEAD` on your behalf.
+
+usage examples:
+
+    $ arcyon git-diff-helper 3aad31 4def41
