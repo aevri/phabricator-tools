@@ -1,7 +1,17 @@
-FROM arcyd
-MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
-RUN mkdir -p /data/arcyd
-ENTRYPOINT /bin/sh -c 'while sleep 1; do :; done'
+#! /usr/bin/env bash
+set -euo pipefail
+THIS_DIR=$(cd $(dirname $0); pwd -P)
+echo ${THIS_DIR}
+BUILD_DIR=$(mktemp -d /tmp/temp.XXXXX)
+DOCKERFILE=$(readlink -f "$1")
+
+pushd ${BUILD_DIR}
+cp -R "${THIS_DIR}/.." .
+cp "$DOCKERFILE" Dockerfile
+docker build -t "$2" .
+popd
+
+rm -rf ${BUILD_DIR}
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015 Bloomberg Finance L.P.
 #
