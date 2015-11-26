@@ -7,7 +7,6 @@ for dir in $@; do
     git init --bare $dir
 done
 git daemon --verbose --reuseaddr --export-all --base-path=/data/git --enable=receive-pack /data/git
-while sleep 1; do true; done
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015 Bloomberg Finance L.P.
 #
