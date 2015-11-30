@@ -1,3 +1,4 @@
+#! /bin/bash
 set -eux
 
 # NOTE: this script expects you to have phab running in a local container
@@ -5,7 +6,7 @@ set -eux
 
 docker kill git
 docker rm git
-docker run -d --name git gitdaemon arcyd a b c
+docker run -d --name git gitdaemon arcyd testrepo
 docker kill arcyd
 docker rm arcyd
 ../build-image.sh arcyd-dockerfile arcyd
@@ -31,11 +32,26 @@ docker exec arcyd arcyd-do add-phabricator \
     --arcyd-user "$arcyduser" \
     --arcyd-cert "$arcydcert"
 
-docker exec arcyd arcyd-do add-repo phabweb mygit git://git/a
-docker exec arcyd arcyd-do add-repo phabweb mygit git://git/b
-docker exec arcyd arcyd-do add-repo phabweb mygit git://git/c
+docker run --rm -i gituser <<EOF
+    mkdir data
+    cd data
+    git clone git://git/testrepo
+    cd testrepo
+    git config user.email alice@server.test
+    git config user.name alice
+    touch README
+    git add README
+    git commit -m README
+    git push origin master
+    git checkout -b r/master/hello
+    echo Hello > README
+    git commit -am hello
+    git push origin r/master/hello
+EOF
+
+docker exec arcyd arcyd-do add-repo phabweb mygit git://git/testrepo --name testrepo
 docker exec arcyd arcyd-do reload
 
-docker logs arcyd
 sleep 5
-docker exec arcyd cat var/arcyd/var/log/debug
+docker exec arcyd cat var/arcyd/var/log/info
+docker logs arcyd
