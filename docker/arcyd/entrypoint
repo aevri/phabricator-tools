@@ -6,6 +6,7 @@ if [[ "$#" != 2 ]]; then
 fi
 REPO_URL=$1
 CONSUL_SERVER=$2
+touch /var/arcyd/var/logs/info
 if [ ! -d /var/arcyd ]; then
     cd /var
     git clone $REPO_URL arcyd

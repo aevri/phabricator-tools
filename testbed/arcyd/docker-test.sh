@@ -21,10 +21,13 @@ docker rm arcydtest-git || true
 docker rm arcydtest-arcyd || true
 docker rm arcydtest-consulserver || true
 
-docker run -d --name arcyd-consulserver gliderlabs/consul-server -bootstrap-expect 1
+docker run -d --name arcydtest-consulserver gliderlabs/consul-server -bootstrap-expect 1
+CONSUL_SERVER_IP=$(docker inspect arcydtest-consulserver | python -c 'import json; import sys; print json.load(sys.stdin)[0]["NetworkSettings"]["IPAddress"]')
+sleep 3
+
 docker run -d --name arcydtest-git gitdaemon arcyd testrepo
 ../build-image.sh arcyd-dockerfile arcyd
-docker run -d --name arcydtest-arcyd arcyd git://arcydtest-git/arcyd
+docker run -d --name arcydtest-arcyd arcyd git://arcydtest-git/arcyd "${CONSUL_SERVER_IP}"
 
 # wait for arcyd container to be ready
 while ! docker exec arcydtest-arcyd arcyd-do list-repos 2> /dev/null; do sleep 1; done

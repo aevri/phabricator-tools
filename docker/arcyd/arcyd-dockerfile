@@ -1,11 +1,12 @@
-FROM alpine
+FROM gliderlabs/consul-agent
 MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
 RUN apk update && apk add python git
 COPY py /opt/phabricator-tools/py
 COPY proto/arcyd /opt/phabricator-tools/bin/arcyd
 COPY docker/arcyd/entrypoint /bin/entrypoint
 COPY docker/arcyd/arcyd-do /bin/arcyd-do
-COPY docker/arcyd/contend-leadership /bin/contend-leadership.py
+COPY docker/arcyd/contend-leadership.py /bin/contend-leadership.py
+COPY docker/arcyd/config/ /config
 ENV ARCYD_EMAIL arcyd@localhost.invalid
 ENV ARCYD_NAME Arcyd
 ENV ARCYD_SLEEP_SECS 3
