@@ -16,9 +16,12 @@ cd ../../docker/arcyd
 
 docker kill arcydtest-git || true
 docker kill arcydtest-arcyd || true
+docker kill arcydtest-consulserver || true
 docker rm arcydtest-git || true
 docker rm arcydtest-arcyd || true
+docker rm arcydtest-consulserver || true
 
+docker run -d --name arcyd-consulserver gliderlabs/consul-server -bootstrap-expect 1
 docker run -d --name arcydtest-git gitdaemon arcyd testrepo
 ../build-image.sh arcyd-dockerfile arcyd
 docker run -d --name arcydtest-arcyd arcyd git://arcydtest-git/arcyd

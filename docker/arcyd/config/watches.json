@@ -1,0 +1,9 @@
+{
+    "watches": [
+        {
+            "type": "key",
+            "key": "arcyd/leader",
+            "handler": "/bin/contend-leadership.py"
+        }
+    ]
+}

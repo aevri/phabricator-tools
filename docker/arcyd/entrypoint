@@ -1,6 +1,11 @@
 #! /bin/sh
 set -x
+if [[ "$#" != 2 ]]; then
+    echo "Usage: $0 REPO_URL CONSUL_SERVER" >&2
+    exit 1
+fi
 REPO_URL=$1
+CONSUL_SERVER=$2
 if [ ! -d /var/arcyd ]; then
     cd /var
     git clone $REPO_URL arcyd
@@ -17,7 +22,9 @@ if [ ! -d /var/arcyd ]; then
     fi
 fi
 cd /var/arcyd
-arcyd start --foreground
+consul agent -config-dir /config -join ${CONSUL_SERVER} &
+tail -F /var/arcyd/var/logs/info &
+wait
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015 Bloomberg Finance L.P.
 #
