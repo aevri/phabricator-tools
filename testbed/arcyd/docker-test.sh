@@ -25,7 +25,9 @@ docker rm arcydtest-consulserver || true
 
 docker run -d --name arcydtest-consulserver gliderlabs/consul-server -bootstrap-expect 1
 CONSUL_SERVER_IP=$(docker inspect arcydtest-consulserver | python -c 'import json; import sys; print json.load(sys.stdin)[0]["NetworkSettings"]["IPAddress"]')
-sleep 3
+
+# wait for consul server to be ready
+while ! docker exec arcydtest-consulserver consul info | grep 'leader = true'; do sleep 1; done
 
 docker run -d --name arcydtest-git gitdaemon arcyd testrepo
 ../build-image.sh arcyd-dockerfile arcyd
@@ -74,16 +76,23 @@ docker exec arcydtest-arcyd arcyd-do reload
 
 docker run -d --name arcydtest-arcyd2 arcyd git://arcydtest-git/arcyd "${CONSUL_SERVER_IP}"
 
+# let some stuff happen
 sleep 5
+
+echo ----- arcyd 1 -----
 docker logs arcydtest-arcyd
+echo ----- arcyd 2 -----
 docker logs arcydtest-arcyd2
 
 docker kill arcydtest-git
 docker kill arcydtest-arcyd
 docker kill arcydtest-arcyd2
+docker kill arcydtest-consulserver
 docker rm arcydtest-git
 docker rm arcydtest-arcyd
 docker rm arcydtest-arcyd2
+docker rm arcydtest-consulserver
+
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015 Bloomberg Finance L.P.
 #
