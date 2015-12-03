@@ -1,6 +1,7 @@
 FROM gliderlabs/consul-agent
 MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
-RUN apk update && apk add python git
+RUN apk update && apk add python py-pip git
+RUN pip install requests
 COPY py /opt/phabricator-tools/py
 COPY proto/arcyd /opt/phabricator-tools/bin/arcyd
 COPY docker/arcyd/entrypoint /bin/entrypoint

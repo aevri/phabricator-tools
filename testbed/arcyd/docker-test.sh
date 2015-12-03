@@ -16,9 +16,11 @@ cd ../../docker/arcyd
 
 docker kill arcydtest-git || true
 docker kill arcydtest-arcyd || true
+docker kill arcydtest-arcyd2 || true
 docker kill arcydtest-consulserver || true
 docker rm arcydtest-git || true
 docker rm arcydtest-arcyd || true
+docker rm arcydtest-arcyd2 || true
 docker rm arcydtest-consulserver || true
 
 docker run -d --name arcydtest-consulserver gliderlabs/consul-server -bootstrap-expect 1
@@ -67,16 +69,21 @@ docker run --rm -i gituser <<EOF
 EOF
 
 docker exec arcydtest-arcyd arcyd-do add-repo phabweb mygit git://arcydtest-git/testrepo --name testrepo
+docker exec arcydtest-arcyd sh -c 'cd /var/arcyd; git push origin master;'
 docker exec arcydtest-arcyd arcyd-do reload
-docker logs arcydtest-arcyd
+
+docker run -d --name arcydtest-arcyd2 arcyd git://arcydtest-git/arcyd "${CONSUL_SERVER_IP}"
 
 sleep 5
-docker exec arcydtest-arcyd cat var/arcyd/var/log/info
+docker logs arcydtest-arcyd
+docker logs arcydtest-arcyd2
 
 docker kill arcydtest-git
 docker kill arcydtest-arcyd
+docker kill arcydtest-arcyd2
 docker rm arcydtest-git
 docker rm arcydtest-arcyd
+docker rm arcydtest-arcyd2
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015 Bloomberg Finance L.P.
 #

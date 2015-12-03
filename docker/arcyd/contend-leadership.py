@@ -1,7 +1,9 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 import json
+import logging
 import requests
+import subprocess
 import sys
 import time
 
@@ -11,12 +13,16 @@ _SERVICE_NAME = 'arcyd'
 
 
 def main():
+    logging.basicConfig(
+        filename='/var/log/contend-leadership',
+        level=logging.DEBUG)
+
     kv = json.load(sys.stdin)
-    print "Got kv:", kv
+    logging.debug("Got kv: {}".format(kv))
 
     has_leader = test_has_leader(kv)
     if has_leader:
-        print "There is already a leader."
+        logging.debug("There is already a leader.")
     else:
         contend_leadership()
 
@@ -34,7 +40,7 @@ def contend_leadership():
         requests.put(
             consul_api + 'session/create',
             json={'Name': _SERVICE_NAME}))['ID']
-    print "Got session ID:", session_id
+    logging.debug("Got session ID: {}".format(session_id))
 
     has_leader = False
     while not has_leader:
@@ -43,19 +49,25 @@ def contend_leadership():
                 '{}kv/{}/leader?acquire={}'.format(
                     consul_api, _SERVICE_NAME, session_id),
                 'I am the leader'))
-        print "Is leader:", is_leader
+        logging.debug("Is leader:{}".format(is_leader))
 
         if is_leader:
             has_leader = True
+            logging.info("This node is the leader.")
+            logging.info(
+                subprocess.check_output(
+                    ['/bin/arcyd-do', 'start']))
         else:
             has_leader = test_has_leader(
                 get_response_json(
                     requests.get(
                         '{}kv/{}/leader'.format(
                             consul_api, _SERVICE_NAME)))[0])
-            print "Has leader:", has_leader
-            if not has_leader:
-                print "Waiting to retry .."
+            logging.debug("Has leader:".format(has_leader))
+            if has_leader:
+                logging.info("This node is a follower.")
+            else:
+                logging.debug("Waiting to retry ..")
 
                 # there may be a 'lock-delay', wait before retry
                 time.sleep(5)
