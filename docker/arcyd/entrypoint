@@ -23,11 +23,10 @@ if [ ! -d /var/arcyd ]; then
 fi
 touch /var/arcyd/var/log/info
 touch /var/log/contend-leadership
-echo hello >> /var/log/contend-leadership
+touch /var/log/consul-agent
 cd /var/arcyd
-consul agent -config-dir /config -join ${CONSUL_SERVER} &
-tail -F /var/arcyd/var/log/info &
-tail -F /var/log/contend-leadership &
+tail -F /var/arcyd/var/log/info /var/log/contend-leadership /var/log/consul-agent &
+consul agent -config-dir /config -join ${CONSUL_SERVER} > /var/log/consul-agent 2>&1 &
 wait
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015 Bloomberg Finance L.P.
