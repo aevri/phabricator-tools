@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 THIS_DIR=$(cd $(dirname $0); pwd -P)
 echo ${THIS_DIR}
-BUILD_DIR=$(mktemp -d)
+BUILD_DIR=$(mktemp -d /tmp/temp.XXXXX)
 
 pushd ${BUILD_DIR}
 cp -R "${THIS_DIR}/../.." ${BUILD_DIR}
