@@ -1,0 +1,11 @@
+{
+  "hosts": {
+    "http:\/\/127.0.0.1\/api\/": {
+      "user": "alice",
+      "cert": "35yxukrjcltwgzfmgsnj2klc2jbrnzehqz3c36ijxnicwysv3xenxymwz532pyhimpxh7jryynh32su2ajxahd3gp7qshyik2qwf6ntuim2acxvjnko6p2q4mhacpvugqou2wpmyqwj4hkchgc5vh33lur723r4dexy5b3aj35v4v6ffork727ww5qk5yhhcmolbcqg3rxl6qpf53spn4aopneggtb675hmpx3xya3et7jrowzlkl3yw3sktvdu"
+    }
+  },
+  "config": {
+    "default": "http:\/\/127.0.0.1\/api\/"
+  }
+}
