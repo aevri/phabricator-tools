@@ -1,20 +1,20 @@
-FROM ubuntu:14.04
+FROM alpine
 MAINTAINER Angelos Evripiotis <jevripiotis@bloomberg.net>
 EXPOSE 80
-RUN apt-get update && apt-get install -y \
+RUN apk update
+RUN apk add \
     git \
-    php5 \
-    php5-mysql \
-    php5-gd \
-    php5-dev \
-    php5-curl \
-    php-apc \
-    php5-cli \
+    php-apache2 \
+    php-mysql \
+    php-gd \
+    php-dev \
+    php-curl \
+    php-cli \
     apache2
-COPY phab.conf /etc/apache2/sites-available/phab.conf
-RUN ln -s /etc/apache2/sites-available/phab.conf /etc/apache2/sites-enabled/phab.conf
-RUN rm /etc/apache2/sites-enabled/000-default.conf
-RUN /usr/sbin/a2enmod rewrite
+# COPY phab.conf /etc/apache2/sites-available/phab.conf
+# RUN ln -s /etc/apache2/sites-available/phab.conf /etc/apache2/sites-enabled/phab.conf
+# RUN rm /etc/apache2/sites-enabled/000-default.conf
+RUN sed -i 's|^#LoadModule rewrite_module|LoadModule rewrite_module|' /etc/apache2/httpd.conf
 RUN mkdir -p /phabricator/instances/dev
 RUN git clone https://github.com/phacility/phabricator /phabricator/instances/dev/phabricator
 RUN git clone https://github.com/phacility/libphutil /phabricator/instances/dev/libphutil
@@ -22,7 +22,7 @@ RUN git clone https://github.com/phacility/arcanist /phabricator/instances/dev/a
 RUN git -C /phabricator/instances/dev/phabricator reset --hard d13a3225634c47cf2e55b94199a0f2aba37aa293
 RUN git -C /phabricator/instances/dev/libphutil reset --hard 0b9f193303dfae4f9204d8f577e2bd45acd4963f
 RUN git -C /phabricator/instances/dev/arcanist reset --hard 6270dd0de5073931f3c3e75ab77f0f1d5fa77eef
-CMD /usr/sbin/apache2ctl -D FOREGROUND
+CMD httpd -DFOREGROUND
 # -----------------------------------------------------------------------------
 # Copyright (C) 2016 Bloomberg Finance L.P.
 #
