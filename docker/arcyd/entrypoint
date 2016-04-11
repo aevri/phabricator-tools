@@ -14,14 +14,23 @@ def main():
     parser.add_argument(
         'REPO_URL',
         help='URL of the config repository to git clone')
-    parser.add_argument(
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument(
         '--standby-loop',
         metavar='SECS',
         type=int,
         default=None,
         help='Only fetch in a loop, waiting the specified number of seconds. '
              'This is useful when you want a warm standby instance.')
+    mode_group.add_argument(
+        '--shell',
+        action='store_true',
+        help='Spawn a shell after setting up, to allow for debugging. '
+             'Don\'t start Arcyd.')
     args = parser.parse_args()
+
+    if not check_args(args):
+        return 1
 
     repo_dir = '/var/arcyd/'
 
@@ -33,10 +42,24 @@ def main():
         setup_repo(args.REPO_URL, repo_dir)
 
     os.chdir(repo_dir)
-    if args.standby_loop is None:
-        run_arcyd()
-    else:
+    if args.standby_loop is not None:
         run_standby_loop(args.standby_loop)
+    elif args.shell:
+        subprocess.call(['sh'])
+    else:
+        run_arcyd()
+
+
+def check_args(args):
+    is_ok = True
+    if args.shell and not os.isatty(sys.stdin.fileno()):
+        print('STDIN is not a TTY', file=sys.stderr, flush=True)
+        print(
+            'You probably mean to run with "docker run -it ..."',
+            file=sys.stderr,
+            flush=True)
+        is_ok = False
+    return is_ok
 
 
 def run_arcyd():
