@@ -103,6 +103,16 @@ def run_standby_loop(sleep_secs):
             subprocess.call(['arcyd', 'fsck', '--fix'])
         if not got_sigterm:
             subprocess.call(['arcyd', 'fetch'])
+            fetch = subprocess.Popen(['arcyd', 'fetch'])
+            while fetch.poll() is None:
+                if got_sigterm:
+                    fetch.terminate()
+                    fetch.wait()
+                else:
+                    try:
+                        fetch.wait(1)
+                    except subprocess.TimeoutExpired:
+                        pass
         if not got_sigterm:
             print('Sleep', sleep_secs, 'secs', flush=True)
             time.sleep(sleep_secs)  # If we get SIGTERM we'll wake up early
