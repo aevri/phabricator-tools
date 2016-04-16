@@ -30,6 +30,7 @@ import hashlib
 import json
 import os
 
+import phlsys_fs
 import phlurl_request
 
 
@@ -179,7 +180,7 @@ class FileCacheWatcherWrapper(object):
         return self._watcher
 
     def save(self):
-        with open(self._filename, 'w') as f:
+        with phlsys_fs.open_write_text_file_atomic(self._filename) as f:
             self._watcher.dump(f)
 
 
