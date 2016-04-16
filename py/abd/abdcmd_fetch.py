@@ -26,6 +26,7 @@ import sys
 import phlgitx_refcache
 import phlsys_git
 import phlsys_pid
+import phlsys_signal
 import phlsys_subprocess
 import phlurl_watcher
 
@@ -45,6 +46,8 @@ def setupParser(parser):
 
 
 def process(args):
+
+    phlsys_signal.set_exit_on_sigterm()
 
     _ = args  # NOQA
     fs = abdt_fs.make_default_accessor()
