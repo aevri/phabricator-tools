@@ -138,6 +138,21 @@ class CyclingPool(object):
             for index, result in self._overrun_cycle_results():
                 yield index, result
 
+    def terminate(self):
+        """Terminate all active workers with multiprocessing.Process.terminate.
+
+        On Linux this will be done with SIGTERM, if there is no appropriate
+        handler installed then shutdown will not be graceful and could leave
+        the queues used by CyclingPool in an invalid state.
+
+        One way to install an appropriate handler is to use
+        phlsys_signal.set_exit_on_sigterm.
+
+        :returns: None
+
+        """
+        self._pool_list.terminate_pools()
+
     @property
     def num_active_jobs(self):
         """Return the number of jobs not yet yielded."""
@@ -233,6 +248,10 @@ class _PoolList(object):
     def is_yield_finished(self):
         return not self._pool_list
 
+    def terminate_pools(self):
+        for pool in self._pool_list:
+            pool.terminate_workers()
+
 
 class _Pool(object):
 
@@ -275,6 +294,10 @@ class _Pool(object):
                 finished_workers.append(worker)
         for worker in finished_workers:
             self._worker_list.remove(worker)
+
+    def terminate_workers(self):
+        for worker in self._worker_list:
+            worker.terminate()
 
     def yield_available_results(self):
         while not self._results_queue.empty():
