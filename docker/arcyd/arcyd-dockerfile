@@ -4,12 +4,13 @@ RUN apk update && apk add python python3 git openssh-client
 COPY py /opt/phabricator-tools/py
 COPY proto/arcyd /opt/phabricator-tools/bin/arcyd
 COPY docker/arcyd/entrypoint /bin/entrypoint
+COPY docker/arcyd/init /bin/init
 COPY docker/arcyd/arcyd-do /bin/arcyd-do
 ENV ARCYD_EMAIL arcyd@localhost.invalid
 ENV ARCYD_NAME Arcyd
 ENV ARCYD_SLEEP_SECS 3
 RUN ln -s /opt/phabricator-tools/bin/arcyd /usr/bin/arcyd
-ENTRYPOINT ["/bin/entrypoint"]
+ENTRYPOINT ["/bin/init"]
 # -----------------------------------------------------------------------------
 # Copyright (C) 2015-2016 Bloomberg Finance L.P.
 #

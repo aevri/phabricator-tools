@@ -1,0 +1,113 @@
+#! /usr/bin/python3
+"""Minimal pid1 / init program for Arcyd containers.
+
+Launch 'entrypoint', propagate SIGTERM and reap children.
+
+"""
+
+import os
+import signal
+import sys
+import time
+
+
+def main():
+    got_sigterm = False
+    def handle_sigterm(unused1, unused2):
+        nonlocal got_sigterm
+        got_sigterm = True
+
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
+    # Chop the path to this program off the front of argv, to pass to
+    # 'entrypoint'.
+    args = sys.argv[1:]
+
+    entrypoint_pid = os.spawnvp(
+        os.P_NOWAIT, 'entrypoint', ['entrypoint'] + args)
+
+    while True:
+        entrypoint_return_code = check_pid_reap_others(entrypoint_pid)
+        if entrypoint_return_code is not None:
+            break
+
+        if got_sigterm:
+            # Note that it's possible we will drop some SIGTERM signals as this
+            # is a race condition.
+            got_sigterm = False
+
+            os.kill(entrypoint_pid, signal.SIGTERM)
+
+        # We will be woken by SIGCHLD in the event of a child exiting.
+        time.sleep(1)
+
+    wait_until_no_children()
+
+    return entrypoint_return_code
+
+
+def check_pid_reap_others(target_pid):
+
+    target_return_code = None
+
+    try:
+        # Wait on every child that has exited.
+        done = False
+        while not done:
+            pid, exit_status, _ = os.wait3(os.WNOHANG)
+            if not pid:
+                #  'pid' will be 0 if there was no exited process to wait on.
+                done = True
+            elif pid == target_pid:
+                exit_signal = exit_status & 255
+                if exit_signal == 0:
+                    # Capture the high byte of the exit status, this is the
+                    # return code of the process.
+                    target_return_code = (exit_status >> 8) & 255
+                else:
+                    # If the exit signal was not zero then the return code is
+                    # not defined.
+                    target_return_code = 0
+    except ChildProcessError:
+        # We have no more children, interrupt waiting.
+        if target_return_code is None:
+            # We should have reaped the target pid, raise through.
+            raise
+
+    return target_return_code
+
+
+def wait_until_no_children():
+    while True:
+        try:
+            # Wait on everything that has exited.
+            # Wait again if there was something to be waited on, i.e. a pid was
+            # returned from wait3().
+            while os.wait3(os.WNOHANG)[0]:
+                pass
+        except ChildProcessError:
+            break
+
+        # We will be woken by SIGCHLD in the event of a child exiting
+        time.sleep(1)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+
+
+# -----------------------------------------------------------------------------
+# Copyright (C) 2016 Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------ END-OF-FILE ----------------------------------
