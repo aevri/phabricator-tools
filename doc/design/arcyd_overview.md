@@ -60,6 +60,36 @@ then need to accept the changes again.
 Setup
 -----
 
+### Pre-requisites
+
+To start an Arcyd instance, you will need the following software installed:
+
+- Linux / UNIX
+- Git client
+- Python 2.7
+
+You will of course also need to be able to reach these services:
+
+- Your Git server (e.g. Phabricator, Gitolite, local fs, ...)
+- Your Phabricator instance
+
+You will also need a Phabricator user for Arcyd to run as, probably called
+'arcyd' or similar.
+
+### Optional dependencies
+
+As an administrator, it can be useful to get email notifications from Arcyd.
+For example in the case where Phabricator or Git become unavailable. In this
+case you will need 'sendmail' configured on the machine.
+
+### Installation
+
+At the time of writing, the phabricator-tools repository does not provide any
+Python packages. Instead you can simply get a local clone and add `proto/arcyd`
+to your `$PATH`.
+
+### Configuration
+
 ...
 
 Inspection
