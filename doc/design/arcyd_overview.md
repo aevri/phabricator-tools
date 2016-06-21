@@ -65,7 +65,7 @@ Setup
 Inspection
 ----------
 
-# Log files
-# Special branches
-# Special refs
-# Phabricator user
+### Log files
+### Special branches
+### Special refs
+### Phabricator user
