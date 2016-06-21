@@ -85,11 +85,17 @@ case you will need 'sendmail' configured on the machine.
 ### Installation
 
 At the time of writing, the phabricator-tools repository does not provide any
-Python packages. Instead you can simply get a local clone and add `proto/arcyd`
-to your `$PATH`.
+Python packages. Instead you can simply get a local clone and add the
+`proto/arcyd` binary to your `$PATH`.
 
 ### Configuration
 
+
+Disaster recovery
+-----------------
+
+In the event of the loss of the Arcyd machine ... Arcyd only caches
+repositories locally, all state is stored on the Git Server and in Phabricator
 ...
 
 Inspection
