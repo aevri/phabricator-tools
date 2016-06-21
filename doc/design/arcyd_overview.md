@@ -90,6 +90,14 @@ Python packages. Instead you can simply get a local clone and add the
 
 ### Configuration
 
+Arcyd insists on storing it's configuration in a Git repository, the aim is to
+make replication possible using the existing dependencies (Git client and
+server), and also to encourage versioning of configuration changes.
+
+Use the [`arcyd init`](../man/arcyd/arcyd_init.generated.txt) command to start
+a new repository with some basic configuration.
+
+...
 
 Disaster recovery
 -----------------
